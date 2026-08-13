@@ -1,0 +1,39 @@
+  vector dH_dt(
+    real tau, // time
+    vector H, // expected number of hunted seals
+    real n0, // initial population size
+    real k, // length of hunting season
+    real E_1, // hunting effort in region 1
+    real E_2, // hunting effort in region 2
+    real mu // other mortality rate
+  ) {
+
+    real surv = exp(-(E_1 + E_2) * (k * tau - square(tau) / 2) - mu * tau);
+    real dH = n0 * E_1 * surv * (k - tau);
+    return rep_vector(dH, 1);
+  }
+
+vector expected_hunting_pressure(
+  int Q,
+  real epsilon_h,
+  real sigma_h,
+  real tau_h,
+  vector g,
+  vector N
+) {
+  int K = size(g);
+
+  // log numerator
+  vector[K] log_num =
+      g
+    + log(Q)
+    + log(2.0)
+    - 2.0 * log(tau_h)
+    - epsilon_h * sigma_h;
+
+  // log denominator
+  real log_denom = log_sum_exp(g + log(N));
+
+  // final result
+  return exp(log_num - log_denom);
+}

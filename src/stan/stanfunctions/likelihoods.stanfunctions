@@ -1,0 +1,417 @@
+real aerial_count_lpmf(
+  array[] int obs_aerial_count, // observed count
+  array[] int aerial_year, // year
+  vector population_total, // N_tot
+  real mu, // mean prob
+  real phi // overdispersion
+) {
+  int n_obs = size(obs_aerial_count);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = aerial_year[i];
+
+    lp += neg_binomial_2_lpmf(
+      obs_aerial_count[i] |
+      mu * population_total[t],
+      phi
+    );
+  }
+
+  return lp;
+}
+
+vector aerial_count_pointwise_log_lik(
+  array[] int obs_aerial_count, // observed count
+  array[] int aerial_year, // year
+  vector population_total, // N_tot
+  real mu, // mean prob
+  real phi // overdispersion
+) {
+  int n_obs = size(obs_aerial_count);
+  vector[n_obs] log_lik;
+  
+  for (i in 1:n_obs) {
+    int t = aerial_year[i];
+
+    log_lik[i] = neg_binomial_2_lpmf(
+      obs_aerial_count[i] |
+      mu * population_total[t],
+      phi
+    );
+  }
+
+  return log_lik;
+}
+
+real harvest_bags_lpdf(
+  array[] real hunting_count,   // observed count
+  array[] int hunting_year,   // year
+  vector hunted_total,    // total
+  real harvest_bag_cv
+) {
+  int n_obs = size(hunting_count);
+  int T = size(hunting_count);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    lp += normal_lpdf(
+      hunting_count[i] |
+      hunted_total[t],
+      harvest_bag_cv * hunted_total[t]
+    );
+  }
+
+  return lp;
+}
+
+array[] real harvest_bags_rng(
+  vector hunted_total,    // total
+  real harvest_bag_cv
+) {
+  int n_years = size(hunted_total);
+
+  array[n_years] real hunting_bag;
+
+  for (year in 1:n_years) {
+    hunting_bag[year] = normal_rng(
+      hunted_total[year],
+      harvest_bag_cv * hunted_total[year]
+    );
+    return hunting_bag;
+  }
+}
+
+vector harvest_bags_pointwise_log_lik(
+  array[] real hunting_count,   // observed count
+  array[] int hunting_year,   // year
+  vector hunted_total,    // total
+  real harvest_bag_cv
+) {
+  int n_obs = size(hunting_count);
+  int T = size(hunting_count);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    log_lik[i] = normal_lpdf(
+      hunting_count[i] |
+      hunted_total[t],
+      harvest_bag_cv * hunted_total[t]
+    );
+  }
+
+  return log_lik;
+}
+
+
+real hunting_comp_lpmf(
+  array[,] int hunting_composition,  // [n_obs, K]
+  array[] int hunting_year,          // [n_obs]
+  matrix hunted,                      // [K, T]
+  vector hunted_total           // [T]
+) {
+  int n_obs = size(hunting_composition);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+      lp += multinomial_lpmf(
+        hunting_composition[i] |
+        hunted[, t] / hunted_total[t]
+      );
+  }
+
+  return lp;
+}
+
+vector hunting_comp_pointwise_log_lik(
+  array[,] int hunting_composition,  // [n_obs, K]
+  array[] int hunting_year,          // [n_obs]
+  matrix hunted,                      // [K, T]
+  vector hunted_total           // [T]
+) {
+  int n_obs = size(hunting_composition);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+      log_lik[i] = multinomial_lpmf(
+        hunting_composition[i] |
+        hunted[, t] / hunted_total[t]
+      );
+  }
+
+  return log_lik;
+}
+
+
+
+real bycatch_comp_lpmf(
+  array[,] int bycatch_composition,   // [n_obs, K]
+  array[] int bycatch_comp_year,      // [n_obs]
+  matrix bycatch_expected,            // [K, T]
+  vector bias                          // [K]
+) {
+  int n_obs = size(bycatch_composition);
+  vector[rows(bycatch_expected)] w = exp(bias);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = bycatch_comp_year[i];
+    lp += multinomial_lpmf(
+      bycatch_composition[i] |
+      (w .* bycatch_expected[, t]) /
+        dot_product(w, bycatch_expected[, t])
+    );
+  }
+  return lp;
+}
+
+
+vector bycatch_comp_pointwise_log_lik(
+  array[,] int bycatch_composition,   // [n_obs, K]
+  array[] int bycatch_comp_year,      // [n_obs]
+  matrix bycatch_expected,            // [K, T]
+  vector bias                          // [K]
+) {
+  int n_obs = size(bycatch_composition);
+  vector[rows(bycatch_expected)] w = exp(bias);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = bycatch_comp_year[i];
+    log_lik[i] = multinomial_lpmf(
+      bycatch_composition[i] |
+      (w .* bycatch_expected[, t]) /
+        dot_product(w, bycatch_expected[, t])
+    );
+  }
+  return log_lik;
+}
+
+
+
+real pregnancy_lpmf(
+  array[] int pregnancy_count,        // [n_obs]
+  array[] int pregnancy_count_year,   // [n_obs]
+  array[] int pregnancy_sample_size,  // [n_obs]
+  vector pregnancy_rate         // [T]
+) {
+  int n_obs = size(pregnancy_count);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = pregnancy_count_year[i];
+    lp += binomial_lpmf(
+      pregnancy_count[i] |
+      pregnancy_sample_size[i],
+      pregnancy_rate[t]
+    );
+  }
+
+  return lp;
+}
+
+
+real reproductive_signs_lpmf(
+  array[,] int obs_reproductive_signs,
+  array[] int reproductive_signs_year,
+  matrix reproductive_probs
+) {
+  int n_obs = size(obs_reproductive_signs);
+  real lp = 0;
+  for (i in 1:n_obs) {
+    int t = reproductive_signs_year[i];
+    lp += multinomial_lpmf(
+      obs_reproductive_signs[i] | reproductive_probs[, t]
+    );
+  }
+  return lp;
+}
+
+
+vector pregnancy_pointwise_log_lik(
+  array[] int pregnancy_count,
+  array[] int pregnancy_count_year,
+  array[] int pregnancy_sample_size,
+  vector pregnancy_rate
+) {
+  int n_obs = size(pregnancy_count);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = pregnancy_count_year[i];
+    log_lik[i] = binomial_lpmf(
+      pregnancy_count[i] |
+      pregnancy_sample_size[i],
+      pregnancy_rate[t]
+    );
+  }
+
+  return log_lik;
+}
+
+
+vector reproductive_signs_pointwise_log_lik(
+  array[,] int obs_reproductive_signs,
+  array[] int reproductive_signs_year,
+  matrix reproductive_probs
+) {
+  int n_obs = size(obs_reproductive_signs);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = reproductive_signs_year[i];
+    log_lik[i] = multinomial_lpmf(
+      obs_reproductive_signs[i] |
+      reproductive_probs[, t]
+    );
+  }
+
+  return log_lik;
+}
+
+
+
+array[] int aerial_count_rng(
+  array[] int aerial_year,
+  vector population_total,
+  real mu,
+  real phi
+) {
+  int n_obs = size(aerial_year);
+  array[n_obs] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = aerial_year[i];
+    y_sim[i] = neg_binomial_2_rng(mu * population_total[t], phi);
+  }
+
+  return y_sim;
+}
+
+
+array[] real harvest_bags_rng(
+  array[] int hunting_year,
+  vector hunted_total,
+  real harvest_bag_cv
+) {
+  int n_obs = size(hunting_year);
+  array[n_obs] real y_sim;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    if (hunted_total[t] > 0) {
+      y_sim[i] = normal_rng(
+        hunted_total[t],
+        harvest_bag_cv * hunted_total[t]
+      );
+    } else {
+      y_sim[i] = 0.0;
+    }
+  }
+
+  return y_sim;
+}
+
+
+array[,] int hunting_comp_rng(
+  array[] int hunting_year,
+  matrix hunted,
+  vector hunted_total,
+  array[] int hunting_sample_size
+) {
+  int n_obs = size(hunting_year);
+  int K = rows(hunted);
+  array[n_obs, K] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    if (hunting_sample_size[i] == 0 || hunted_total[t] <= 0) {
+      y_sim[i] = rep_array(0, K);
+    } else {
+      y_sim[i] = multinomial_rng(
+        hunted[, t] / hunted_total[t],
+        hunting_sample_size[i]
+      );
+    }
+  }
+
+  return y_sim;
+}
+
+
+array[,] int bycatch_comp_rng(
+  array[] int bycatch_comp_year,
+  matrix bycatch_expected,
+  vector bias,
+  array[] int bycatch_sample_size
+) {
+  int n_obs = size(bycatch_comp_year);
+  int K = rows(bycatch_expected);
+  vector[K] w = exp(bias);
+  array[n_obs, K] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = bycatch_comp_year[i];
+    real denom = dot_product(w, bycatch_expected[, t]);
+
+    if (bycatch_sample_size[i] == 0 || denom <= 0) {
+      y_sim[i] = rep_array(0, K);
+    } else {
+      y_sim[i] = multinomial_rng(
+        (w .* bycatch_expected[, t]) / denom,
+        bycatch_sample_size[i]
+      );
+    }
+  }
+
+  return y_sim;
+}
+
+
+array[] int pregnancy_rng(
+  array[] int pregnancy_count_year,
+  array[] int pregnancy_sample_size,
+  vector pregnancy_rate
+) {
+  int n_obs = size(pregnancy_count_year);
+  array[n_obs] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = pregnancy_count_year[i];
+    y_sim[i] = binomial_rng(
+      pregnancy_sample_size[i],
+      pregnancy_rate[t]
+    );
+  }
+
+  return y_sim;
+}
+
+
+array[,] int reproductive_signs_rng(
+  array[] int reproductive_signs_year,
+  matrix reproductive_probs,
+  array[] int reproductive_signs_sample_size
+) {
+  int n_obs = size(reproductive_signs_year);
+  int K = rows(reproductive_probs);
+  array[n_obs, K] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = reproductive_signs_year[i];
+    if (reproductive_signs_sample_size[i] == 0) {
+      y_sim[i] = rep_array(0, K);
+    } else {
+      y_sim[i] = multinomial_rng(
+        reproductive_probs[, t],
+        reproductive_signs_sample_size[i]
+      );
+    }
+  }
+
+  return y_sim;
+}

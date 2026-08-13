@@ -1,0 +1,672 @@
+vector compute_baseline_birth_rate(
+  real min_baseline_birth_rate,
+  real max_baseline_birth_rate,
+  real herring_intercept_scaled,
+  real herring_slope,
+  real herring_weight,
+  data vector herring_index_baltic_proper_gulf_finland,
+  data vector herring_index_gulf_bothnia
+) {
+  int n_state_years = num_elements(herring_index_baltic_proper_gulf_finland);
+  vector[n_state_years] baseline_birth_rate;
+  for (t in 1:(n_state_years)) {
+    real weighted_h =
+      herring_weight * herring_index_baltic_proper_gulf_finland[t]
+      + (1.0 - herring_weight) * herring_index_gulf_bothnia[t];
+    baseline_birth_rate[t] =
+      min_baseline_birth_rate +
+      (max_baseline_birth_rate - min_baseline_birth_rate) *
+      inv_logit(herring_slope * (herring_intercept_scaled + weighted_h));
+  }
+  return baseline_birth_rate;
+}
+
+real compute_density_dependence_intercept(
+  real max_baseline_birth_rate,
+  real density_dependence_scaled
+) {
+  return
+    -log(
+      max_baseline_birth_rate
+      + (1.0 - max_baseline_birth_rate)
+        * density_dependence_scaled
+    );
+}
+
+
+real update_birth_rate(
+  real b0,
+  real theta0,
+  real theta1,
+  real N_tot_prev
+) {
+  return b0 * exp(-theta0 * (exp(theta1 * N_tot_prev) - 1.0));
+}
+
+real update_pregnancy_rate(
+  real baseline_birth_rate,
+  real theta0,
+  real theta1,
+  real N_tot,
+  real tau_s
+) {
+  return baseline_birth_rate *
+    exp(theta0 * (1.0 - tau_s * exp(theta1 * N_tot)));
+}
+
+
+vector mortality_rates(
+  real phi_pup,
+  real phi_adult,
+  real c,
+  data int n_age_classes,
+  real male_pup_offset,
+  real male_adult_offset
+) {
+  int n_demo = 2 * n_age_classes;
+  vector[n_demo] mu_m;
+
+  real mu_pup_f = -log(phi_pup);
+  real mu_ad_f  = -log(phi_adult);
+
+  real mu_pup_m = exp(log(mu_pup_f) + male_pup_offset);
+  real mu_ad_m  = exp(log(mu_ad_f)  + male_adult_offset);
+
+  // female endpoints
+  mu_m[1] = mu_pup_f;
+  mu_m[n_age_classes] = mu_ad_f;
+
+  // female intermediate ages
+  for (j in 2:(n_age_classes - 1)) {
+    real w =
+      ((j - 1.0) / (n_age_classes - 1.0))^c;
+
+    mu_m[j] =
+      exp(
+        log(mu_pup_f)
+        + w * (log(mu_ad_f) - log(mu_pup_f))
+      );
+  }
+
+  // male endpoints
+  mu_m[n_age_classes + 1] = mu_pup_m;
+  mu_m[n_demo] = mu_ad_m;
+
+  // male intermediate ages
+  for (j in 2:(n_age_classes - 1)) {
+    real w =
+      ((j - 1.0) / (n_age_classes - 1.0))^c;
+
+    mu_m[n_age_classes + j] =
+      exp(
+        log(mu_pup_m)
+        + w * (log(mu_ad_m) - log(mu_pup_m))
+      );
+  }
+
+  return mu_m;
+}
+
+
+matrix create_aging_matrix(int n_demo_groups, int n_age_groups) {
+  matrix[n_demo_groups, n_demo_groups] A;
+
+  // initialize everything to zero
+  A = rep_matrix(0.0, n_demo_groups, n_demo_groups);
+
+  // female aging (ages 1 -> a)
+  for (i in 2:n_age_groups) {
+    A[i, i - 1] = 1.0;
+  }
+
+  // female plus group
+  A[n_age_groups, n_age_groups] = 1.0;
+
+  // male aging (ages a+1 -> 2a)
+  for (i in (n_age_groups + 2):n_demo_groups) {
+    A[i, i - 1] = 1.0;
+  }
+
+  // male plus group
+  A[n_demo_groups, n_demo_groups] = 1.0;
+
+  return A;
+}
+
+
+matrix create_transition_matrix(
+  vector hunting_comp_sw,
+  vector hunting_comp_fi,
+  vector population_comp,
+  vector hunting_pressure_sw,
+  vector hunting_pressure_fi,
+  real tau_h,
+  vector S_diag
+) {
+  int n = num_elements(population_comp);
+
+  vector[n] M_hunted_sw = hunting_comp_sw ./ population_comp;
+  vector[n] M_hunted_fi = hunting_comp_fi ./ population_comp;
+
+  vector[n] M_survived =
+    exp(-(hunting_pressure_sw + hunting_pressure_fi) * square(tau_h) / 2)
+    .* S_diag;
+
+  // exact analytical definition (no clipping or renormalization)
+  vector[n] M_died =
+    1.0 - M_survived - M_hunted_sw - M_hunted_fi;
+
+  return append_row(
+    diag_matrix(M_survived),
+    append_row(
+      diag_matrix(M_died),
+      append_row(
+        diag_matrix(M_hunted_sw),
+        diag_matrix(M_hunted_fi)
+      )
+    )
+  );
+}
+
+vector update_population_from_survivors(
+  vector previous_survivors,
+  matrix aging_mat,
+  real birth_rate,
+  real epsilon_birth,
+  real epsilon_sex,
+  int n_age_classes
+) {
+  int n_demo = rows(previous_survivors);
+  vector[n_demo] N;
+  real N_temp;
+
+  // Step 1: age survivors (same as original: N[,i] = A * U_stacked[,1])
+  N = aging_mat * previous_survivors;
+
+  // Step 2: compute stochastic births using ADULT FEMALES AFTER AGING
+  N_temp =
+    N[n_age_classes] * birth_rate
+    + sqrt(N[n_age_classes] * birth_rate * (1.0 - birth_rate)) * epsilon_birth;
+
+  // Step 3: split into female and male pups
+  N[1] =
+    N_temp / 2.0
+    + sqrt(N_temp / 4.0) * epsilon_sex;
+
+  N[n_age_classes + 1] =
+    N_temp - N[1];
+
+  return N;
+}
+
+
+
+tuple(vector, real, real) initialize_population_with_burnin(
+  vector population_init,
+  real population_init_size,
+  int population_burn_in,
+  real birth_rate_year,
+  matrix aging_matrix,
+  vector S_diag,
+  data int n_age_classes
+) {
+  int n_demo_groups = 2 * n_age_classes;
+  vector[n_demo_groups] population_comp_year = population_init;
+  real population_total_year;
+
+  for (k in 1:population_burn_in) {
+    population_comp_year =
+      aging_matrix
+      * diag_matrix(S_diag)
+      * population_comp_year;
+
+    population_comp_year[1] =
+      birth_rate_year
+      / 2.0
+      * population_comp_year[n_age_classes];
+
+    population_comp_year[n_age_classes + 1] =
+      birth_rate_year
+      / 2.0
+      * population_comp_year[n_age_classes];
+  }
+
+  population_comp_year =
+    population_comp_year
+    * population_init_size
+    / sum(population_comp_year);
+
+  population_total_year =
+    sum(population_comp_year);
+
+  return (
+    population_comp_year,
+    birth_rate_year,
+    population_total_year
+  );
+}
+
+
+tuple(
+  vector,  // 1 birth_rate
+  vector,  // 2 pregnancy_rate
+  vector,  // 3 population_total
+  matrix,  // 4 population_comp
+  matrix,  // 5 survivors
+  matrix,  // 6 deaths_or_bycatch
+  matrix,  // 7 hunted_sweden
+  matrix,  // 8 hunted_finland
+  matrix,  // 9 bycatch_expected
+  vector,  // 10 hunting_bag_total_sweden
+  vector,  // 11 hunting_bag_total_finland
+  vector,  // 12 hunted_total
+  matrix   // 13 reproductive_probs
+) run_state_process_from_first_population(
+  int n_state_years,
+  int n_age_classes,
+
+  // Known population state for first modeled year
+  vector population_comp_first,
+  real birth_rate_first,
+  real population_total_first,
+
+  // Precomputed demographic quantities
+  vector baseline_birth_rate,          // length n_state_years + 1
+  real density_dependence_intercept,
+  real density_dependence_slope,
+  matrix aging_matrix,
+  vector S_diag,
+  vector mu_m,
+
+  // Hunting
+  vector hunting_selectivity_sweden,
+  vector hunting_selectivity_finland,
+  array[] int hunting_quota_sweden,
+  array[] int hunting_quota_finland,
+  real hunting_effort_sd_sweden,
+  real hunting_effort_sd_finland,
+  vector epsilon_h_sw,
+  vector epsilon_h_fi,
+
+  // Timing
+  real t_mate_to_preg,
+  real t_birth_to_end_hunt,
+
+  // State-process stochasticity
+  vector epsilon_birth,
+  vector epsilon_sex,
+  matrix transition_noise_raw,
+
+  // Reproductive signs
+  vector pi_s,
+  vector pi_c,
+  real prob_of_ca,
+
+  // ODE setup/settings
+  data vector ode_init_state,
+  data array[] real ode_times,
+  data real rel_tol,
+  data real abs_tol,
+  data int max_num_steps
+
+) {
+  int n_demo_groups = 2 * n_age_classes;
+
+  // Outputs
+  vector[n_state_years] birth_rate;
+  vector[n_state_years] pregnancy_rate;
+  vector[n_state_years] population_total;
+
+  matrix[n_demo_groups, n_state_years] population_comp;
+  matrix[n_demo_groups, n_state_years] survivors;
+  matrix[n_demo_groups, n_state_years] deaths_or_bycatch;
+  matrix[n_demo_groups, n_state_years] hunted_sweden;
+  matrix[n_demo_groups, n_state_years] hunted_finland;
+  matrix[n_demo_groups, n_state_years] bycatch_expected;
+
+  vector[n_state_years] hunting_bag_total_sweden;
+  vector[n_state_years] hunting_bag_total_finland;
+  vector[n_state_years] hunted_total;
+
+  matrix[4, n_state_years] reproductive_probs;
+
+  // Working variables
+  vector[n_demo_groups] hunting_pressure_sweden;
+  vector[n_demo_groups] hunting_pressure_finland;
+
+  vector[n_demo_groups] expected_hunted_sweden;
+  vector[n_demo_groups] expected_hunted_finland;
+
+  matrix[4 * n_demo_groups, n_demo_groups] transition_matrix;
+  matrix[n_demo_groups, 4] expected_fate_counts;
+  matrix[n_demo_groups, 4] realized_fate;
+  matrix[n_demo_groups, 3] transition_noise_year;
+
+  for (year in 1:n_state_years) {
+
+    // ----------------------------
+    // CONSTRUCT POPULATION
+    // ----------------------------
+
+    if (year == 1) {
+      birth_rate[year] =
+        birth_rate_first;
+
+      population_comp[, year] =
+        population_comp_first;
+
+      population_total[year] =
+        population_total_first;
+
+    } else {
+      birth_rate[year] =
+        update_birth_rate(
+          baseline_birth_rate[year],
+          density_dependence_intercept,
+          density_dependence_slope,
+          population_total[year - 1]
+        );
+
+      population_comp[, year] =
+        update_population_from_survivors(
+          survivors[, year - 1],
+          aging_matrix,
+          birth_rate[year],
+          epsilon_birth[year],
+          epsilon_sex[year],
+          n_age_classes
+        );
+
+      population_total[year] =
+        sum(population_comp[, year]);
+    }
+
+    pregnancy_rate[year] =
+      update_pregnancy_rate(
+        baseline_birth_rate[year + 1],
+        density_dependence_intercept,
+        density_dependence_slope,
+        population_total[year],
+        t_mate_to_preg
+      );
+
+    // ----------------------------
+    // HUNTING PRESSURE
+    // ----------------------------
+
+    {
+      vector[n_demo_groups] log_N =
+        log(population_comp[, year]);
+
+      real log_denom_sw =
+        log_sum_exp(
+          hunting_selectivity_sweden + log_N
+        );
+
+      real log_denom_fi =
+        log_sum_exp(
+          hunting_selectivity_finland + log_N
+        );
+
+      if (hunting_quota_sweden[year] == 0) {
+        hunting_pressure_sweden =
+          rep_vector(0.0, n_demo_groups);
+      } else {
+        hunting_pressure_sweden =
+          exp(
+            hunting_selectivity_sweden
+            + log(hunting_quota_sweden[year])
+            + log(2.0)
+            - 2.0 * log(t_birth_to_end_hunt)
+            - epsilon_h_sw[year] * hunting_effort_sd_sweden
+            - log_denom_sw
+          );
+      }
+
+      if (hunting_quota_finland[year] == 0) {
+        hunting_pressure_finland =
+          rep_vector(0.0, n_demo_groups);
+      } else {
+        hunting_pressure_finland =
+          exp(
+            hunting_selectivity_finland
+            + log(hunting_quota_finland[year])
+            + log(2.0)
+            - 2.0 * log(t_birth_to_end_hunt)
+            - epsilon_h_fi[year] * hunting_effort_sd_finland
+            - log_denom_fi
+          );
+      }
+    }
+
+    // ----------------------------
+    // EXPECTED HUNTED NUMBERS
+    // ----------------------------
+
+    for (demo in 1:n_demo_groups) {
+      array[1] vector[1] sol_sweden;
+      array[1] vector[1] sol_finland;
+
+      if (
+        is_nan(population_comp[demo, year]) ||
+  is_inf(population_comp[demo, year]) ||
+  is_nan(hunting_pressure_sweden[demo]) ||
+  is_inf(hunting_pressure_sweden[demo]) ||
+  is_nan(hunting_pressure_finland[demo]) ||
+  is_inf(hunting_pressure_finland[demo]) ||
+  is_nan(mu_m[demo]) ||
+  is_inf(mu_m[demo])
+      ) {
+        reject(
+    "Non-finite ODE input: year=", year,
+    ", demo=", demo,
+    ", N=", population_comp[demo, year],
+    ", E_sw=", hunting_pressure_sweden[demo],
+    ", E_fi=", hunting_pressure_finland[demo],
+    ", mu=", mu_m[demo]
+        );
+      }      
+      sol_sweden =
+        ode_rk45_tol(
+          dH_dt,
+          ode_init_state,
+          0.0,
+          ode_times,
+          rel_tol,
+          abs_tol,
+          max_num_steps,
+          population_comp[demo, year],
+          t_birth_to_end_hunt,
+          hunting_pressure_sweden[demo],
+          hunting_pressure_finland[demo],
+          mu_m[demo]
+        );
+
+      expected_hunted_sweden[demo] =
+        sol_sweden[1][1];
+
+      sol_finland =
+        ode_rk45_tol(
+          dH_dt,
+          ode_init_state,
+          0.0,
+          ode_times,
+          rel_tol,
+          abs_tol,
+          max_num_steps,
+          population_comp[demo, year],
+          t_birth_to_end_hunt,
+          hunting_pressure_finland[demo],
+          hunting_pressure_sweden[demo],
+          mu_m[demo]
+        );
+
+      expected_hunted_finland[demo] =
+        sol_finland[1][1];
+    }
+
+    // ----------------------------
+    // STATE TRANSITION
+    // ----------------------------
+
+    transition_matrix =
+      create_transition_matrix(
+        expected_hunted_sweden,
+        expected_hunted_finland,
+        population_comp[, year],
+        hunting_pressure_sweden,
+        hunting_pressure_finland,
+        t_birth_to_end_hunt,
+        S_diag
+      );
+
+    expected_fate_counts =
+      to_matrix(
+        transition_matrix * population_comp[, year],
+        n_demo_groups,
+        4
+      );
+  
+    transition_noise_year =to_matrix(
+      transition_noise_raw[, year],
+      n_demo_groups,
+      3
+    );
+
+
+    for (demo in 1:n_demo_groups) {
+      for (fate in 1:4) {
+        if (
+          is_nan(expected_fate_counts[demo, fate]) ||
+      is_inf(expected_fate_counts[demo, fate]) ||
+      expected_fate_counts[demo, fate] <= 0
+        ) {
+          reject(
+        "Bad expected_fate_counts: year=", year,
+        ", demo=", demo,
+        ", fate=", fate,
+        ", expected=", expected_fate_counts[demo, fate],
+        ", N=", population_comp[demo, year],
+        ", survived_prob=", transition_matrix[demo, demo],
+        ", M_died approx=", 
+          1.0
+          - exp(-(hunting_pressure_sweden[demo] + hunting_pressure_finland[demo])
+                * square(t_birth_to_end_hunt) / 2.0)
+            * S_diag[demo]
+          - expected_hunted_sweden[demo] / population_comp[demo, year]
+          - expected_hunted_finland[demo] / population_comp[demo, year],
+        ", H_sw=", expected_hunted_sweden[demo],
+        ", H_fi=", expected_hunted_finland[demo],
+        ", E_sw=", hunting_pressure_sweden[demo],
+        ", E_fi=", hunting_pressure_finland[demo],
+        ", mu=", mu_m[demo]
+          );
+        }
+      }
+    }
+    
+    for (demo in 1:n_demo_groups) {
+
+      
+
+  row_vector[4] log_expected_fate_counts_row;
+
+  for (fate in 1:4) {
+    if (
+      is_nan(expected_fate_counts[demo, fate]) ||
+      is_inf(expected_fate_counts[demo, fate]) ||
+      expected_fate_counts[demo, fate] <= 0
+    ) {
+      reject(
+        "Bad expected_fate_counts before log allocation: ",
+        "year=", year,
+        ", demo=", demo,
+        ", fate=", fate,
+        ", expected=", expected_fate_counts[demo, fate],
+        ", expected row=[",
+          expected_fate_counts[demo, 1], ", ",
+          expected_fate_counts[demo, 2], ", ",
+          expected_fate_counts[demo, 3], ", ",
+          expected_fate_counts[demo, 4], "]"
+      );
+    }
+
+    log_expected_fate_counts_row[fate] =
+      log(expected_fate_counts[demo, fate]);
+  }
+      
+      realized_fate[demo, ] =
+        multinomial_allocation(
+          expected_fate_counts[demo, ],
+          transition_noise_year[demo, ],
+          population_comp[demo, year]
+        );
+    }
+
+    // ----------------------------
+    // YEARLY OUTPUTS
+    // ----------------------------
+
+    survivors[, year] =
+      realized_fate[, 1];
+
+    deaths_or_bycatch[, year] =
+      realized_fate[, 2];
+
+    hunted_sweden[, year] =
+      realized_fate[, 3];
+
+    hunted_finland[, year] =
+      realized_fate[, 4];
+
+    bycatch_expected[, year] =
+      deaths_or_bycatch[, year];
+
+    hunting_bag_total_sweden[year] =
+      sum(hunted_sweden[, year]);
+
+    hunting_bag_total_finland[year] =
+      sum(hunted_finland[, year]);
+
+    hunted_total[year] =
+      hunting_bag_total_sweden[year]
+      + hunting_bag_total_finland[year];
+
+    reproductive_probs[2, year] =
+      birth_rate[year]
+      * pi_s[year]
+      * (1.0 - pi_c[year]);
+
+    reproductive_probs[3, year] =
+      birth_rate[year]
+      * (1.0 - pi_s[year])
+      * pi_c[year]
+      + (1.0 - birth_rate[year])
+        * prob_of_ca
+        * pi_c[year];
+
+    reproductive_probs[4, year] =
+      birth_rate[year]
+      * pi_s[year]
+      * pi_c[year];
+
+    reproductive_probs[1, year] =
+      1.0 - sum(reproductive_probs[2:4, year]);
+  }
+
+  return (
+    birth_rate,
+    pregnancy_rate,
+    population_total,
+    population_comp,
+    survivors,
+    deaths_or_bycatch,
+    hunted_sweden,
+    hunted_finland,
+    bycatch_expected,
+    hunting_bag_total_sweden,
+    hunting_bag_total_finland,
+    hunted_total,
+    reproductive_probs
+  );
+}

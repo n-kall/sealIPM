@@ -1,0 +1,134 @@
+---
+title: "Data source importance"
+vignette: >
+  %\VignetteIndexEntry{data_source_importance}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+---
+
+```{r}
+#| label: setup
+library(sealIPM)
+library(tidyverse)
+library(tinytable)
+library(priorsense)
+library(posterior)
+library(bayesplot)
+```
+
+The data is available in the package
+
+```{r}
+data(grey_seal_data)
+```
+
+We first fit the model with all the data sources.
+
+```{r}
+#| message: false
+#| warning: false
+fit_full <- fit_ipm(
+    data = grey_seal_data,
+    species = "grey",
+    years = 2005:2010,
+    iter_warmup = 1000,
+    iter_sampling = 200,
+    chains = 10,
+    refresh = 0
+)
+```
+
+
+Next we check the likelihood sensitivity.
+```{r}
+sources <- c(
+    "aerial",
+    "harvest_bags_finland",
+    "harvest_bags_sweden",
+    "hunting_comp_finland",
+    "hunting_comp_sweden",
+    "bycatch",
+    "pregnancy",
+    "reproductive_signs"
+)
+
+source_likelihood_sens <- map(
+    sources,
+    ~ powerscale_sensitivity(
+        fit_full$fit,
+        component = "likelihood",
+        variable = "population_total_final",
+        likelihood_selection = .x
+    ) |>
+        mutate(source = .x)
+) |>
+    list_rbind() |>
+    select(source, likelihood, -prior, -diagnosis, -variable) |>
+    arrange(likelihood) |>
+rename(Source = source, "Likelihood sensitivity" = likelihood)
+
+source_likelihood_sens |> tt(digits = 1)
+```
+
+
+Pregnancy signs exhibits much lower likelihood sensitivity than others. So we fit a reduced model excluding that source.
+```{r}
+#| message: false
+#| warning: false
+data_no_pregnancy <- grey_seal_data
+data_no_pregnancy[["pregnancy_status"]] <- tibble(
+    Year = numeric(0),
+    Status = numeric(0)
+)
+
+
+fit_no_pregnancy <- fit_ipm(
+    data = data_no_pregnancy,
+    species = "grey",
+    years = 2005:2010,
+    iter_warmup = 1000,
+    iter_sampling = 200,
+    chains = 10,
+    refresh = 0
+)
+```
+
+
+And specify data to use for forecasting.
+```{r}
+future_data <- tibble(
+    Herring_GoF_BP = c(0, 0),
+    Herring_GoB = c(0, 0),
+    Sweden_Quota = c(1000, 1000),
+    Finland_Quota = c(1000, 1000)
+)
+```
+
+We then run the forecast.
+```{r}
+forecast_full <- forecast_ipm(
+    fit_full,
+    future_data = future_data,
+    species = "grey"
+)
+
+no_pregnancy_forecast <- forecast_ipm(
+    fit_no_pregnancy,
+    future_data = future_data,
+    species = "grey"
+)
+```
+
+And see how the models predicts the future.
+```{r}
+forecast_full$draws("population_total_future") |> summarise_draws(mean, sd)
+
+no_pregnancy_forecast$draws("population_total_future") |>
+    summarise_draws(mean, sd)
+```
+
+

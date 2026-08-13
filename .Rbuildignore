@@ -1,0 +1,7 @@
+^LICENSE\.md$
+^data-raw$
+^vignettes/\.quarto$
+^vignettes/*_files$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

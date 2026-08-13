@@ -1,0 +1,28 @@
+Package: sealIPM
+Title: Integrated Population Models for Baltic seals
+Version: 0.0.0.9000
+Authors@R: 
+    c(
+    person("Noa", "Kallioinen", , "noa.kallioinen@helsinki.fi", role = c("aut", "cre")),
+    person("Jarno", "Vanhatalo",  role = "aut")
+    )
+Description: Fit integrated population models for Baltic grey or ringed seals.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+Additional_repositories:
+    https://stan-dev.r-universe.dev
+Imports:
+    dplyr,
+    instantiate (>= 0.2.3.9003),
+    rlang,
+    stats
+Depends: 
+    R (>= 4.1.0)
+LazyData: true
+Suggests: 
+    knitr,
+    quarto,
+    rmarkdown
+VignetteBuilder: knitr, quarto

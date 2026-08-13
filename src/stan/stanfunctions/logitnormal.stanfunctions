@@ -1,0 +1,49 @@
+row_vector multinomial_allocation(
+  row_vector eta_row,   // length 4: [survive, died, hunted_sw, hunted_fi]
+  row_vector u_row,     // length 3
+  real N                // population size
+) {
+  vector[4] eta;
+  vector[4] eta_adj;
+
+  row_vector[3] mean_logratio;
+  matrix[3, 3] Sigma;
+  matrix[3, 3] L;
+
+  row_vector[1] reference_logit;
+  row_vector[4] logits;
+  row_vector[4] allocation;
+
+  // Convert expected counts to a column vector for vectorized special functions
+  eta = eta_row';
+
+  // Variance inflation to avoid very small expected counts
+  eta_adj =
+    eta * (1.0 + 1.0 / min(eta));
+
+  // Logistic-normal mean, using category 1 as reference
+  mean_logratio =
+    (digamma(eta_adj[2:4]) - digamma(eta_adj[1]))';
+
+  // Logistic-normal covariance
+  Sigma =
+    rep_matrix(trigamma(eta_adj[1]), 3, 3)
+    + diag_matrix(trigamma(eta_adj[2:4]));
+
+  L =
+    cholesky_decompose(Sigma);
+
+  // Survivors are the reference category
+  reference_logit[1] = 0.0;
+
+  logits =
+    append_col(
+      reference_logit,
+      mean_logratio + u_row * L'
+    );
+
+  allocation =
+    softmax(logits')';
+
+  return allocation * N;
+}
