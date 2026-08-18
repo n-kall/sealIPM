@@ -48,9 +48,9 @@ fit_full <- fit_ipm(
     data = grey_seal_data,
     species = "grey",
     years = 2005:2010,
-    iter_warmup = 800,
-    iter_sampling = 200,
-    chains = 5,
+    iter_warmup = 1000,
+    iter_sampling = 500,
+    chains = 10,
     seed = 123,
     refresh = 0
 )
@@ -104,9 +104,9 @@ fit_no_pregnancy <- fit_ipm(
     data = data_no_pregnancy,
     species = "grey",
     years = 2005:2010,
-    iter_warmup = 800,
-    iter_sampling = 200,
-    chains = 5,
+    iter_warmup = 1000,
+    iter_sampling = 500,
+    chains = 10,
     seed = 123,
     refresh = 0
 )
