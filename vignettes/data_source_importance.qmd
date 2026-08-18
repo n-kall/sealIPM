@@ -17,33 +17,46 @@ library(tidyverse)
 library(tinytable)
 library(priorsense)
 library(posterior)
-library(bayesplot)
+library(ggdist)
+library(patchwork)
 ```
 
-The data is available in the package
+The data described in [Vanko et al. 2026](https://doi.org/10.1016/j.ecolmodel.2026.111666) is available in the package as `grey_seal_data`
 
 ```{r}
 data(grey_seal_data)
 ```
+
+The model has the following data sources:
+
+- aerial counts: `aerial`
+- total hunting counts in Sweden:     `harvest_bags_finland`
+- total hunting counts in Finland:      `harvest_bags_finland`
+- age/sex composition of hunted samples in Sweden: `hunting_comp_sweden`
+- age/sex composition of hunted samples in Finland: `hunting_comp_finland`
+- bycatch composition (combined): `bycatch`
+- pregnancy observations: `pregnancy`
+- reproductive signs: `reproductive_signs`
 
 We first fit the model with all the data sources.
 
 ```{r}
 #| message: false
 #| warning: false
+#| output: false
 fit_full <- fit_ipm(
     data = grey_seal_data,
     species = "grey",
     years = 2005:2010,
-    iter_warmup = 1000,
+    iter_warmup = 800,
     iter_sampling = 200,
-    chains = 10,
+    chains = 5,
+    seed = 123,
     refresh = 0
 )
 ```
 
-
-Next we check the likelihood sensitivity.
+Next we check the likelihood sensitivity for each source separately. We focus on the posterior of the population in the final year: `population_total_final`
 ```{r}
 sources <- c(
     "aerial",
@@ -75,10 +88,11 @@ source_likelihood_sens |> tt(digits = 1)
 ```
 
 
-Pregnancy signs exhibits much lower likelihood sensitivity than others. So we fit a reduced model excluding that source.
+Pregnancy signs exhibits much lower likelihood sensitivity than others. Based on this, we fit a reduced model excluding that source.
 ```{r}
 #| message: false
 #| warning: false
+#| output: false
 data_no_pregnancy <- grey_seal_data
 data_no_pregnancy[["pregnancy_status"]] <- tibble(
     Year = numeric(0),
@@ -90,15 +104,18 @@ fit_no_pregnancy <- fit_ipm(
     data = data_no_pregnancy,
     species = "grey",
     years = 2005:2010,
-    iter_warmup = 1000,
+    iter_warmup = 800,
     iter_sampling = 200,
-    chains = 10,
+    chains = 5,
+    seed = 123,
     refresh = 0
 )
 ```
 
 
-And specify data to use for forecasting.
+Next we compare the full and reduced models on their forecasts:
+
+We first specify data to use for forecasting.
 ```{r}
 future_data <- tibble(
     Herring_GoF_BP = c(0, 0),
@@ -108,7 +125,7 @@ future_data <- tibble(
 )
 ```
 
-We then run the forecast.
+We then run the forecast for each of the models.
 ```{r}
 forecast_full <- forecast_ipm(
     fit_full,
@@ -123,12 +140,28 @@ no_pregnancy_forecast <- forecast_ipm(
 )
 ```
 
-And see how the models predicts the future.
+And see how the models forecast the future population. Here we can judge whether the difference between the full and reduced models is meaningful, or if we consider dropping the source.
+
 ```{r}
-forecast_full$draws("population_total_future") |> summarise_draws(mean, sd)
+plot_full <- forecast_full$draws("population_total_future", format = "draws_df") |>
+    ggplot(aes(x = `population_total_future[2]`)) +
+    stat_halfeye() +
+    xlim(20000, 55000) +
+    ggtitle("Full model")
 
-no_pregnancy_forecast$draws("population_total_future") |>
-    summarise_draws(mean, sd)
+plot_reduced <- no_pregnancy_forecast$draws("population_total_future", format = "draws_df") |>
+    ggplot(aes(x = `population_total_future[2]`)) +
+    stat_halfeye() +
+    xlim(20000, 55000) +
+    ggtitle("Reduced model")
+
+plot_full / plot_reduced +
+    plot_layout(axes = "collect") &
+    theme_classic() &
+    theme(
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.line.y = element_blank(),
+        axis.ticks.y = element_blank()) &
+    xlab("Future total population")
 ```
-
-

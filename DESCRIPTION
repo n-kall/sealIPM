@@ -24,5 +24,11 @@ LazyData: true
 Suggests: 
     knitr,
     quarto,
-    rmarkdown
+    rmarkdown,
+    ggdist,
+    priorsense,
+    tidyverse,
+    tinytable,
+    patchwork
+URL: https://n-kall.github.io/sealIPM
 VignetteBuilder: knitr, quarto

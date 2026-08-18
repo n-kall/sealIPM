@@ -25,6 +25,9 @@ cmdstanr::install_cmdstan()
 pak::install("n-kall/sealIPM")
 ```
 
+## Leave-data-source out case study
+See the case study [here](https://n-kall.github.io/sealIPM/articles/data_source_importance.html).
+
 ## Example
 
 To fit an IPM for Baltic grey seals for data from selected years, e.g. 2005 to 2010:
