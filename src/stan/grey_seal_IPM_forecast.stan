@@ -14,8 +14,8 @@ data {
 
   vector[n_future_years + 1] future_herring_index_baltic_proper_gulf_finland;
   vector[n_future_years + 1] future_herring_index_gulf_bothnia;
-  array[n_future_years] int future_hunting_quota_sweden;
-  array[n_future_years] int future_hunting_quota_finland;
+  array[n_future_years] int<lower=0> future_hunting_quota_sweden;
+  array[n_future_years] int<lower=0> future_hunting_quota_finland;
 
   // Hunting/reproductive timing
   real<lower=0> t_mate_to_preg; // time from mating to pregnancy
@@ -30,10 +30,72 @@ data {
 
   real<lower=0> harvest_bag_cv;
 
-  array[n_future_years] int future_hunting_sample_size;
-  array[n_future_years] int future_bycatch_sample_size;
-  array[n_future_years] int future_reproductive_signs_sample_size;
-  array[n_future_years] int future_pregnancy_sample_size;
+  array[n_future_years] int<lower=0> future_hunting_sample_size_sweden;
+    array[n_future_years] int<lower=0> future_hunting_sample_size_finland;
+  array[n_future_years] int<lower=0> future_bycatch_sample_size;
+  array[n_future_years] int<lower=0> future_reproductive_signs_sample_size;
+  array[n_future_years] int<lower=0> future_pregnancy_sample_size;
+
+  // ------------------------------
+  // LEAVE-FUTURE-OUT OBSERVATIONS
+  // ------------------------------
+
+  int<lower=0> n_future_aerial;
+  int<lower=0> n_future_hunting_bag_sweden;
+  int<lower=0> n_future_hunting_bag_finland;
+  int<lower=0> n_future_hunting_comp_sweden;
+  int<lower=0> n_future_hunting_comp_finland;
+  int<lower=0> n_future_bycatch;
+  int<lower=0> n_future_pregnancy;
+  int<lower=0> n_future_reproductive_signs;
+
+  array[n_future_aerial] int<lower=1, upper=n_future_years> aerial_year; // which year was the count (1 is first year)
+
+  array[n_future_aerial]
+  int<lower=0> future_obs_aerial_count;
+
+
+  array[n_future_hunting_bag_sweden] int<lower=1, upper=n_future_years> hunting_bag_year_sweden; // which year was the count (1 is first year)
+
+  array[n_future_hunting_bag_sweden]
+  real<lower=0> future_obs_hunting_bag_sweden;
+
+
+  array[n_future_hunting_bag_finland] int<lower=1, upper=n_future_years> hunting_bag_year_finland; // which year was the count (1 is first year)
+
+  array[n_future_hunting_bag_finland]
+  real<lower=0> future_obs_hunting_bag_finland;
+
+
+  array[n_future_hunting_comp_sweden] int<lower=1, upper=n_future_years> hunting_comp_year_sweden; // which year was the count (1 is first year)
+
+  array[n_future_hunting_comp_sweden, 2 * n_age_classes]
+  int<lower=0> future_obs_hunting_comp_sweden;
+
+
+  array[n_future_hunting_comp_finland] int<lower=1, upper=n_future_years> hunting_comp_year_finland; // which year was the count (1 is first year)
+
+  array[n_future_hunting_comp_finland, 2 * n_age_classes]
+  int<lower=0> future_obs_hunting_comp_finland;
+
+  array[n_future_bycatch] int<lower=1, upper=n_future_years> bycatch_year; // which year was the count (1 is first year)
+
+  array[n_future_bycatch, 2 * n_age_classes]
+  int<lower=0> future_obs_bycatch_comp;
+
+
+  array[n_future_pregnancy] int<lower=1, upper=n_future_years> pregnancy_count_year; // which year was the count (1 is first year)
+
+  array[n_future_pregnancy]
+  int<lower=0> future_obs_pregnancy_count;
+
+  array[n_future_pregnancy]
+  int<lower=0> future_obs_pregnancy_sample_size;
+
+  array[n_future_reproductive_signs] int<lower=1, upper=n_future_years> reproductive_signs_year; // which year was the count (1 is first year)
+
+  array[n_future_reproductive_signs, 4]
+  int<lower=0> future_obs_reproductive_signs_finland;
 
 }
 
@@ -58,8 +120,8 @@ transformed data {
 
 parameters {
 
-  real aerial_count_mu;
-  real aerial_count_overdispersion;
+  real<lower=0, upper=1> aerial_count_mu;
+  real<lower=0> aerial_count_overdispersion;
 
   real<lower=0> hunting_effort_sd_sweden;
   real<lower=0> hunting_effort_sd_finland;
@@ -93,15 +155,16 @@ parameters {
 
   real density_dependence_slope;
 
-  vector[n_demo_groups] population_comp_final;
-  real population_total_final;
+  vector<lower=0>[n_demo_groups] population_comp_final;
+  real<lower=0> population_total_final;
   real<lower=0, upper=1> birth_rate_final;
   real<lower=0, upper=1> pregnancy_rate_final;
+  vector<lower=0>[n_demo_groups] survivors_final;
 
 }
 
 generated quantities {
-
+  
   vector<lower=0, upper=1>[n_future_years + 1] baseline_birth_rate_future = compute_baseline_birth_rate(
     min_baseline_birth_rate_actual,
     max_baseline_birth_rate,
@@ -111,23 +174,6 @@ generated quantities {
     future_herring_index_baltic_proper_gulf_finland,
     future_herring_index_gulf_bothnia
   );
-  
-
-  tuple(
-    vector[n_future_years],  // 1 birth_rate
-    vector[n_future_years],  // 2 pregnancy_rate
-    vector[n_future_years],  // 3 population_total
-    matrix[n_demo_groups, n_future_years],  // 4 population_comp
-    matrix[n_demo_groups, n_future_years],  // 5 survivors
-    matrix[n_demo_groups, n_future_years],  // 6 deaths_or_bycatch
-    matrix[n_demo_groups, n_future_years],  // 7 hunted_sweden
-    matrix[n_demo_groups, n_future_years],  // 8 hunted_finland
-    matrix[n_demo_groups, n_future_years],  // 9 bycatch_expected
-    vector[n_future_years],  // 10 hunting_bag_total_sweden
-    vector[n_future_years],  // 11 hunting_bag_total_finland
-    vector[n_future_years],  // 12 hunted_total
-    matrix[4, n_future_years]   // 13 reproductive_probs
-  ) state_process_future;
 
   vector<lower=0>[n_future_years] epsilon_h_sw_future;
   vector<lower=0>[n_future_years] epsilon_h_fi_future;
@@ -158,7 +204,7 @@ generated quantities {
 
   matrix[4, n_future_years] reproductive_probs_future;
 
-    
+
 
   for (i in 1:n_future_years) {
     epsilon_h_sw_future[i] = abs(normal_rng(0, 1));
@@ -180,14 +226,48 @@ generated quantities {
   vector<lower=0, upper=1>[n_future_years] pi_c_future =
   report_ca_mean * exp(-epsilon_ca_future * report_ca_sd);
 
-  
-  state_process_future =
+
+  real birth_rate_future_first =
+  update_birth_rate(
+    baseline_birth_rate_future[1],
+    density_dependence_intercept,
+    density_dependence_slope,
+    population_total_final
+  );
+
+vector[n_demo_groups] population_comp_future_first =
+  update_population_from_survivors(
+    survivors_final,
+    aging_matrix,
+    birth_rate_future_first,
+    epsilon_birth_future[1],
+    epsilon_sex_future[1],
+    n_age_classes
+  );
+
+real population_total_future_first =
+  sum(population_comp_future_first);
+
+
+  (birth_rate_future,
+  pregnancy_rate_future,
+  population_total_future,
+  population_comp_future,
+  survivors_future,
+  deaths_or_bycatch_future,
+  hunted_sweden_future,
+  hunted_finland_future,
+  bycatch_expected_future,
+  hunting_bag_total_sweden_future,
+  hunting_bag_total_finland_future,
+  hunted_total_future,
+  reproductive_probs_future) =
   run_state_process_from_first_population(
     n_future_years,
     n_age_classes,
-    population_comp_final,
-    birth_rate_final,
-    population_total_final,
+    population_comp_future_first,
+    birth_rate_future_first,
+    population_total_future_first,
     baseline_birth_rate_future,
     density_dependence_intercept,
     density_dependence_slope,
@@ -217,53 +297,12 @@ generated quantities {
     max_num_steps
   );
 
-  birth_rate_future =
-  state_process_future.1;
-
-  pregnancy_rate_future =
-  state_process_future.2;
-
-  population_total_future =
-  state_process_future.3;
-
-  population_comp_future =
-  state_process_future.4;
-
-  survivors_future =
-  state_process_future.5;
-
-  deaths_or_bycatch_future =
-  state_process_future.6;
-
-  hunted_sweden_future =
-  state_process_future.7;
-
-  hunted_finland_future =
-  state_process_future.8;
-
-  bycatch_expected_future =
-  state_process_future.9;
-
-  hunting_bag_total_sweden_future =
-  state_process_future.10;
-
-  hunting_bag_total_finland_future =
-  state_process_future.11;
-
-  hunted_total_future =
-  state_process_future.12;
-
-  reproductive_probs_future =
-  state_process_future.13;
-
-  
   array[n_future_years] int future_aerial_count = aerial_count_rng(
     future_year,
     population_total_future,
     aerial_count_mu,
     aerial_count_overdispersion
   );
-
 
   array[n_future_years] real future_harvest_bags_sweden =
   harvest_bags_rng(future_year, hunting_bag_total_sweden_future, harvest_bag_cv);
@@ -277,7 +316,7 @@ generated quantities {
     future_year,
     hunted_finland_future,
     hunting_bag_total_finland_future,
-    future_hunting_sample_size
+    future_hunting_sample_size_finland
   );
 
   array[n_future_years, n_demo_groups] int future_hunting_comp_sweden =
@@ -285,7 +324,7 @@ generated quantities {
     future_year,
     hunted_sweden_future,
     hunting_bag_total_sweden_future,
-    future_hunting_sample_size
+    future_hunting_sample_size_sweden
   );
 
   array[n_future_years, n_demo_groups] int future_bycatch_comp =
@@ -309,5 +348,127 @@ generated quantities {
     reproductive_probs_future,
     future_reproductive_signs_sample_size
   );
+
+  // --------------------------------------------------
+  // LEAVE-FUTURE-OUT LOG LIKELIHOODS
+  // --------------------------------------------------
+
+vector[n_future_aerial] log_lik_future_aerial =
+  rep_vector(0.0, n_future_aerial);
+
+vector[n_future_hunting_bag_sweden]
+  log_lik_future_harvest_bags_sweden =
+  rep_vector(0.0, n_future_hunting_bag_sweden);
+
+vector[n_future_hunting_bag_finland]
+  log_lik_future_harvest_bags_finland =
+  rep_vector(0.0, n_future_hunting_bag_finland);
+
+vector[n_future_hunting_comp_sweden]
+  log_lik_future_hunting_comp_sweden =
+  rep_vector(0.0, n_future_hunting_comp_sweden);
+
+vector[n_future_hunting_comp_finland]
+  log_lik_future_hunting_comp_finland =
+  rep_vector(0.0, n_future_hunting_comp_finland);
+
+vector[n_future_bycatch] log_lik_future_bycatch =
+  rep_vector(0.0, n_future_bycatch);
+
+vector[n_future_pregnancy] log_lik_future_pregnancy =
+  rep_vector(0.0, n_future_pregnancy);
+
+vector[n_future_reproductive_signs]
+  log_lik_future_reproductive_signs =
+  rep_vector(0.0, n_future_reproductive_signs);
+
   
+  if (n_future_aerial > 0) {
+    log_lik_future_aerial =
+        aerial_count_pointwise_log_lik(
+          future_obs_aerial_count,
+          aerial_year,
+          population_total_future,
+          aerial_count_mu,
+          aerial_count_overdispersion
+        );
+  }
+
+  if (n_future_hunting_bag_sweden > 0) {
+    log_lik_future_harvest_bags_sweden =
+        harvest_bags_pointwise_log_lik(
+          future_obs_hunting_bag_sweden,
+          hunting_bag_year_sweden,
+          hunting_bag_total_sweden_future,
+          harvest_bag_cv
+        );
+  }
+
+  if (n_future_hunting_bag_finland > 0) {
+    log_lik_future_harvest_bags_finland =
+        harvest_bags_pointwise_log_lik(
+          future_obs_hunting_bag_finland,
+          hunting_bag_year_finland,
+          hunting_bag_total_finland_future,
+          harvest_bag_cv
+      );
+  }
+
+  if (n_future_hunting_comp_sweden > 0) {
+    log_lik_future_hunting_comp_sweden =
+        hunting_comp_pointwise_log_lik(
+          future_obs_hunting_comp_sweden,
+          hunting_comp_year_sweden,
+          hunted_sweden_future,
+          hunting_bag_total_sweden_future
+      );
+  }
+
+  if (n_future_hunting_comp_finland > 0) {
+    log_lik_future_hunting_comp_finland =
+        hunting_comp_pointwise_log_lik(
+          future_obs_hunting_comp_finland,
+          hunting_comp_year_finland,
+          hunted_finland_future,
+          hunting_bag_total_finland_future
+      );
+  }
+
+  if (n_future_bycatch > 0) {
+    log_lik_future_bycatch =
+        bycatch_comp_pointwise_log_lik(
+          future_obs_bycatch_comp,
+          bycatch_year,
+          bycatch_expected_future,
+          bycatch_bias
+      );
+  }
+
+  if (n_future_pregnancy > 0) {
+    log_lik_future_pregnancy =
+        pregnancy_pointwise_log_lik(
+          future_obs_pregnancy_count,
+          pregnancy_count_year,
+          future_obs_pregnancy_sample_size,
+          pregnancy_rate_future
+      );
+  }
+
+  if (n_future_reproductive_signs > 0) {
+    log_lik_future_reproductive_signs =
+        reproductive_signs_pointwise_log_lik(
+          future_obs_reproductive_signs_finland,
+          reproductive_signs_year,
+          reproductive_probs_future
+      );
+  }
+
+  real log_lik_future_joint = sum(log_lik_future_aerial)
+                     + sum(log_lik_future_harvest_bags_sweden)
+                     + sum(log_lik_future_harvest_bags_finland)
+                     + sum(log_lik_future_hunting_comp_sweden)
+                     + sum(log_lik_future_hunting_comp_sweden)
+                     + sum(log_lik_future_bycatch)
+                     + sum(log_lik_future_pregnancy)
+                     + sum(log_lik_future_reproductive_signs);
 }

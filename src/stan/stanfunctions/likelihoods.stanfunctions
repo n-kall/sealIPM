@@ -51,7 +51,6 @@ real harvest_bags_lpdf(
   real harvest_bag_cv
 ) {
   int n_obs = size(hunting_count);
-  int T = size(hunting_count);
   real lp = 0;
 
   for (i in 1:n_obs) {
@@ -66,23 +65,6 @@ real harvest_bags_lpdf(
   return lp;
 }
 
-array[] real harvest_bags_rng(
-  vector hunted_total,    // total
-  real harvest_bag_cv
-) {
-  int n_years = size(hunted_total);
-
-  array[n_years] real hunting_bag;
-
-  for (year in 1:n_years) {
-    hunting_bag[year] = normal_rng(
-      hunted_total[year],
-      harvest_bag_cv * hunted_total[year]
-    );
-    return hunting_bag;
-  }
-}
-
 vector harvest_bags_pointwise_log_lik(
   array[] real hunting_count,   // observed count
   array[] int hunting_year,   // year
@@ -90,7 +72,6 @@ vector harvest_bags_pointwise_log_lik(
   real harvest_bag_cv
 ) {
   int n_obs = size(hunting_count);
-  int T = size(hunting_count);
   vector[n_obs] log_lik;
 
   for (i in 1:n_obs) {
