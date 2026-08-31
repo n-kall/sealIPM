@@ -33,6 +33,18 @@ real compute_density_dependence_intercept(
     );
 }
 
+real compute_density_dependence_slope(
+  real birth_rate_at_carrying_capacity,
+  real reference_baseline_birth_rate,
+  real density_dependence_intercept,
+  real carrying_capacity
+) {
+    return log(
+     1.0
+     - log(birth_rate_at_carrying_capacity / reference_baseline_birth_rate)
+       / density_dependence_intercept
+   ) / carrying_capacity;
+}
 
 real update_birth_rate(
   real b0,
@@ -669,4 +681,13 @@ tuple(
     hunted_total,
     reproductive_probs
   );
+}
+
+real euler_lotka_birth_rate(
+  vector mu_m,
+  int n_age_classes,
+  real phi_a
+) {
+return  2.0 * (1.0 - phi_a) /
+  exp(sum(-mu_m[1:(n_age_classes - 1)]));
 }
