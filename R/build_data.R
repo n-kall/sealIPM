@@ -1,10 +1,21 @@
 #' @importFrom rlang .data
 NULL
 
-build_stan_data <- function(species, data, years, prior_spec = NULL) {
+build_stan_data <- function(
+    species,
+    data,
+    years,
+    prior_spec = NULL,
+    prior_only = FALSE
+) {
     switch(
         species,
-        grey = build_grey_stan_data(data, years = years, prior_spec)
+        grey = build_grey_stan_data(
+            data = data,
+            years = years,
+            prior_spec = prior_spec,
+            prior_only = prior_only
+        )
     )
 }
 
@@ -409,7 +420,7 @@ build_grey_pregnancy_status <- function(pregnancy, years) {
     out
 }
 
-build_grey_stan_data <- function(data, years, prior_spec) {
+build_grey_stan_data <- function(data, years, prior_spec, prior_only) {
     process_years <- c(min(years) - 1, years)
 
     c(
@@ -457,6 +468,7 @@ build_grey_stan_data <- function(data, years, prior_spec) {
         build_grey_pregnancy_status(
             data$pregnancy_status,
             process_years
-        )
+        ),
+        prior_only = as.integer(prior_only)
     )
 }

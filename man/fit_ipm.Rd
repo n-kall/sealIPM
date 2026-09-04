@@ -10,6 +10,8 @@ fit_ipm(
   years,
   prior_spec = NULL,
   method = c("sample", "pathfinder", "laplace", "optimize"),
+  init = NULL,
+  prior_only = FALSE,
   ...
 )
 }
@@ -23,6 +25,10 @@ fit_ipm(
 \item{prior_spec}{priors}
 
 \item{method}{Stan method}
+
+\item{init}{Initialisation function or draws passed to Stan}
+
+\item{prior_only}{Should only prior be used?}
 
 \item{...}{passed to Stan method}
 }

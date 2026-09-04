@@ -4,22 +4,24 @@
 \alias{forecast_ipm}
 \title{Forecast IPM}
 \usage{
-forecast_ipm(fit, future_data, species, prior_spec = NULL, ...)
+forecast_ipm(fit, data, future_years, species = fit$species, ...)
 }
 \arguments{
-\item{fit}{fit object}
+\item{fit}{A fitted IPM object.}
 
-\item{future_data}{future data}
+\item{data}{The original raw sealIPM data list.}
 
-\item{species}{which species}
+\item{future_years}{Consecutive calendar years to forecast.}
 
-\item{prior_spec}{prior settings}
+\item{species}{Either \code{"grey"} or \code{"ringed"}.}
 
-\item{...}{unused}
+\item{...}{Passed to \code{generate_quantities()}.}
 }
 \value{
-forecast results
+A CmdStan generated-quantities fit.
 }
 \description{
-Forecasts future years from a fitted IPM
+Forecasts future years from a fitted IPM. When the original data are
+supplied, observations in \code{future_years} are automatically included for
+leave-future-out validation.
 }

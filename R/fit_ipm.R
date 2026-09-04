@@ -8,6 +8,7 @@
 #' @param prior_spec priors
 #' @param method Stan method
 #' @param init Initialisation function or draws passed to Stan
+#' @param prior_only Should only prior be used?
 #' @param ... passed to Stan method
 #' @return fitted model
 #' @export
@@ -18,6 +19,7 @@ fit_ipm <- function(
     prior_spec = NULL,
     method = c("sample", "pathfinder", "laplace", "optimize"),
     init = NULL,
+    prior_only = FALSE,
     ...
 ) {
     method <- match.arg(method)
@@ -37,7 +39,8 @@ fit_ipm <- function(
         species = species,
         data = data,
         years = years,
-        prior_spec = prior_spec
+        prior_spec = prior_spec,
+        prior_only = prior_only
     )
 
     model <- get_species_model(species)

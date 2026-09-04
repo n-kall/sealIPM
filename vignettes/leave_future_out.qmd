@@ -1,17 +1,18 @@
 This is a simple example of doing leave-future-out cross validation.
 
 ```{r}
+library(sealIPM)
 data(grey_seal_data)
 
 elpd_lfo_out <- c()
-for (year in 2010:2023) {
+for (year in 2010:2015) {
 
   fit <- fit_ipm(
     grey_seal_data,
     "grey",
     years = 2005:(year - 1),
- #   iter_warmup = 100,
- #   iter_sampling = 100
+#    iter_warmup = 100,
+#    iter_sampling = 100,
 method = "pathfinder"
   )
 
