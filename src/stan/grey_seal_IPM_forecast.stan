@@ -31,7 +31,7 @@ data {
   real<lower=0> harvest_bag_cv;
 
   array[n_future_years] int<lower=0> future_hunting_sample_size_sweden;
-    array[n_future_years] int<lower=0> future_hunting_sample_size_finland;
+  array[n_future_years] int<lower=0> future_hunting_sample_size_finland;
   array[n_future_years] int<lower=0> future_bycatch_sample_size;
   array[n_future_years] int<lower=0> future_reproductive_signs_sample_size;
   array[n_future_years] int<lower=0> future_pregnancy_sample_size;
