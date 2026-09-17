@@ -4,12 +4,21 @@
 \alias{forecast_ipm}
 \title{Forecast IPM}
 \usage{
-forecast_ipm(fit, data, future_years, species = fit$species, ...)
+forecast_ipm(
+  fit,
+  actual_data = NULL,
+  scenario_data = NULL,
+  future_years,
+  species = fit$species,
+  ...
+)
 }
 \arguments{
 \item{fit}{A fitted IPM object.}
 
-\item{data}{The original raw sealIPM data list.}
+\item{actual_data}{Raw data}
+
+\item{scenario_data}{List of quotas and optionally herring indices}
 
 \item{future_years}{Consecutive calendar years to forecast.}
 

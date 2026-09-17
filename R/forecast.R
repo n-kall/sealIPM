@@ -5,11 +5,11 @@
 #' leave-future-out validation.
 #'
 #' @param fit A fitted IPM object.
-#' @param data The original raw sealIPM data list.
+#' @param actual_data Raw data
+#' @param scenario_data List of quotas and optionally herring indices
 #' @param future_years Consecutive calendar years to forecast.
 #' @param species Either `"grey"` or `"ringed"`.
 #' @param ... Passed to `generate_quantities()`.
-#'
 #' @return A CmdStan generated-quantities fit.
 #' @export
 forecast_ipm <- function(
