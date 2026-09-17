@@ -31,7 +31,7 @@ data {
   real<lower=0> harvest_bag_cv;
 
   array[n_future_years] int<lower=0> future_hunting_sample_size_sweden;
-    array[n_future_years] int<lower=0> future_hunting_sample_size_finland;
+  array[n_future_years] int<lower=0> future_hunting_sample_size_finland;
   array[n_future_years] int<lower=0> future_bycatch_sample_size;
   array[n_future_years] int<lower=0> future_reproductive_signs_sample_size;
   array[n_future_years] int<lower=0> future_pregnancy_sample_size;
@@ -127,7 +127,7 @@ parameters {
   real<lower=0> hunting_effort_sd_finland;
 
   real<lower=0, upper=1> max_baseline_birth_rate;
-  real<lower=0, upper=1> min_baseline_birth_rate;
+  real<lower=0, upper=1> min_baseline_birth_rate_prop;
 
   real herring_intercept_scaled;
   real herring_slope;
@@ -150,7 +150,7 @@ parameters {
   vector[n_demo_groups] hunting_selectivity_sweden;
   vector[n_demo_groups] bycatch_bias;
 
-  real<lower=0, upper=0.8> birth_rate_at_carrying_capacity;
+  real<lower=0, upper=1> birth_rate_at_carrying_capacity;
   real<lower=0, upper=1> min_baseline_birth_rate_actual;
 
   real density_dependence_slope;
@@ -164,7 +164,7 @@ parameters {
 }
 
 generated quantities {
-  
+
   vector<lower=0, upper=1>[n_future_years + 1] baseline_birth_rate_future = compute_baseline_birth_rate(
     min_baseline_birth_rate_actual,
     max_baseline_birth_rate,
@@ -382,7 +382,7 @@ vector[n_future_reproductive_signs]
   log_lik_future_reproductive_signs =
   rep_vector(0.0, n_future_reproductive_signs);
 
-  
+
   if (n_future_aerial > 0) {
     log_lik_future_aerial =
         aerial_count_pointwise_log_lik(

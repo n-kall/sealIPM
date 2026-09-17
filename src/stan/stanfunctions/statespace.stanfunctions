@@ -25,14 +25,38 @@ real compute_density_dependence_intercept(
   real max_baseline_birth_rate,
   real density_dependence_scaled
 ) {
-  return
-    -log(
-      max_baseline_birth_rate
-      + (1.0 - max_baseline_birth_rate)
-        * density_dependence_scaled
-    );
+  // return
+  //   -log(
+  //     max_baseline_birth_rate
+  //     + (1.0 - max_baseline_birth_rate)
+  //       * density_dependence_scaled
+  //   );
+// new version based on herbie
+    return -log(
+    (
+(density_dependence_scaled + max_baseline_birth_rate) - (density_dependence_scaled * max_baseline_birth_rate)
+    )
+  );
 }
 
+real compute_density_dependence_slope(
+  real birth_rate_at_carrying_capacity,
+  real reference_baseline_birth_rate,
+  real density_dependence_intercept,
+  real carrying_capacity
+) {
+  // original
+    // return log(
+    //  1.0
+    //  - log(birth_rate_at_carrying_capacity / reference_baseline_birth_rate)
+    //    / density_dependence_intercept
+    // ) / carrying_capacity;
+
+  // herbie improved
+  return -log(
+    (density_dependence_intercept / (density_dependence_intercept - log((birth_rate_at_carrying_capacity / reference_baseline_birth_rate))))) / carrying_capacity;
+
+}
 
 real update_birth_rate(
   real b0,
@@ -40,7 +64,9 @@ real update_birth_rate(
   real theta1,
   real N_tot_prev
 ) {
-  return b0 * exp(-theta0 * (exp(theta1 * N_tot_prev) - 1.0));
+  // return b0 * exp(-theta0 * (exp(theta1 * N_tot_prev) - 1.0));
+  // herbie improved
+  return b0 / exp((expm1((N_tot_prev * theta1)) * theta0));
 }
 
 real update_pregnancy_rate(
@@ -669,4 +695,14 @@ tuple(
     hunted_total,
     reproductive_probs
   );
+}
+
+real euler_lotka_birth_rate(
+  vector mu_m,
+  int n_age_classes,
+  real phi_a
+) {
+// original: return  2.0 * (1.0 - phi_a) / exp(sum(-mu_m[1:(n_age_classes - 1)]));
+// improved with herbie
+  return exp(sum(mu_m[1:(n_age_classes - 1)])) * ((-phi_a + 2.0) - phi_a);
 }
