@@ -1,3 +1,17 @@
+/**
+* @brief compute_baseline_birth_rate
+*
+* Description.
+*
+* @param min_baseline_birth_rate Description.
+* @param max_baseline_birth_rate Description.
+* @param herring_intercept_scaled Description.
+* @param herring_slope Description.
+* @param herring_weight Description.
+* @param herring_index_baltic_proper_gulf_finland Description.
+* @param herring_index_gulf_bothnia Description.
+* @return Description of return value.
+*/
 vector compute_baseline_birth_rate(
   real min_baseline_birth_rate,
   real max_baseline_birth_rate,
@@ -21,6 +35,15 @@ vector compute_baseline_birth_rate(
   return baseline_birth_rate;
 }
 
+/**
+* @brief compute_density_dependence_intercept
+*
+* Description.
+*
+* @param max_baseline_birth_rate Description.
+* @param density_dependence_scaled Description.
+* @return Description of return value.
+*/
 real compute_density_dependence_intercept(
   real max_baseline_birth_rate,
   real density_dependence_scaled
@@ -31,14 +54,25 @@ real compute_density_dependence_intercept(
   //     + (1.0 - max_baseline_birth_rate)
   //       * density_dependence_scaled
   //   );
-// new version based on herbie
-    return -log(
+  // new version based on herbie
+  return -log(
     (
 (density_dependence_scaled + max_baseline_birth_rate) - (density_dependence_scaled * max_baseline_birth_rate)
     )
   );
 }
 
+/**
+* @brief compute_density_dependence_slope
+*
+* Description.
+*
+* @param birth_rate_at_carrying_capacity Description.
+* @param reference_baseline_birth_rate Description.
+* @param density_dependence_intercept Description.
+* @param carrying_capacity Description.
+* @return Description of return value.
+*/
 real compute_density_dependence_slope(
   real birth_rate_at_carrying_capacity,
   real reference_baseline_birth_rate,
@@ -46,11 +80,11 @@ real compute_density_dependence_slope(
   real carrying_capacity
 ) {
   // original
-    // return log(
-    //  1.0
-    //  - log(birth_rate_at_carrying_capacity / reference_baseline_birth_rate)
-    //    / density_dependence_intercept
-    // ) / carrying_capacity;
+  // return log(
+  //  1.0
+  //  - log(birth_rate_at_carrying_capacity / reference_baseline_birth_rate)
+  //    / density_dependence_intercept
+  // ) / carrying_capacity;
 
   // herbie improved
   return -log(
@@ -58,6 +92,17 @@ real compute_density_dependence_slope(
 
 }
 
+/**
+* @brief update_birth_rate
+*
+* Description.
+*
+* @param b0 Description.
+* @param theta0 Description.
+* @param theta1 Description.
+* @param N_tot_prev Description.
+* @return Description of return value.
+*/
 real update_birth_rate(
   real b0,
   real theta0,
@@ -69,6 +114,18 @@ real update_birth_rate(
   return b0 / exp((expm1((N_tot_prev * theta1)) * theta0));
 }
 
+/**
+* @brief update_pregnancy_rate
+*
+* Description.
+*
+* @param baseline_birth_rate Description.
+* @param theta0 Description.
+* @param theta1 Description.
+* @param N_tot Description.
+* @param tau_s Description.
+* @return Description of return value.
+*/
 real update_pregnancy_rate(
   real baseline_birth_rate,
   real theta0,
@@ -81,6 +138,19 @@ real update_pregnancy_rate(
 }
 
 
+/**
+* @brief mortality_rates
+*
+* Description.
+*
+* @param phi_pup Description.
+* @param phi_adult Description.
+* @param c Description.
+* @param n_age_classes Description.
+* @param male_pup_offset Description.
+* @param male_adult_offset Description.
+* @return Description of return value.
+*/
 vector mortality_rates(
   real phi_pup,
   real phi_adult,
@@ -134,32 +204,57 @@ vector mortality_rates(
 }
 
 
-matrix create_aging_matrix(int n_demo_groups, int n_age_groups) {
-  matrix[n_demo_groups, n_demo_groups] A;
+/**
+* @brief create_aging_matrix
+*
+* Description.
+*
+* @param n_demo_groups Description.
+* @param n_age_groups Description.
+* @return Description of return value.
+*/
+matrix create_aging_matrix(
+  data int n_demo_groups,
+  data int n_age_groups) {
+    matrix[n_demo_groups, n_demo_groups] A;
 
-  // initialize everything to zero
-  A = rep_matrix(0.0, n_demo_groups, n_demo_groups);
+    // initialize everything to zero
+    A = rep_matrix(0.0, n_demo_groups, n_demo_groups);
 
-  // female aging (ages 1 -> a)
-  for (i in 2:n_age_groups) {
-    A[i, i - 1] = 1.0;
+    // female aging (ages 1 -> a)
+    for (i in 2:n_age_groups) {
+      A[i, i - 1] = 1.0;
+    }
+
+    // female plus group
+    A[n_age_groups, n_age_groups] = 1.0;
+
+    // male aging (ages a+1 -> 2a)
+    for (i in (n_age_groups + 2):n_demo_groups) {
+      A[i, i - 1] = 1.0;
+    }
+
+    // male plus group
+    A[n_demo_groups, n_demo_groups] = 1.0;
+
+    return A;
   }
 
-  // female plus group
-  A[n_age_groups, n_age_groups] = 1.0;
 
-  // male aging (ages a+1 -> 2a)
-  for (i in (n_age_groups + 2):n_demo_groups) {
-    A[i, i - 1] = 1.0;
-  }
-
-  // male plus group
-  A[n_demo_groups, n_demo_groups] = 1.0;
-
-  return A;
-}
-
-
+/**
+* @brief create_transition_matrix
+*
+* Description.
+*
+* @param hunting_comp_sw Description.
+* @param hunting_comp_fi Description.
+* @param population_comp Description.
+* @param hunting_pressure_sw Description.
+* @param hunting_pressure_fi Description.
+* @param tau_h Description.
+* @param S_diag Description.
+* @return Description of return value.
+*/
 matrix create_transition_matrix(
   vector hunting_comp_sw,
   vector hunting_comp_fi,
@@ -194,6 +289,19 @@ matrix create_transition_matrix(
   );
 }
 
+/**
+* @brief update_population_from_survivors
+*
+* Description.
+*
+* @param previous_survivors Description.
+* @param aging_mat Description.
+* @param birth_rate Description.
+* @param epsilon_birth Description.
+* @param epsilon_sex Description.
+* @param n_age_classes Description.
+* @return Description of return value.
+*/
 vector update_population_from_survivors(
   vector previous_survivors,
   matrix aging_mat,
@@ -227,6 +335,20 @@ vector update_population_from_survivors(
 
 
 
+/**
+* @brief initialize_population_with_burnin
+*
+* Description.
+*
+* @param population_init Description.
+* @param population_init_size Description.
+* @param population_burn_in Description.
+* @param birth_rate_year Description.
+* @param aging_matrix Description.
+* @param S_diag Description.
+* @param n_age_classes Description.
+* @return Description of return value.
+*/
 tuple(vector, real, real) initialize_population_with_burnin(
   vector population_init,
   real population_init_size,
@@ -273,6 +395,45 @@ tuple(vector, real, real) initialize_population_with_burnin(
 }
 
 
+/**
+* @brief run_state_process_from_first_population
+*
+* Description.
+*
+* @param n_state_years Description.
+* @param n_age_classes Description.
+* @param population_comp_first Description.
+* @param birth_rate_first Description.
+* @param population_total_first Description.
+* @param baseline_birth_rate Description.
+* @param density_dependence_intercept Description.
+* @param density_dependence_slope Description.
+* @param aging_matrix Description.
+* @param S_diag Description.
+* @param mu_m Description.
+* @param hunting_selectivity_sweden Description.
+* @param hunting_selectivity_finland Description.
+* @param hunting_quota_sweden Description.
+* @param hunting_quota_finland Description.
+* @param hunting_effort_sd_sweden Description.
+* @param hunting_effort_sd_finland Description.
+* @param epsilon_h_sw Description.
+* @param epsilon_h_fi Description.
+* @param t_mate_to_preg Description.
+* @param t_birth_to_end_hunt Description.
+* @param epsilon_birth Description.
+* @param epsilon_sex Description.
+* @param transition_noise_raw Description.
+* @param pi_s Description.
+* @param pi_c Description.
+* @param prob_of_ca Description.
+* @param ode_init_state Description.
+* @param ode_times Description.
+* @param rel_tol Description.
+* @param abs_tol Description.
+* @param max_num_steps Description.
+* @return Description of return value.
+*/
 tuple(
   vector,  // 1 birth_rate
   vector,  // 2 pregnancy_rate
@@ -491,7 +652,7 @@ tuple(
     ", E_fi=", hunting_pressure_finland[demo],
     ", mu=", mu_m[demo]
         );
-      }      
+      }
       sol_sweden =
         ode_rk45_tol(
           dH_dt,
@@ -552,7 +713,7 @@ tuple(
         n_demo_groups,
         4
       );
-  
+
     transition_noise_year =to_matrix(
       transition_noise_raw[, year],
       n_demo_groups,
@@ -565,7 +726,7 @@ tuple(
         if (
           is_nan(expected_fate_counts[demo, fate]) ||
       is_inf(expected_fate_counts[demo, fate]) ||
-      expected_fate_counts[demo, fate] <= 0
+          (expected_fate_counts[demo, 1] < 0)
         ) {
           reject(
         "Bad expected_fate_counts: year=", year,
@@ -574,7 +735,7 @@ tuple(
         ", expected=", expected_fate_counts[demo, fate],
         ", N=", population_comp[demo, year],
         ", survived_prob=", transition_matrix[demo, demo],
-        ", M_died approx=", 
+        ", M_died approx=",
           1.0
           - exp(-(hunting_pressure_sweden[demo] + hunting_pressure_finland[demo])
                 * square(t_birth_to_end_hunt) / 2.0)
@@ -590,43 +751,116 @@ tuple(
         }
       }
     }
-    
-    for (demo in 1:n_demo_groups) {
 
-      
+    {
+      int sw_active =
+    hunting_quota_sweden[year] > 0;
 
-  row_vector[4] log_expected_fate_counts_row;
+      int fi_active =
+    hunting_quota_finland[year] > 0;
 
-  for (fate in 1:4) {
-    if (
-      is_nan(expected_fate_counts[demo, fate]) ||
-      is_inf(expected_fate_counts[demo, fate]) ||
-      expected_fate_counts[demo, fate] <= 0
-    ) {
-      reject(
-        "Bad expected_fate_counts before log allocation: ",
-        "year=", year,
-        ", demo=", demo,
-        ", fate=", fate,
-        ", expected=", expected_fate_counts[demo, fate],
-        ", expected row=[",
-          expected_fate_counts[demo, 1], ", ",
-          expected_fate_counts[demo, 2], ", ",
-          expected_fate_counts[demo, 3], ", ",
-          expected_fate_counts[demo, 4], "]"
+      for (demo in 1:n_demo_groups) {
+
+        // Initialize inactive hunting categories to exactly zero.
+        realized_fate[demo, ] =
+    rep_row_vector(0.0, 4);
+
+        if (sw_active && fi_active) {
+          vector[4] allocation_active =
+      multinomial_allocation_active(
+        expected_fate_counts[demo, ]',
+        transition_noise_year[demo, ]',
+        population_comp[demo, year]
       );
-    }
 
-    log_expected_fate_counts_row[fate] =
-      log(expected_fate_counts[demo, fate]);
-  }
-      
-      realized_fate[demo, ] =
-        multinomial_allocation(
-          expected_fate_counts[demo, ],
-          transition_noise_year[demo, ],
-          population_comp[demo, year]
-        );
+          realized_fate[demo, ] =
+      allocation_active';
+
+        } else if (sw_active) {
+          vector[3] expected_active;
+          vector[3] allocation_active;
+
+          // Survivor, death, Sweden
+          expected_active[1] =
+      expected_fate_counts[demo, 1];
+
+          expected_active[2] =
+      expected_fate_counts[demo, 2];
+
+          expected_active[3] =
+      expected_fate_counts[demo, 3];
+
+          allocation_active =
+      multinomial_allocation_active(
+        expected_active,
+        transition_noise_year[demo, 1:2]',
+        population_comp[demo, year]
+      );
+
+          realized_fate[demo, 1] =
+      allocation_active[1];
+
+          realized_fate[demo, 2] =
+      allocation_active[2];
+
+          realized_fate[demo, 3] =
+      allocation_active[3];
+
+        } else if (fi_active) {
+          vector[3] expected_active;
+          vector[3] allocation_active;
+
+          // Survivor, death, Finland
+          expected_active[1] =
+      expected_fate_counts[demo, 1];
+
+          expected_active[2] =
+      expected_fate_counts[demo, 2];
+
+          expected_active[3] =
+      expected_fate_counts[demo, 4];
+
+          allocation_active =
+      multinomial_allocation_active(
+        expected_active,
+        transition_noise_year[demo, 1:2]',
+        population_comp[demo, year]
+      );
+
+          realized_fate[demo, 1] =
+      allocation_active[1];
+
+          realized_fate[demo, 2] =
+      allocation_active[2];
+
+          realized_fate[demo, 4] =
+      allocation_active[3];
+
+        } else {
+          vector[2] expected_active;
+          vector[2] allocation_active;
+
+          // Survivor and death only
+          expected_active[1] =
+      expected_fate_counts[demo, 1];
+
+          expected_active[2] =
+      expected_fate_counts[demo, 2];
+
+          allocation_active =
+      multinomial_allocation_active(
+        expected_active,
+        transition_noise_year[demo, 1:1]',
+        population_comp[demo, year]
+      );
+
+          realized_fate[demo, 1] =
+      allocation_active[1];
+
+          realized_fate[demo, 2] =
+      allocation_active[2];
+        }
+      }
     }
 
     // ----------------------------
@@ -697,12 +931,22 @@ tuple(
   );
 }
 
+/**
+* @brief euler_lotka_birth_rate
+*
+* Description.
+*
+* @param mu_m Description.
+* @param n_age_classes Description.
+* @param phi_a Description.
+* @return Description of return value.
+*/
 real euler_lotka_birth_rate(
   vector mu_m,
   int n_age_classes,
   real phi_a
 ) {
-// original: return  2.0 * (1.0 - phi_a) / exp(sum(-mu_m[1:(n_age_classes - 1)]));
-// improved with herbie
+  // original: return  2.0 * (1.0 - phi_a) / exp(sum(-mu_m[1:(n_age_classes - 1)]));
+  // improved with herbie
   return exp(sum(mu_m[1:(n_age_classes - 1)])) * ((-phi_a + 2.0) - phi_a);
 }

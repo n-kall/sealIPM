@@ -1,11 +1,25 @@
-  vector dH_dt(
-    real tau, // time
-    vector H, // expected number of hunted seals
-    real n0, // initial population size
-    real k, // length of hunting season
-    real E_1, // hunting effort in region 1
-    real E_2, // hunting effort in region 2
-    real mu // other mortality rate
+/**
+ * @brief Differential equation of hunting vs time
+ *
+ * Used to determine the number of hunted seals
+ *
+ * @param tau time
+ * @param H expected number of hunted seals
+ * @param n0 initial population size
+ * @param k length of hunting season
+ * @param E_1 hunting effort in region 1
+ * @param E_2 hunting effort in region 2
+ * @param mu other mortality rate
+ * @return Description of return value
+*/
+vector dH_dt(
+    real tau,
+    vector H,
+    real n0,
+    real k,
+    real E_1,
+    real E_2,
+    real mu
   ) {
 
     real surv = exp(-(E_1 + E_2) * (k * tau - square(tau) / 2) - mu * tau);
@@ -13,6 +27,19 @@
     return rep_vector(dH, 1);
   }
 
+/**
+ * @brief Calculate expected hunting pressure
+ *
+ * Used to calculate the hunting pressure
+ *
+ * @param Q Hunting quota
+ * @param epsilon_h
+ * @param sigma_h
+ * @param tau_h
+ * @param g
+ * @param N
+ * @return Description of return value
+*/
 vector expected_hunting_pressure(
   int Q,
   real epsilon_h,

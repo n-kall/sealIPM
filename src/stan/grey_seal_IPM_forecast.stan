@@ -463,11 +463,11 @@ vector[n_future_reproductive_signs]
       );
   }
 
-  real log_lik_future_joint = sum(log_lik_future_aerial)
+  real log_lik = sum(log_lik_future_aerial)
                      + sum(log_lik_future_harvest_bags_sweden)
                      + sum(log_lik_future_harvest_bags_finland)
                      + sum(log_lik_future_hunting_comp_sweden)
-                     + sum(log_lik_future_hunting_comp_sweden)
+                     + sum(log_lik_future_hunting_comp_finland)
                      + sum(log_lik_future_bycatch)
                      + sum(log_lik_future_pregnancy)
                      + sum(log_lik_future_reproductive_signs);

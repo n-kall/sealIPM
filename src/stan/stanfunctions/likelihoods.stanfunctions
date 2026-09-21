@@ -1,5 +1,17 @@
+/**
+ * @brief aerial_count_lpmf
+ *
+ * Description.
+ *
+ * @param obs_aerial_count Observed count
+ * @param aerial_year Year for each observation
+ * @param population_total Total population
+ * @param mu Unscaled count observation rate
+ * @param overdispersion Overdispersion in counts
+ * @return log probability
+ */
 real aerial_count_lpmf(
-  array[] int obs_aerial_count, // observed count
+  array[] int obs_aerial_count, //
   array[] int aerial_year, // year
   vector population_total, // N_tot
   real mu, // mean prob
@@ -21,6 +33,19 @@ real aerial_count_lpmf(
   return lp;
 }
 
+
+/**
+ * @brief aerial_count_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param obs_aerial_count Description.
+ * @param aerial_year Description.
+ * @param population_total Description.
+ * @param mu Description.
+ * @param overdispersion Description.
+ * @return Description of return value.
+ */
 vector aerial_count_pointwise_log_lik(
   array[] int obs_aerial_count, // observed count
   array[] int aerial_year, // year
@@ -30,7 +55,7 @@ vector aerial_count_pointwise_log_lik(
 ) {
   int n_obs = size(obs_aerial_count);
   vector[n_obs] log_lik;
-  
+
   for (i in 1:n_obs) {
     int t = aerial_year[i];
 
@@ -44,6 +69,17 @@ vector aerial_count_pointwise_log_lik(
   return log_lik;
 }
 
+/**
+ * @brief harvest_bags_lpdf
+ *
+ * Description.
+ *
+ * @param hunting_count Description.
+ * @param hunting_year Description.
+ * @param hunted_total Description.
+ * @param harvest_bag_cv Description.
+ * @return Description of return value.
+ */
 real harvest_bags_lpdf(
   array[] real hunting_count,   // observed count
   array[] int hunting_year,   // year
@@ -65,6 +101,17 @@ real harvest_bags_lpdf(
   return lp;
 }
 
+/**
+ * @brief harvest_bags_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param hunting_count Observed count of reported hunted seals
+ * @param hunting_year Years of data
+ * @param hunted_total Total hunted
+ * @param harvest_bag_cv variation in hunting reports
+ * @return pointwise log-likelihood
+ */
 vector harvest_bags_pointwise_log_lik(
   array[] real hunting_count,   // observed count
   array[] int hunting_year,   // year
@@ -87,11 +134,22 @@ vector harvest_bags_pointwise_log_lik(
 }
 
 
+/**
+ * @brief hunting_comp_lpmf
+ *
+ * Description.
+ *
+ * @param hunting_composition Description.
+ * @param hunting_year Description.
+ * @param hunted Description.
+ * @param hunted_total Description.
+ * @return Description of return value.
+ */
 real hunting_comp_lpmf(
-  array[,] int hunting_composition,  // [n_obs, K]
-  array[] int hunting_year,          // [n_obs]
-  matrix hunted,                      // [K, T]
-  vector hunted_total           // [T]
+  array[,] int hunting_composition,
+  array[] int hunting_year,
+  matrix hunted,
+  vector hunted_total
 ) {
   int n_obs = size(hunting_composition);
   real lp = 0;
@@ -107,11 +165,22 @@ real hunting_comp_lpmf(
   return lp;
 }
 
+/**
+ * @brief hunting_comp_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param hunting_composition Description.
+ * @param hunting_year Description.
+ * @param hunted Description.
+ * @param hunted_total Description.
+ * @return Description of return value.
+ */
 vector hunting_comp_pointwise_log_lik(
-  array[,] int hunting_composition,  // [n_obs, K]
-  array[] int hunting_year,          // [n_obs]
-  matrix hunted,                      // [K, T]
-  vector hunted_total           // [T]
+  array[,] int hunting_composition,
+  array[] int hunting_year,
+  matrix hunted,
+  vector hunted_total
 ) {
   int n_obs = size(hunting_composition);
   vector[n_obs] log_lik;
@@ -129,11 +198,22 @@ vector hunting_comp_pointwise_log_lik(
 
 
 
+/**
+ * @brief bycatch_comp_lpmf
+ *
+ * Description.
+ *
+ * @param bycatch_composition Description.
+ * @param bycatch_comp_year Description.
+ * @param bycatch_expected Description.
+ * @param bias Description.
+ * @return Description of return value.
+ */
 real bycatch_comp_lpmf(
-  array[,] int bycatch_composition,   // [n_obs, K]
-  array[] int bycatch_comp_year,      // [n_obs]
-  matrix bycatch_expected,            // [K, T]
-  vector bias                          // [K]
+  array[,] int bycatch_composition,
+  array[] int bycatch_comp_year,
+  matrix bycatch_expected,
+  vector bias
 ) {
   int n_obs = size(bycatch_composition);
   vector[rows(bycatch_expected)] w = exp(bias);
@@ -151,11 +231,22 @@ real bycatch_comp_lpmf(
 }
 
 
+/**
+ * @brief bycatch_comp_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param bycatch_composition Description.
+ * @param bycatch_comp_year Description.
+ * @param bycatch_expected Description.
+ * @param bias Description.
+ * @return Description of return value.
+ */
 vector bycatch_comp_pointwise_log_lik(
-  array[,] int bycatch_composition,   // [n_obs, K]
-  array[] int bycatch_comp_year,      // [n_obs]
-  matrix bycatch_expected,            // [K, T]
-  vector bias                          // [K]
+  array[,] int bycatch_composition,
+  array[] int bycatch_comp_year,
+  matrix bycatch_expected,
+  vector bias
 ) {
   int n_obs = size(bycatch_composition);
   vector[rows(bycatch_expected)] w = exp(bias);
@@ -174,11 +265,22 @@ vector bycatch_comp_pointwise_log_lik(
 
 
 
+/**
+ * @brief pregnancy_lpmf
+ *
+ * Description.
+ *
+ * @param pregnancy_count Description.
+ * @param pregnancy_count_year Description.
+ * @param pregnancy_sample_size Description.
+ * @param pregnancy_rate Description.
+ * @return Description of return value.
+ */
 real pregnancy_lpmf(
-  array[] int pregnancy_count,        // [n_obs]
-  array[] int pregnancy_count_year,   // [n_obs]
-  array[] int pregnancy_sample_size,  // [n_obs]
-  vector pregnancy_rate         // [T]
+  array[] int pregnancy_count,
+  array[] int pregnancy_count_year,
+  array[] int pregnancy_sample_size,
+  vector pregnancy_rate
 ) {
   int n_obs = size(pregnancy_count);
   real lp = 0;
@@ -196,6 +298,16 @@ real pregnancy_lpmf(
 }
 
 
+/**
+ * @brief reproductive_signs_lpmf
+ *
+ * Description.
+ *
+ * @param obs_reproductive_signs Description.
+ * @param reproductive_signs_year Description.
+ * @param reproductive_probs Description.
+ * @return Description of return value.
+ */
 real reproductive_signs_lpmf(
   array[,] int obs_reproductive_signs,
   array[] int reproductive_signs_year,
@@ -213,6 +325,17 @@ real reproductive_signs_lpmf(
 }
 
 
+/**
+ * @brief pregnancy_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param pregnancy_count Description.
+ * @param pregnancy_count_year Description.
+ * @param pregnancy_sample_size Description.
+ * @param pregnancy_rate Description.
+ * @return Description of return value.
+ */
 vector pregnancy_pointwise_log_lik(
   array[] int pregnancy_count,
   array[] int pregnancy_count_year,
@@ -235,6 +358,16 @@ vector pregnancy_pointwise_log_lik(
 }
 
 
+/**
+ * @brief reproductive_signs_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param obs_reproductive_signs Description.
+ * @param reproductive_signs_year Description.
+ * @param reproductive_probs Description.
+ * @return Description of return value.
+ */
 vector reproductive_signs_pointwise_log_lik(
   array[,] int obs_reproductive_signs,
   array[] int reproductive_signs_year,
@@ -256,6 +389,17 @@ vector reproductive_signs_pointwise_log_lik(
 
 
 
+/**
+ * @brief aerial_count_rng
+ *
+ * Description.
+ *
+ * @param aerial_year Description.
+ * @param population_total Description.
+ * @param mu Description.
+ * @param phi Description.
+ * @return Description of return value.
+ */
 array[] int aerial_count_rng(
   array[] int aerial_year,
   vector population_total,
@@ -274,6 +418,16 @@ array[] int aerial_count_rng(
 }
 
 
+/**
+ * @brief harvest_bags_rng
+ *
+ * Description.
+ *
+ * @param hunting_year Description.
+ * @param hunted_total Description.
+ * @param harvest_bag_cv Description.
+ * @return Description of return value.
+ */
 array[] real harvest_bags_rng(
   array[] int hunting_year,
   vector hunted_total,
@@ -298,6 +452,17 @@ array[] real harvest_bags_rng(
 }
 
 
+/**
+ * @brief hunting_comp_rng
+ *
+ * Description.
+ *
+ * @param hunting_year Description.
+ * @param hunted Description.
+ * @param hunted_total Description.
+ * @param hunting_sample_size Description.
+ * @return Description of return value.
+ */
 array[,] int hunting_comp_rng(
   array[] int hunting_year,
   matrix hunted,
@@ -324,6 +489,17 @@ array[,] int hunting_comp_rng(
 }
 
 
+/**
+ * @brief bycatch_comp_rng
+ *
+ * Description.
+ *
+ * @param bycatch_comp_year Description.
+ * @param bycatch_expected Description.
+ * @param bias Description.
+ * @param bycatch_sample_size Description.
+ * @return Description of return value.
+ */
 array[,] int bycatch_comp_rng(
   array[] int bycatch_comp_year,
   matrix bycatch_expected,
@@ -353,6 +529,16 @@ array[,] int bycatch_comp_rng(
 }
 
 
+/**
+ * @brief pregnancy_rng
+ *
+ * Description.
+ *
+ * @param pregnancy_count_year Description.
+ * @param pregnancy_sample_size Description.
+ * @param pregnancy_rate Description.
+ * @return Description of return value.
+ */
 array[] int pregnancy_rng(
   array[] int pregnancy_count_year,
   array[] int pregnancy_sample_size,
@@ -373,6 +559,16 @@ array[] int pregnancy_rng(
 }
 
 
+/**
+ * @brief reproductive_signs_rng
+ *
+ * Description.
+ *
+ * @param reproductive_signs_year Description.
+ * @param reproductive_probs Description.
+ * @param reproductive_signs_sample_size Description.
+ * @return Description of return value.
+ */
 array[,] int reproductive_signs_rng(
   array[] int reproductive_signs_year,
   matrix reproductive_probs,

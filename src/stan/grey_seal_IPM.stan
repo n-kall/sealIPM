@@ -38,37 +38,37 @@ data {
 
   // Hunting bag observations
   int<lower=0, upper=n_state_years> n_hunting_bag_years_sweden; // total number of observed years
-  array[n_hunting_bag_years_sweden] int<lower=1> hunting_bag_year_sweden; // which year is it from (1 is first year)
+  array[n_hunting_bag_years_sweden] int<lower=1, upper=n_state_years> hunting_bag_year_sweden; // which year is it from (1 is first year)
   array[n_hunting_bag_years_sweden] real<lower=0> obs_hunting_bag_sweden; // reported number of hunted seals
 
   int<lower=0, upper=n_state_years> n_hunting_bag_years_finland; // total number of observed years
-  array[n_hunting_bag_years_finland] int<lower=1> hunting_bag_year_finland; // which year is it from (1 is first year)
+  array[n_hunting_bag_years_finland] int<lower=1, upper=n_state_years> hunting_bag_year_finland; // which year is it from (1 is first year)
   array[n_hunting_bag_years_finland] real<lower=0> obs_hunting_bag_finland; // reported number of hunted seals
 
   // Hunting composition observations, year-major
   int<lower=0, upper=n_state_years> n_hunting_comp_years_sweden; // total number of observed years
-  array[n_hunting_comp_years_sweden] int<lower=1> hunting_comp_year_sweden; // which year is it from (1 is first year)
+  array[n_hunting_comp_years_sweden] int<lower=1, upper=n_state_years> hunting_comp_year_sweden; // which year is it from (1 is first year)
   array[n_hunting_comp_years_sweden, 2 * n_age_classes] int<lower=0> obs_hunting_comp_sweden; // reported hunting compositions
 
   int<lower=0, upper=n_state_years> n_hunting_comp_years_finland; // total number of observed years
-  array[n_hunting_comp_years_finland] int<lower=1> hunting_comp_year_finland; // which year is it from (1 is first year)
+  array[n_hunting_comp_years_finland] int<lower=1, upper=n_state_years> hunting_comp_year_finland; // which year is it from (1 is first year)
   array[n_hunting_comp_years_finland, 2 * n_age_classes] int<lower=0> obs_hunting_comp_finland; // reported hunting compositions
 
   // Bycatch comp observations
   int<lower=0, upper=n_state_years> n_bycatch_years;
-  array[n_bycatch_years] int<lower=1> bycatch_comp_year; // which year is it from (1 is first year)
+  array[n_bycatch_years] int<lower=1, upper=n_state_years> bycatch_comp_year; // which year is it from (1 is first year)
   array[n_bycatch_years, 2 * n_age_classes] int<lower=0> obs_bycatch_comp; // reported bycatch compositions
 
 
   // Pregnancy observations
   int<lower=0, upper=n_state_years> n_pregnancy_years; // total number of surveyed years
-  array[n_pregnancy_years] int<lower=1> pregnancy_count_year; // which year was it (1 is first year)
+  array[n_pregnancy_years] int<lower=1, upper=n_state_years> pregnancy_count_year; // which year was it (1 is first year)
   array[n_pregnancy_years] int<lower=0> obs_pregnancy_count; // observed count of pregnancy
   array[n_pregnancy_years] int<lower=0> pregnancy_sample_size; // total checked for pregnancy
 
   // Reproductive signs observations
   int<lower=0, upper=n_state_years> n_reproductive_years; // total number of surveyed years
-  array[n_reproductive_years] int<lower=1> reproductive_signs_year; // which year was it (1 is first year)
+  array[n_reproductive_years] int<lower=1, upper=n_state_years> reproductive_signs_year; // which year was it (1 is first year)
   array[n_reproductive_years, 4] int<lower=0> obs_reproductive_signs_finland; // observed reproductive signs
 
 
@@ -194,7 +194,7 @@ parameters {
 
 
   // state process
-  real population_init_size; // n_0
+  real<lower=0> population_init_size; // n_0
   vector[n_state_years] epsilon_birth; //
   vector[n_state_years] epsilon_sex;
   matrix[3 * n_demo_groups, n_state_years] transition_noise_raw;
@@ -481,10 +481,10 @@ initialize_population_with_burnin(
   real lprior_phi_sc = beta_lpdf(phi_sc | 2, 1); // try to keep pup survival away from zero
   lprior += lprior_phi_sc;
 
-  real lprior_male_pup_survival_offset = student_t_lpdf(male_pup_survival_offset | 4, prior_male_pup_mortality_offset_location, prior_male_pup_mortality_offset_scale);
+  real lprior_male_pup_survival_offset = normal_lpdf(male_pup_survival_offset | prior_male_pup_mortality_offset_location, prior_male_pup_mortality_offset_scale);
   lprior += lprior_male_pup_survival_offset;
 
-  real lprior_male_adult_survival_offset = student_t_lpdf(male_adult_survival_offset | 4, prior_male_adult_mortality_offset_location, prior_male_adult_mortality_offset_scale);
+  real lprior_male_adult_survival_offset = normal_lpdf(male_adult_survival_offset | prior_male_adult_mortality_offset_location, prior_male_adult_mortality_offset_scale);
   lprior += lprior_male_adult_survival_offset;
 
   // Carrying capacity
