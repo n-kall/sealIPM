@@ -71,7 +71,6 @@ forecast_ipm <- function(
             scenario_data = scenario_data,
             future_years = future_years
         )
-        print(future_data)
     }
 
     forecast_variables <- names(
