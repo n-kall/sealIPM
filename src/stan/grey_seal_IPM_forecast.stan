@@ -157,7 +157,6 @@ parameters {
 
   vector<lower=0>[n_demo_groups] population_comp_final;
   real<lower=0> population_total_final;
-  real<lower=0, upper=1> birth_rate_final;
   real<lower=0, upper=1> pregnancy_rate_final;
   vector<lower=0>[n_demo_groups] survivors_final;
 

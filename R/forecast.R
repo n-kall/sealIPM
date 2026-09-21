@@ -59,32 +59,22 @@ forecast_ipm <- function(
 
     forecast_model <- get_species_forecast_model(species)
 
-    if (!is.null(actual_data)) {
-        future_data <- build_future_stan_data(
-            species = species,
-            actual_data = actual_data,
-            future_years = future_years
-        )
-    } else if (!is.null(scenario_data)) {
-        future_data <- build_future_stan_data(
-            species = species,
-            scenario_data = scenario_data,
-            future_years = future_years
-        )
-    }
+    future_data <- build_future_stan_data(
+        species = species,
+        actual_data = actual_data,
+        scenario_data = scenario_data,
+        future_years = future_years,
+        fitted_stan_data = fit$stan_data
+    )
 
     forecast_variables <- names(
         forecast_model$variables()$parameters
     )
 
-    if (posterior::is_draws("fit")) {
-        past_draws <- posterior::as_draws_matrix(fit)
-    } else {
-        past_draws <- fit$fit$draws(
-            variables = forecast_variables,
-            format = "draws_matrix"
-        )
-    }
+    past_draws <- fit$fit$draws(
+        variables = forecast_variables,
+        format = "draws_matrix"
+    )
 
     forecast_draws <- forecast_model$generate_quantities(
         fitted_params = past_draws,
@@ -120,14 +110,16 @@ build_future_stan_data <- function(
     species,
     actual_data = NULL,
     scenario_data = NULL,
-    future_years
+    future_years,
+    fitted_stan_data
 ) {
     switch(
         species,
         grey = build_grey_future_stan_data(
             actual_data = actual_data,
             scenario_data = scenario_data,
-            future_years = future_years
+            future_years = future_years,
+            fitted_stan_data = fitted_stan_data
         ),
         ringed = stop(
             "Ringed seal forecasting is not yet implemented.",
@@ -136,13 +128,14 @@ build_future_stan_data <- function(
     )
 }
 
-
 build_grey_future_stan_data <- function(
     actual_data,
     scenario_data,
-    future_years
+    future_years,
+    fitted_stan_data
 ) {
     n_future_years <- length(future_years)
+
     if (!is.null(actual_data)) {
         herring <- build_grey_herring(
             herring = actual_data$herring,
@@ -187,13 +180,44 @@ build_grey_future_stan_data <- function(
             )
         )
     } else if (!is.null(scenario_data)) {
-        out <- scenario_data
+        last_herring_bp_gof <- utils::tail(
+            fitted_stan_data$herring_index_baltic_proper_gulf_finland,
+            1L
+        )
+
+        last_herring_gob <- utils::tail(
+            fitted_stan_data$herring_index_gulf_bothnia,
+            1L
+        )
+
+        out <- list(
+            future_hunting_quota_sweden = as.integer(
+                scenario_data$future_hunting_quota_sweden
+            ),
+            future_hunting_quota_finland = as.integer(
+                scenario_data$future_hunting_quota_finland
+            ),
+
+            future_herring_index_baltic_proper_gulf_finland = as.numeric(
+                c(
+                    last_herring_bp_gof,
+                    scenario_data$future_herring_index_baltic_proper_gulf_finland
+                )
+            ),
+
+            future_herring_index_gulf_bothnia = as.numeric(
+                c(
+                    last_herring_gob,
+                    scenario_data$future_herring_index_gulf_bothnia
+                )
+            )
+        )
+
         observations <- build_grey_future_observations(
             data = NULL,
             future_years = future_years
         )
     }
-
     sample_sizes <- build_grey_future_sample_sizes(
         observations = observations,
         n_future_years = n_future_years
@@ -484,14 +508,14 @@ build_scenario_data <- function(
     if (is.null(herring_indices_gulf_bothnia)) {
         herring_indices_gulf_bothnia <- rep(
             0,
-            length(hunting_quotas_finland) + 1
+            length(hunting_quotas_finland)
         )
     }
 
     if (is.null(herring_indices_baltic_proper_gulf_finland)) {
         herring_indices_baltic_proper_gulf_finland <- rep(
             0,
-            length(hunting_quotas_finland) + 1
+            length(hunting_quotas_finland)
         )
     }
 

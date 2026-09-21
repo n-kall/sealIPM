@@ -84,6 +84,7 @@ fit_ipm <- function(
             fit = fit,
             species = species,
             data = data,
+            years = as.integer(years),
             stan_data = stan_data,
             priors = prior_spec,
             method = method

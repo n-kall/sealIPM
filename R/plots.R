@@ -1,3 +1,11 @@
+##' Plot forecast
+##'
+##' @param forecast forecast draws
+##' @param future_years years
+##' @param variables variables to plot
+##' @return ggplot object
+##' @importFrom rlang .data
+##' @export
 forecast_plot <- function(forecast, future_years = NULL, variables = NULL) {
     draws <- posterior::as_draws(forecast)
 
@@ -19,12 +27,14 @@ forecast_plot <- function(forecast, future_years = NULL, variables = NULL) {
 
     p <- ggplot2::ggplot(
         summary,
-        ggplot2::aes(x = year_id, y = mean)
+        ggplot2::aes(x = .data$year_id, y = .data$mean)
     ) +
         ggplot2::geom_line() +
         ggplot2::geom_ribbon(
-            ggplot2::aes(ymin = q5, ymax = q95),
-            width = 0.1,
+            ggplot2::aes(
+                ymin = .data$q5,
+                ymax = .data$q95
+            ),
             alpha = 0.2
         ) +
         ggplot2::facet_wrap(~facet, scales = "free_y")
