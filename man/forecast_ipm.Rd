@@ -18,7 +18,7 @@ forecast_ipm(
 
 \item{actual_data}{Raw data}
 
-\item{scenario_data}{List of quotas and optionally herring indices}
+\item{scenario_data}{List of quotas and optionally herring indices. Use he function \code{build_scenario_data} to create it.}
 
 \item{future_years}{Consecutive calendar years to forecast.}
 

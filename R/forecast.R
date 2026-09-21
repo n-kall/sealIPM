@@ -6,7 +6,7 @@
 #'
 #' @param fit A fitted IPM object.
 #' @param actual_data Raw data
-#' @param scenario_data List of quotas and optionally herring indices
+#' @param scenario_data List of quotas and optionally herring indices. Use he function `build_scenario_data` to create it.
 #' @param future_years Consecutive calendar years to forecast.
 #' @param species Either `"grey"` or `"ringed"`.
 #' @param ... Passed to `generate_quantities()`.
@@ -468,7 +468,14 @@ build_grey_future_sample_sizes <- function(
     )
 }
 
-
+##' Build scenario data for forecasting
+##'
+##' @param hunting_quotas_sweden numeric vector of hunting quotas for Sweden
+##' @param hunting_quotas_finland numeric vector of hunting quotas for Finland
+##' @param herring_indices_gulf_bothnia numeric vector Herring WAA indices for Gulf of Bothnia
+##' @param herring_indices_baltic_proper_gulf_finland numeric vector Herring WAA indices for Baltic proper and Gulf of Finland
+##' @return list to be passed as scenario data
+##' @export
 build_scenario_data <- function(
     hunting_quotas_sweden,
     hunting_quotas_finland,
