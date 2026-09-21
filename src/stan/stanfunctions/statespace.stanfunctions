@@ -725,8 +725,7 @@ tuple(
       for (fate in 1:4) {
         if (
           is_nan(expected_fate_counts[demo, fate]) ||
-      is_inf(expected_fate_counts[demo, fate]) ||
-          (expected_fate_counts[demo, 1] < 0)
+      is_inf(expected_fate_counts[demo, fate])
         ) {
           reject(
         "Bad expected_fate_counts: year=", year,
