@@ -1,5 +1,11 @@
-/**
- * @brief Logistic-normal allocation over active fate categories.
+/** @brief multinomial_allocation_active
+ *
+ * Description.
+ *
+ * @param expected_counts Description.
+ * @param z Description.
+ * @param N Description.
+ * @return Description of return value.
  */
 vector multinomial_allocation_active(
   vector expected_counts,

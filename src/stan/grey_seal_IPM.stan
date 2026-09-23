@@ -135,8 +135,7 @@ data {
   real<lower=0> rel_tol;
   real<lower=0> abs_tol;
   int<lower=1> max_num_steps;
-
-
+  real<lower=0> fate_probability_tolerance;
   int<lower=0, upper=1> prior_only;
 
 }
@@ -148,11 +147,6 @@ transformed data {
   // aging matrix
   matrix[n_demo_groups, n_demo_groups] aging_matrix = create_aging_matrix(n_demo_groups, n_age_classes);
 
-  // ode
-  vector[1] ode_init_state;
-  array[1] real ode_times;
-  ode_init_state[1] = 0.0;
-  ode_times[1] = t_birth_to_end_hunt;
 
 }
 
@@ -445,7 +439,6 @@ initialize_population_with_burnin(
     density_dependence_intercept,
     density_dependence_slope,
     aging_matrix,
-    S_diag,
     mu_m,
     hunting_selectivity_sweden,
     hunting_selectivity_finland,
@@ -463,11 +456,10 @@ initialize_population_with_burnin(
     pi_s,
     pi_c,
     prob_of_ca,
-    ode_init_state,
-    ode_times,
     rel_tol,
     abs_tol,
-    max_num_steps
+    max_num_steps,
+    fate_probability_tolerance
   );
 
 

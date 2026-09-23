@@ -1,9 +1,8 @@
 /**
  * @brief Convert continuous expected counts to integer demographic counts.
  *
- * Draws the total count from a Poisson distribution with mean equal to the
- * sum of the expected counts, then allocates that total among demographic
- * groups using a multinomial distribution.
+ * Draws an integer total from a Poisson distribution and allocates that
+ * total among demographic groups with a multinomial distribution.
  *
  * @param expected_counts Non-negative expected demographic counts.
  * @return Integer demographic counts.
@@ -15,14 +14,14 @@ array[] int integerize_population_rng(
   real expected_total = sum(expected_counts);
   int realized_total;
 
-  if (!(min(expected_counts) >= 0)) {
+  if (!(min(expected_counts) >= 0.0)) {
     reject(
       "integerize_population_rng requires non-negative counts; ",
       "expected_counts=", expected_counts
     );
   }
 
-  if (expected_total == 0) {
+  if (expected_total == 0.0) {
     return rep_array(0, n_groups);
   }
 
@@ -38,20 +37,14 @@ array[] int integerize_population_rng(
   );
 }
 
-
 /**
  * @brief Age integer survivors and simulate newborns.
  *
- * Advances female and male survivors by one age class, retaining animals
- * already in each terminal age class in the corresponding plus group.
- * Simulates newborns using a binomial distribution and divides newborns
- * between female and male pups using a second binomial draw.
+ * Female groups occupy indices `1:n_age_classes`; male groups occupy
+ * `(n_age_classes + 1):(2 * n_age_classes)`. The final group for each sex is
+ * a plus group. Births and newborn sex allocation use binomial draws.
  *
- * Female demographic groups occupy indices `1:n_age_classes`, and male
- * demographic groups occupy indices
- * `(n_age_classes + 1):(2 * n_age_classes)`.
- *
- * @param previous_survivors Integer survivor counts from the previous year.
+ * @param previous_survivors Integer survivors from the preceding year.
  * @param birth_rate Probability that an adult female gives birth.
  * @param n_age_classes Number of age classes for each sex.
  * @return Integer population composition for the new year.
@@ -76,26 +69,25 @@ array[] int update_population_from_survivors_rng(
     );
   }
 
-  if (!(birth_rate >= 0 && birth_rate <= 1)) {
+  if (!(birth_rate >= 0.0 && birth_rate <= 1.0)) {
     reject(
-      "update_population_from_survivors_rng requires ",
-      "birth_rate in [0, 1]; birth_rate=",
-      birth_rate
+      "update_population_from_survivors_rng requires birth_rate in [0, 1]; ",
+      "birth_rate=", birth_rate
     );
   }
 
   if (n_age_classes < 2) {
     reject(
-      "update_population_from_survivors_rng requires at least ",
-      "two age classes; n_age_classes=",
-      n_age_classes
+      "update_population_from_survivors_rng requires at least two age ",
+      "classes; n_age_classes=", n_age_classes
     );
   }
 
-  // Female ageing and terminal plus group.
   if (n_age_classes > 2) {
     for (age in 2:(n_age_classes - 1)) {
       population[age] = previous_survivors[age - 1];
+      population[n_age_classes + age] =
+        previous_survivors[n_age_classes + age - 1];
     }
   }
 
@@ -103,19 +95,10 @@ array[] int update_population_from_survivors_rng(
     previous_survivors[n_age_classes - 1]
     + previous_survivors[n_age_classes];
 
-  // Male ageing and terminal plus group.
-  if (n_age_classes > 2) {
-    for (age in 2:(n_age_classes - 1)) {
-      population[n_age_classes + age] =
-        previous_survivors[n_age_classes + age - 1];
-    }
-  }
-
   population[2 * n_age_classes] =
     previous_survivors[2 * n_age_classes - 1]
     + previous_survivors[2 * n_age_classes];
 
-  // Births use adult females after ageing.
   adult_females = population[n_age_classes];
   newborns = binomial_rng(adult_females, birth_rate);
   female_newborns = binomial_rng(newborns, 0.5);
@@ -126,17 +109,14 @@ array[] int update_population_from_survivors_rng(
   return population;
 }
 
-
 /**
- * @brief Compute demographic hunting pressure for a discrete population.
+ * @brief Compute hunting pressure for a discrete population.
  *
- * Permits demographic groups with zero abundance. Returns exact zero
- * pressure when the quota is zero and requires a positive total population
- * when the quota is positive. Pressure is set to zero for empty demographic
- * groups.
+ * Allows exact zero demographic counts and returns exact zero pressure when
+ * the quota is zero.
  *
  * @param hunting_quota Annual hunting quota.
- * @param hunting_selectivity Demographic hunting selectivity on the log scale.
+ * @param hunting_selectivity Demographic log-selectivity.
  * @param population_comp Demographic population counts.
  * @param hunting_effort_sd Hunting-effort standard deviation.
  * @param epsilon_h Standardized effort reduction.
@@ -158,23 +138,21 @@ vector compute_hunting_pressure_discrete(
     return rep_vector(0.0, n_demo_groups);
   }
 
-  if (!(t_birth_to_end_hunt > 0)) {
+  if (!(t_birth_to_end_hunt > 0.0)) {
     reject(
       "compute_hunting_pressure_discrete requires ",
-      "t_birth_to_end_hunt > 0; received ",
-      t_birth_to_end_hunt
+      "t_birth_to_end_hunt > 0; received ", t_birth_to_end_hunt
     );
   }
 
-  if (min(population_comp) < 0) {
+  if (!(min(population_comp) >= 0.0)) {
     reject(
-      "compute_hunting_pressure_discrete requires non-negative ",
-      "population counts; population_comp=",
-      population_comp
+      "compute_hunting_pressure_discrete requires non-negative counts; ",
+      "population_comp=", population_comp
     );
   }
 
-  if (!(sum(population_comp) > 0)) {
+  if (!(sum(population_comp) > 0.0)) {
     reject(
       "compute_hunting_pressure_discrete requires a positive total ",
       "population when the quota is positive."
@@ -197,7 +175,7 @@ vector compute_hunting_pressure_discrete(
   }
 
   for (demo in 1:n_demo_groups) {
-    if (population_comp[demo] == 0) {
+    if (population_comp[demo] == 0.0) {
       pressure[demo] = 0.0;
     }
   }
@@ -205,78 +183,45 @@ vector compute_hunting_pressure_discrete(
   return pressure;
 }
 
-
 /**
- * @brief Simulate a discrete demographic state process from fitted survivors.
+ * @brief Simulate the discrete state process using one joint fate ODE.
  *
- * Advances an age- and sex-structured seal population over
- * `n_state_years` using discrete demographic transitions. The continuous
- * fitted survivor composition at the forecast boundary is converted to
- * integer counts once. Every forecast year, including the first, then uses
- * integer ageing, binomial births, binomial sex allocation, and multinomial
- * demographic fate allocation.
- *
- * The four demographic fates are ordered as survived, died or bycaught,
- * hunted in Sweden, and hunted in Finland. A zero quota produces an exact
- * zero probability and count for the corresponding hunting fate.
- *
- * This function calls random-number generators and may only be called from
- * transformed data or generated quantities.
+ * The fitted survivor boundary is integerized once. Each forecast year uses
+ * integer ageing, binomial births and sex allocation, one joint competing-
+ * risks ODE per non-empty demographic group, and multinomial fate sampling.
  *
  * @param n_state_years Number of years to simulate.
  * @param n_age_classes Number of age classes for each sex.
- * @param survivors_previous_first Continuous fitted survivor composition
- *   from the year immediately preceding the first simulated year.
- * @param birth_rate_first Birth rate for the first simulated year.
- * @param baseline_birth_rate Baseline birth rates with length
- *   `n_state_years + 1`.
- * @param density_dependence_intercept Intercept of the density-dependent
- *   reproductive model.
- * @param density_dependence_slope Population-size slope of the
- *   density-dependent reproductive model.
- * @param S_diag Annual natural-survival probabilities.
- * @param mu_m Instantaneous natural-mortality rates.
- * @param hunting_selectivity_sweden Swedish demographic hunting
- *   selectivities on the log scale.
- * @param hunting_selectivity_finland Finnish demographic hunting
- *   selectivities on the log scale.
- * @param hunting_quota_sweden Swedish quota for each simulated year.
- * @param hunting_quota_finland Finnish quota for each simulated year.
- * @param hunting_effort_sd_sweden Standard deviation of Swedish annual
- *   hunting-effort reduction.
- * @param hunting_effort_sd_finland Standard deviation of Finnish annual
- *   hunting-effort reduction.
- * @param epsilon_h_sw Standardized Swedish hunting-effort reductions.
- * @param epsilon_h_fi Standardized Finnish hunting-effort reductions.
+ * @param survivors_previous_first Fitted survivor composition preceding year 1.
+ * @param birth_rate_first Birth rate for year 1.
+ * @param baseline_birth_rate Baseline birth rates of length n_state_years + 1.
+ * @param density_dependence_intercept Density-dependence intercept.
+ * @param density_dependence_slope Density-dependence slope.
+ * @param mu_m Instantaneous annual natural-mortality rates.
+ * @param hunting_selectivity_sweden Swedish demographic log-selectivity.
+ * @param hunting_selectivity_finland Finnish demographic log-selectivity.
+ * @param hunting_quota_sweden Annual Swedish quotas.
+ * @param hunting_quota_finland Annual Finnish quotas.
+ * @param hunting_effort_sd_sweden Swedish effort standard deviation.
+ * @param hunting_effort_sd_finland Finnish effort standard deviation.
+ * @param epsilon_h_sw Swedish effort reductions.
+ * @param epsilon_h_fi Finnish effort reductions.
  * @param t_mate_to_preg Time from mating to pregnancy sampling.
  * @param t_birth_to_end_hunt Time from birth to the end of hunting.
- * @param pi_s Annual placental-sign reporting probabilities.
- * @param pi_c Annual corpus-albicans reporting probabilities.
- * @param prob_of_ca Probability of corpus albicans without birth.
- * @param ode_init_state Initial hunting ODE state.
- * @param ode_times Hunting ODE evaluation times.
+ * @param pi_s Placental-sign reporting probabilities.
+ * @param pi_c Corpus-albicans reporting probabilities.
+ * @param prob_of_ca Corpus-albicans probability without birth.
  * @param rel_tol Relative ODE tolerance.
  * @param abs_tol Absolute ODE tolerance.
- * @param max_num_steps Maximum number of hunting ODE steps.
- * @return A tuple containing annual birth rates, pregnancy rates, total
- *   populations, demographic compositions, survivors, deaths or bycatch,
- *   Swedish hunting, Finnish hunting, expected bycatch, Swedish hunting-bag
- *   totals, Finnish hunting-bag totals, total hunting bags, and reproductive
- *   sign probabilities.
+ * @param max_num_steps Maximum ODE integration steps.
+ * @param fate_probability_tolerance Maximum accepted numerical deviation
+ *   from the unit simplex after the joint ODE solve.
+ * @return Annual demographic and reproductive state quantities.
  */
 tuple(
-  vector,
-  vector,
-  vector,
-  matrix,
-  matrix,
-  matrix,
-  matrix,
-  matrix,
-  matrix,
-  vector,
-  vector,
-  vector,
+  vector, vector, vector,
+  matrix, matrix, matrix, matrix, matrix, matrix,
+  vector, vector, vector,
   matrix
 ) run_state_process_from_survivors_rng(
   data int n_state_years,
@@ -286,7 +231,6 @@ tuple(
   vector baseline_birth_rate,
   real density_dependence_intercept,
   real density_dependence_slope,
-  vector S_diag,
   vector mu_m,
   vector hunting_selectivity_sweden,
   vector hunting_selectivity_finland,
@@ -301,29 +245,24 @@ tuple(
   vector pi_s,
   vector pi_c,
   real prob_of_ca,
-  data vector ode_init_state,
-  data array[] real ode_times,
   data real rel_tol,
   data real abs_tol,
-  data int max_num_steps
+  data int max_num_steps,
+  data real fate_probability_tolerance
 ) {
   int n_demo_groups = 2 * n_age_classes;
-
   vector[n_state_years] birth_rate;
   vector[n_state_years] pregnancy_rate;
   vector[n_state_years] population_total;
-
   matrix[n_demo_groups, n_state_years] population_comp;
   matrix[n_demo_groups, n_state_years] survivors;
   matrix[n_demo_groups, n_state_years] deaths_or_bycatch;
   matrix[n_demo_groups, n_state_years] hunted_sweden;
   matrix[n_demo_groups, n_state_years] hunted_finland;
   matrix[n_demo_groups, n_state_years] bycatch_expected;
-
   vector[n_state_years] hunting_bag_total_sweden;
   vector[n_state_years] hunting_bag_total_finland;
   vector[n_state_years] hunted_total;
-
   matrix[4, n_state_years] reproductive_probs;
 
   array[n_demo_groups] int population_current;
@@ -337,6 +276,7 @@ tuple(
   vector[n_demo_groups] population_current_real;
   vector[n_demo_groups] hunting_pressure_sweden;
   vector[n_demo_groups] hunting_pressure_finland;
+  vector[n_demo_groups] expected_deaths_or_bycatch;
   vector[n_demo_groups] expected_hunted_sweden;
   vector[n_demo_groups] expected_hunted_finland;
 
@@ -344,21 +284,19 @@ tuple(
     if (year == 1) {
       birth_rate[year] = birth_rate_first;
     } else {
-      birth_rate[year] =
-        update_birth_rate(
-          baseline_birth_rate[year],
-          density_dependence_intercept,
-          density_dependence_slope,
-          population_total[year - 1]
-        );
+      birth_rate[year] = update_birth_rate(
+        baseline_birth_rate[year],
+        density_dependence_intercept,
+        density_dependence_slope,
+        population_total[year - 1]
+      );
     }
 
-    population_current =
-      update_population_from_survivors_rng(
-        survivors_previous,
-        birth_rate[year],
-        n_age_classes
-      );
+    population_current = update_population_from_survivors_rng(
+      survivors_previous,
+      birth_rate[year],
+      n_age_classes
+    );
 
     for (demo in 1:n_demo_groups) {
       population_current_real[demo] = population_current[demo];
@@ -367,132 +305,56 @@ tuple(
 
     population_total[year] = sum(population_current_real);
 
-    pregnancy_rate[year] =
-      update_pregnancy_rate(
-        baseline_birth_rate[year + 1],
-        density_dependence_intercept,
-        density_dependence_slope,
-        population_total[year],
-        t_mate_to_preg
-      );
+    pregnancy_rate[year] = update_pregnancy_rate(
+      baseline_birth_rate[year + 1],
+      density_dependence_intercept,
+      density_dependence_slope,
+      population_total[year],
+      t_mate_to_preg
+    );
 
     survivors_current = rep_array(0, n_demo_groups);
     deaths_current = rep_array(0, n_demo_groups);
     hunted_sweden_current = rep_array(0, n_demo_groups);
     hunted_finland_current = rep_array(0, n_demo_groups);
+    expected_deaths_or_bycatch = rep_vector(0.0, n_demo_groups);
+    expected_hunted_sweden = rep_vector(0.0, n_demo_groups);
+    expected_hunted_finland = rep_vector(0.0, n_demo_groups);
 
-    if (population_total[year] > 0) {
-      hunting_pressure_sweden =
-        compute_hunting_pressure_discrete(
-          hunting_quota_sweden[year],
-          hunting_selectivity_sweden,
-          population_current_real,
-          hunting_effort_sd_sweden,
-          epsilon_h_sw[year],
-          t_birth_to_end_hunt
-        );
+    if (population_total[year] > 0.0) {
+      hunting_pressure_sweden = compute_hunting_pressure_discrete(
+        hunting_quota_sweden[year],
+        hunting_selectivity_sweden,
+        population_current_real,
+        hunting_effort_sd_sweden,
+        epsilon_h_sw[year],
+        t_birth_to_end_hunt
+      );
 
-      hunting_pressure_finland =
-        compute_hunting_pressure_discrete(
-          hunting_quota_finland[year],
-          hunting_selectivity_finland,
-          population_current_real,
-          hunting_effort_sd_finland,
-          epsilon_h_fi[year],
-          t_birth_to_end_hunt
-        );
-
-      for (demo in 1:n_demo_groups) {
-        if (population_current[demo] == 0) {
-          expected_hunted_sweden[demo] = 0.0;
-          expected_hunted_finland[demo] = 0.0;
-        } else {
-          expected_hunted_sweden[demo] =
-            compute_expected_hunted_count(
-              population_current_real[demo],
-              t_birth_to_end_hunt,
-              hunting_pressure_sweden[demo],
-              hunting_pressure_finland[demo],
-              mu_m[demo],
-              ode_init_state,
-              ode_times,
-              rel_tol,
-              abs_tol,
-              max_num_steps
-            );
-
-          expected_hunted_finland[demo] =
-            compute_expected_hunted_count(
-              population_current_real[demo],
-              t_birth_to_end_hunt,
-              hunting_pressure_finland[demo],
-              hunting_pressure_sweden[demo],
-              mu_m[demo],
-              ode_init_state,
-              ode_times,
-              rel_tol,
-              abs_tol,
-              max_num_steps
-            );
-        }
-      }
+      hunting_pressure_finland = compute_hunting_pressure_discrete(
+        hunting_quota_finland[year],
+        hunting_selectivity_finland,
+        population_current_real,
+        hunting_effort_sd_finland,
+        epsilon_h_fi[year],
+        t_birth_to_end_hunt
+      );
 
       for (demo in 1:n_demo_groups) {
         if (population_current[demo] > 0) {
-          vector[4] fate_probability;
-          array[4] int fate;
-
-          fate_probability[1] =
-            exp(
-              -(
-                hunting_pressure_sweden[demo]
-                + hunting_pressure_finland[demo]
-              )
-              * square(t_birth_to_end_hunt)
-              / 2.0
-            )
-            * S_diag[demo];
-
-          fate_probability[3] =
-            expected_hunted_sweden[demo]
-            / population_current_real[demo];
-
-          fate_probability[4] =
-            expected_hunted_finland[demo]
-            / population_current_real[demo];
-
-          fate_probability[2] =
-            1.0
-            - fate_probability[1]
-            - fate_probability[3]
-            - fate_probability[4];
-
-          if (min(fate_probability) < -1e-10) {
-            reject(
-              "Invalid discrete fate probabilities: year=", year,
-              ", demo=", demo,
-              ", probabilities=", fate_probability,
-              ", population=", population_current[demo]
-            );
-          }
-
-          for (fate_id in 1:4) {
-            if (fate_probability[fate_id] < 0) {
-              fate_probability[fate_id] = 0.0;
-            }
-          }
-
-          if (!(sum(fate_probability) > 0)) {
-            reject(
-              "Discrete fate probabilities sum to zero: year=", year,
-              ", demo=", demo
-            );
-          }
-
-          fate_probability =
-            fate_probability / sum(fate_probability);
-
-          fate = multinomial_rng(
+          // One joint solve returns mutually consistent probabilities for
+          // survival, non-hunting death, Swedish hunting, and Finnish hunting.
+          vector[4] fate_probability = compute_joint_fate_probabilities(
+            t_birth_to_end_hunt,
+            hunting_pressure_sweden[demo],
+            hunting_pressure_finland[demo],
+            mu_m[demo],
+            rel_tol,
+            abs_tol,
+            max_num_steps,
+            fate_probability_tolerance
+          );
+          array[4] int fate = multinomial_rng(
             fate_probability,
             population_current[demo]
           );
@@ -501,13 +363,20 @@ tuple(
           deaths_current[demo] = fate[2];
           hunted_sweden_current[demo] = fate[3];
           hunted_finland_current[demo] = fate[4];
+
+          // Preserve expected fate counts for composition observation models;
+          // realized integer fates are retained separately above.
+          expected_deaths_or_bycatch[demo] =
+            population_current_real[demo] * fate_probability[2];
+          expected_hunted_sweden[demo] =
+            population_current_real[demo] * fate_probability[3];
+          expected_hunted_finland[demo] =
+            population_current_real[demo] * fate_probability[4];
         }
       }
     } else {
       hunting_pressure_sweden = rep_vector(0.0, n_demo_groups);
       hunting_pressure_finland = rep_vector(0.0, n_demo_groups);
-      expected_hunted_sweden = rep_vector(0.0, n_demo_groups);
-      expected_hunted_finland = rep_vector(0.0, n_demo_groups);
     }
 
     for (demo in 1:n_demo_groups) {
@@ -515,37 +384,25 @@ tuple(
       deaths_or_bycatch[demo, year] = deaths_current[demo];
       hunted_sweden[demo, year] = hunted_sweden_current[demo];
       hunted_finland[demo, year] = hunted_finland_current[demo];
-      bycatch_expected[demo, year] = deaths_current[demo];
+      bycatch_expected[demo, year] = expected_deaths_or_bycatch[demo];
       survivors_previous[demo] = survivors_current[demo];
     }
 
-    hunting_bag_total_sweden[year] =
-      sum(hunted_sweden[, year]);
-
-    hunting_bag_total_finland[year] =
-      sum(hunted_finland[, year]);
-
+    hunting_bag_total_sweden[year] = sum(hunted_sweden[, year]);
+    hunting_bag_total_finland[year] = sum(hunted_finland[, year]);
     hunted_total[year] =
       hunting_bag_total_sweden[year]
       + hunting_bag_total_finland[year];
 
     reproductive_probs[2, year] =
-      birth_rate[year]
-      * pi_s[year]
-      * (1.0 - pi_c[year]);
+      birth_rate[year] * pi_s[year] * (1.0 - pi_c[year]);
 
     reproductive_probs[3, year] =
-      birth_rate[year]
-      * (1.0 - pi_s[year])
-      * pi_c[year]
-      + (1.0 - birth_rate[year])
-        * prob_of_ca
-        * pi_c[year];
+      birth_rate[year] * (1.0 - pi_s[year]) * pi_c[year]
+      + (1.0 - birth_rate[year]) * prob_of_ca * pi_c[year];
 
     reproductive_probs[4, year] =
-      birth_rate[year]
-      * pi_s[year]
-      * pi_c[year];
+      birth_rate[year] * pi_s[year] * pi_c[year];
 
     reproductive_probs[1, year] =
       1.0 - sum(reproductive_probs[2:4, year]);
