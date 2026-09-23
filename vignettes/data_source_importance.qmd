@@ -118,7 +118,7 @@ Next we compare the full and reduced models on their forecasts:
 We first specify data to use for forecasting.
 ```{r}
 future_scenario_data <- build_scenario_data(
-    c(1000, 1000), c(1000, 1000)
+    rep(1000,times = 30), rep(1000, times = 30)
 )
 ```
 
@@ -126,14 +126,16 @@ We then run the forecast for each of the models.
 ```{r}
 forecast_full <- forecast_ipm(
     fit_full,
-    scenario_data = future_data,
-    species = "grey"
+    scenario_data = future_scenario_data,
+    species = "grey",
+    future_years = 2011:2040
 )
 
 no_pregnancy_forecast <- forecast_ipm(
     fit_no_pregnancy,
-    scenario_data = future_data,
-    species = "grey"
+    scenario_data = future_scenario_data,
+    species = "grey",
+    future_years = 2011:2040
 )
 ```
 
@@ -161,4 +163,9 @@ plot_full / plot_reduced +
         axis.line.y = element_blank(),
         axis.ticks.y = element_blank()) &
     xlab("Future total population")
+    
+    
+    
+p <- sealIPM:::forecast_plot(forecast_full, variables = c("birth_rate_future", "population_total_future"), future_years = 1:30) +
+sealIPM:::forecast_plot(no_pregnancy_forecast, c("birth_rate_future", "population_total_future"), future_years = 1:30)
 ```

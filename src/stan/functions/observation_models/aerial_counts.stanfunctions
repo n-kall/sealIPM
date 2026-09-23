@@ -1,0 +1,116 @@
+/**
+ * @brief aerial_count_lpmf
+ *
+ * Description.
+ *
+ * @param obs_aerial_count Observed count
+ * @param aerial_year Year for each observation
+ * @param population_total Total population
+ * @param mu Unscaled count observation rate
+ * @param overdispersion Overdispersion in counts
+ * @return log probability
+ */
+real aerial_count_lpmf(
+  array[] int obs_aerial_count, //
+  array[] int aerial_year, // year
+  vector population_total, // N_tot
+  real mu, // mean prob
+  real phi // overdispersion
+) {
+  int n_obs = size(obs_aerial_count);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = aerial_year[i];
+
+    lp += neg_binomial_2_lpmf(
+      obs_aerial_count[i] |
+      mu * population_total[t],
+      phi
+    );
+  }
+
+  return lp;
+}
+
+
+/**
+ * @brief aerial_count_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param obs_aerial_count Description.
+ * @param aerial_year Description.
+ * @param population_total Description.
+ * @param mu Description.
+ * @param overdispersion Description.
+ * @return Description of return value.
+ */
+vector aerial_count_pointwise_log_lik(
+  array[] int obs_aerial_count, // observed count
+  array[] int aerial_year, // year
+  vector population_total, // N_tot
+  real mu, // mean prob
+  real phi // overdispersion
+) {
+  int n_obs = size(obs_aerial_count);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = aerial_year[i];
+
+    log_lik[i] = neg_binomial_2_lpmf(
+      obs_aerial_count[i] |
+      mu * population_total[t],
+      phi
+    );
+  }
+
+  return log_lik;
+}
+
+/**
+ * @brief Simulate aerial survey counts.
+ *
+ * Generates aerial survey counts using the same negative-binomial
+ * observation model as `aerial_count_lpmf()`. For observation `i`,
+ * the expected count is:
+ *
+ * `mu * population_total[aerial_year[i]]`.
+ *
+ * If the expected count is zero, the simulated count is set to exactly zero.
+ *
+ * @param aerial_year State-process year index for each simulated observation.
+ * @param population_total Total population size in each state-process year.
+ * @param mu Aerial observation rate.
+ * @param phi Negative-binomial precision parameter.
+ * @return One simulated aerial survey count for each element of
+ *   `aerial_year`.
+ */
+array[] int aerial_count_rng(
+  array[] int aerial_year,
+  vector population_total,
+  real mu,
+  real phi
+) {
+  int n_obs = size(aerial_year);
+  array[n_obs] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = aerial_year[i];
+    real expected_count =
+      mu * population_total[t];
+
+    if (expected_count == 0) {
+      y_sim[i] = 0;
+    } else {
+      y_sim[i] =
+        neg_binomial_2_rng(
+          expected_count,
+          phi
+        );
+    }
+  }
+
+  return y_sim;
+}

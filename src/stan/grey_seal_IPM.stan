@@ -1,8 +1,13 @@
 functions {
-  #include stanfunctions/ode.stanfunctions
-  #include stanfunctions/logitnormal.stanfunctions
-  #include stanfunctions/likelihoods.stanfunctions
-  #include stanfunctions/statespace.stanfunctions
+  #include functions/ode.stanfunctions
+  #include functions/logitnormal.stanfunctions
+  #include functions/observation_models/aerial_counts.stanfunctions
+  #include functions/observation_models/hunting_bags.stanfunctions
+  #include functions/observation_models/hunting_composition.stanfunctions
+  #include functions/observation_models/bycatch_composition.stanfunctions
+  #include functions/observation_models/pregnancy.stanfunctions
+  #include functions/observation_models/reproductive_signs.stanfunctions
+  #include functions/statespace.stanfunctions
 }
 
 data {

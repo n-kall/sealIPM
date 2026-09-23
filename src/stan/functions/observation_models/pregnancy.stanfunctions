@@ -1,0 +1,94 @@
+/**
+ * @brief pregnancy_lpmf
+ *
+ * Description.
+ *
+ * @param pregnancy_count Description.
+ * @param pregnancy_count_year Description.
+ * @param pregnancy_sample_size Description.
+ * @param pregnancy_rate Description.
+ * @return Description of return value.
+ */
+real pregnancy_lpmf(
+  array[] int pregnancy_count,
+  array[] int pregnancy_count_year,
+  array[] int pregnancy_sample_size,
+  vector pregnancy_rate
+) {
+  int n_obs = size(pregnancy_count);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = pregnancy_count_year[i];
+    lp += binomial_lpmf(
+      pregnancy_count[i] |
+      pregnancy_sample_size[i],
+      pregnancy_rate[t]
+    );
+  }
+
+  return lp;
+}
+
+/**
+ * @brief pregnancy_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param pregnancy_count Description.
+ * @param pregnancy_count_year Description.
+ * @param pregnancy_sample_size Description.
+ * @param pregnancy_rate Description.
+ * @return Description of return value.
+ */
+vector pregnancy_pointwise_log_lik(
+  array[] int pregnancy_count,
+  array[] int pregnancy_count_year,
+  array[] int pregnancy_sample_size,
+  vector pregnancy_rate
+) {
+  int n_obs = size(pregnancy_count);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = pregnancy_count_year[i];
+    log_lik[i] = binomial_lpmf(
+      pregnancy_count[i] |
+      pregnancy_sample_size[i],
+      pregnancy_rate[t]
+    );
+  }
+
+  return log_lik;
+}
+
+
+
+/**
+ * @brief pregnancy_rng
+ *
+ * Description.
+ *
+ * @param pregnancy_count_year Description.
+ * @param pregnancy_sample_size Description.
+ * @param pregnancy_rate Description.
+ * @return Description of return value.
+ */
+array[] int pregnancy_rng(
+  array[] int pregnancy_count_year,
+  array[] int pregnancy_sample_size,
+  vector pregnancy_rate
+) {
+  int n_obs = size(pregnancy_count_year);
+  array[n_obs] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = pregnancy_count_year[i];
+    y_sim[i] = binomial_rng(
+      pregnancy_sample_size[i],
+      pregnancy_rate[t]
+    );
+  }
+
+  return y_sim;
+}

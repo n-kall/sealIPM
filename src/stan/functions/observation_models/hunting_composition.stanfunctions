@@ -1,0 +1,97 @@
+/**
+ * @brief hunting_comp_lpmf
+ *
+ * Description.
+ *
+ * @param hunting_composition Description.
+ * @param hunting_year Description.
+ * @param hunted Description.
+ * @param hunted_total Description.
+ * @return Description of return value.
+ */
+real hunting_comp_lpmf(
+  array[,] int hunting_composition,
+  array[] int hunting_year,
+  matrix hunted,
+  vector hunted_total
+) {
+  int n_obs = size(hunting_composition);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+      lp += multinomial_lpmf(
+        hunting_composition[i] |
+        hunted[, t] / hunted_total[t]
+      );
+  }
+
+  return lp;
+}
+
+/**
+ * @brief hunting_comp_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param hunting_composition Description.
+ * @param hunting_year Description.
+ * @param hunted Description.
+ * @param hunted_total Description.
+ * @return Description of return value.
+ */
+vector hunting_comp_pointwise_log_lik(
+  array[,] int hunting_composition,
+  array[] int hunting_year,
+  matrix hunted,
+  vector hunted_total
+) {
+  int n_obs = size(hunting_composition);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+      log_lik[i] = multinomial_lpmf(
+        hunting_composition[i] |
+        hunted[, t] / hunted_total[t]
+      );
+  }
+
+  return log_lik;
+}
+
+/**
+ * @brief hunting_comp_rng
+ *
+ * Description.
+ *
+ * @param hunting_year Description.
+ * @param hunted Description.
+ * @param hunted_total Description.
+ * @param hunting_sample_size Description.
+ * @return Description of return value.
+ */
+array[,] int hunting_comp_rng(
+  array[] int hunting_year,
+  matrix hunted,
+  vector hunted_total,
+  array[] int hunting_sample_size
+) {
+  int n_obs = size(hunting_year);
+  int K = rows(hunted);
+  array[n_obs, K] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    if (hunting_sample_size[i] == 0 || hunted_total[t] <= 0) {
+      y_sim[i] = rep_array(0, K);
+    } else {
+      y_sim[i] = multinomial_rng(
+        hunted[, t] / hunted_total[t],
+        hunting_sample_size[i]
+      );
+    }
+  }
+
+  return y_sim;
+}

@@ -1,3 +1,6 @@
+/**
+ * @brief Logistic-normal allocation over active fate categories.
+ */
 vector multinomial_allocation_active(
   vector expected_counts,
   vector z,
@@ -5,7 +8,6 @@ vector multinomial_allocation_active(
 ) {
   int K = num_elements(expected_counts);
   real min_expected = min(expected_counts);
-
   vector[K] concentration_adjusted;
   vector[K - 1] mean_logratio;
   matrix[K - 1, K - 1] Sigma;
@@ -13,39 +15,31 @@ vector multinomial_allocation_active(
 
   if (K < 2) {
     reject(
-      "multinomial_allocation_active requires at least ",
-      "two active categories; K=", K
+      "multinomial_allocation_active requires at least two active ",
+      "categories; K=", K
     );
   }
 
   if (num_elements(z) != K - 1) {
     reject(
-      "multinomial_allocation_active: expected ",
-      K - 1,
-      " innovations, received ",
-      num_elements(z)
+      "multinomial_allocation_active expected ", K - 1,
+      " innovations, received ", num_elements(z)
     );
   }
 
   if (!(N > 0)) {
     reject(
-      "multinomial_allocation_active requires N > 0; N=",
-      N
+      "multinomial_allocation_active requires N > 0; N=", N
     );
   }
 
   if (!(min_expected > 0)) {
     reject(
       "multinomial_allocation_active requires strictly positive ",
-      "expected counts; expected_counts=",
-      expected_counts
+      "expected counts; expected_counts=", expected_counts
     );
   }
 
-  // Increase the Dirichlet concentration so that the smallest
-  // adjusted concentration exceeds 1. This stabilizes the
-  // logistic-normal approximation but reduces process variance
-  // when an expected category count is small.
   concentration_adjusted =
     expected_counts
     * (1.0 + 1.0 / min_expected);
@@ -68,7 +62,6 @@ vector multinomial_allocation_active(
       );
 
   logits[1] = 0.0;
-
   logits[2:K] =
     mean_logratio
     + cholesky_decompose(Sigma) * z;

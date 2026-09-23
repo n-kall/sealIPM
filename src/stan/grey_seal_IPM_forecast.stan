@@ -1,10 +1,14 @@
 functions {
-
-  #include stanfunctions/ode.stanfunctions
-  #include stanfunctions/logitnormal.stanfunctions
-  #include stanfunctions/likelihoods.stanfunctions
-  #include stanfunctions/statespace.stanfunctions
-
+  #include functions/ode.stanfunctions
+  #include functions/logitnormal.stanfunctions
+  #include functions/observation_models/aerial_counts.stanfunctions
+  #include functions/observation_models/hunting_bags.stanfunctions
+  #include functions/observation_models/hunting_composition.stanfunctions
+  #include functions/observation_models/bycatch_composition.stanfunctions
+  #include functions/observation_models/pregnancy.stanfunctions
+  #include functions/observation_models/reproductive_signs.stanfunctions
+  #include functions/statespace.stanfunctions
+  #include functions/statespace_discrete.stanfunctions
 }
 
 data {
@@ -108,9 +112,6 @@ transformed data {
 
   int n_demo_groups = n_age_classes * 2;
 
-  // aging matrix
-  matrix[n_demo_groups, n_demo_groups] aging_matrix = create_aging_matrix(n_demo_groups, n_age_classes);
-
   vector[1] ode_init_state;
   array[1] real ode_times;
   ode_init_state[1] = 0.0;
@@ -176,11 +177,8 @@ generated quantities {
 
   vector<lower=0>[n_future_years] epsilon_h_sw_future;
   vector<lower=0>[n_future_years] epsilon_h_fi_future;
-  vector[n_future_years] epsilon_birth_future;
-  vector[n_future_years] epsilon_sex_future;
   vector<lower=0>[n_future_years] epsilon_placental_future;
   vector<lower=0>[n_future_years] epsilon_ca_future;
-  matrix[3 * n_demo_groups, n_future_years] transition_noise_raw_future;
 
   vector<lower=0, upper=1>[n_future_years] birth_rate_future;
   vector<lower=0, upper=1>[n_future_years] pregnancy_rate_future;
@@ -209,15 +207,9 @@ generated quantities {
     epsilon_h_sw_future[i] = abs(normal_rng(0, 1));
     epsilon_h_fi_future[i] = abs(normal_rng(0, 1));
 
-    epsilon_birth_future[i] = normal_rng(0, 1);
-    epsilon_sex_future[i] = normal_rng(0, 1);
-
     epsilon_placental_future[i] = abs(normal_rng(0, 1));
     epsilon_ca_future[i] = abs(normal_rng(0, 1));
 
-    for (k in 1:(3 * n_demo_groups)) {
-      transition_noise_raw_future[k, i] = normal_rng(0, 1);
-    }
   }
 
   vector<lower=0, upper=1>[n_future_years] pi_s_future =
@@ -234,20 +226,6 @@ generated quantities {
     population_total_final
   );
 
-vector[n_demo_groups] population_comp_future_first =
-  update_population_from_survivors(
-    survivors_final,
-    aging_matrix,
-    birth_rate_future_first,
-    epsilon_birth_future[1],
-    epsilon_sex_future[1],
-    n_age_classes
-  );
-
-real population_total_future_first =
-  sum(population_comp_future_first);
-
-
   (birth_rate_future,
   pregnancy_rate_future,
   population_total_future,
@@ -261,16 +239,14 @@ real population_total_future_first =
   hunting_bag_total_finland_future,
   hunted_total_future,
   reproductive_probs_future) =
-  run_state_process_from_first_population(
+  run_state_process_from_survivors_rng(
     n_future_years,
     n_age_classes,
-    population_comp_future_first,
+    survivors_final,
     birth_rate_future_first,
-    population_total_future_first,
     baseline_birth_rate_future,
     density_dependence_intercept,
     density_dependence_slope,
-    aging_matrix,
     S_diag,
     mu_m,
     hunting_selectivity_sweden,
@@ -283,9 +259,6 @@ real population_total_future_first =
     epsilon_h_fi_future,
     t_mate_to_preg,
     t_birth_to_end_hunt,
-    epsilon_birth_future,
-    epsilon_sex_future,
-    transition_noise_raw_future,
     pi_s_future,
     pi_c_future,
     prob_of_ca,
