@@ -41,6 +41,7 @@ data {
   real<lower=1e-15> rel_tol;
   real<lower=1e-15> abs_tol;
   int<lower=1> max_num_steps;
+
   // Maximum accepted numerical deviation from the probability simplex
   // returned by the joint fate ODE. Larger deviations cause rejection.
   real<lower=1e-15> fate_probability_tolerance;

@@ -119,7 +119,7 @@ grey_init_fun <- function(n_state_years, n_demo) {
         population_init_size = stats::rlnorm(1, 9.8, 0.1),
 
         # Natural mortality
-        phi_a_sc = stats::runif(1, 0.9, 0.99),
+        phi_a = stats::runif(1, 0.9, 0.99),
         phi_sc = stats::runif(1, 0.8, 0.99),
         survival_shape = stats::runif(1, 0, 1),
 
@@ -140,7 +140,8 @@ grey_init_fun <- function(n_state_years, n_demo) {
 
         # Birth-rate model
         max_baseline_birth_rate = stats::runif(1, 0.85, 0.95),
-        min_baseline_birth_rate = stats::runif(1, 0.7, 0.95),
+        min_baseline_birth_rate_prop = stats::runif(1, 0.7, 0.95),
+        birth_rate_at_carrying_capacity_prop = stats::runif(1, 0.2, 0.8),
 
         herring_intercept_scaled = stats::rnorm(1, 0, 0.5),
         herring_slope = stats::rnorm(1, 1, 0.5),

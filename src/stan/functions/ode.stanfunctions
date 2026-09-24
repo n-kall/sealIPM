@@ -90,6 +90,44 @@ vector non_hunting_death_probability_ode(
 }
 
 /**
+ * @brief Positive integrand for non-hunting death during hunting.
+ *
+ * Unlike an ODE solve, direct one-dimensional quadrature integrates the
+ * non-negative hazard contribution itself. This avoids the negative solver
+ * overshoot that can occur when hunting pressure is large and almost all of
+ * the integral is concentrated immediately after the start of hunting.
+ *
+ * The original time coordinate is rescaled before this function is called.
+ * If `a = E_total * k + mu_m`, `x = a * tau`, and
+ * `x = x_upper * unit_interval`, this function evaluates the remaining
+ * dimensionless integrand on `[0, 1]`. Keeping the numerical integral away
+ * from zero prevents `integrate_1d` from imposing an unattainable absolute
+ * error through its relative-error criterion.
+ *
+ * `theta` contains, in order, total hunting pressure, `a`, and
+ * `x_upper`. The complementary coordinate and data arrays are unused but are
+ * required by `integrate_1d`.
+ */
+real non_hunting_death_probability_integrand(
+  real unit_interval,
+  real unit_interval_complement,
+  array[] real theta,
+  data array[] real x_r,
+  data array[] int x_i
+) {
+  real hunting_pressure_total = theta[1];
+  real initial_total_hazard = theta[2];
+  real x_upper = theta[3];
+  real x = x_upper * unit_interval;
+  real tau = x / initial_total_hazard;
+
+  return exp(
+    -x
+    + hunting_pressure_total * square(tau) / 2.0
+  );
+}
+
+/**
  * @brief Calculate expected demographic hunting pressure.
  *
  * Converts a quota into demographic hunting-pressure coefficients. The
@@ -255,7 +293,8 @@ vector normalize_joint_fate_probabilities(
  * Implements the paper's competing-risk model using:
  *
  * 1. analytic annual survival;
- * 2. numerical integration of non-hunting death while hunting is active;
+ * 2. positive one-dimensional quadrature of non-hunting death while hunting
+ *    is active;
  * 3. analytic non-hunting death after hunting;
  * 4. total hunting as the remaining annual probability mass; and
  * 5. an exact proportional split of hunting between Sweden and Finland.
@@ -278,9 +317,10 @@ vector normalize_joint_fate_probabilities(
  * @param hunting_pressure_sweden Swedish hunting-pressure coefficient.
  * @param hunting_pressure_finland Finnish hunting-pressure coefficient.
  * @param mu_m Instantaneous annual non-hunting mortality rate.
- * @param rel_tol Relative scalar-ODE tolerance.
- * @param abs_tol Absolute scalar-ODE tolerance.
- * @param max_num_steps Maximum scalar-ODE integration steps.
+ * @param rel_tol Relative one-dimensional quadrature tolerance.
+ * @param abs_tol Retained for API compatibility with the former ODE solver.
+ * @param max_num_steps Retained for API compatibility with the former ODE
+ *   solver.
  * @param probability_tolerance Maximum accepted simplex deviation.
  * @return Four annual competing-risk probabilities.
  */
@@ -383,53 +423,49 @@ vector compute_joint_fate_probabilities(
     death_during_hunting =
       0.0;
   } else {
-    vector[1] initial_death_probability =
-      rep_vector(0.0, 1);
-
-    array[1] real evaluation_time;
-    array[1] vector[1] solution;
-
-    evaluation_time[1] =
-      k;
-
     /*
-     * BDF is used for robustness when quota-to-population ratios generate
-     * rapidly changing hunting hazards. The solve is scalar.
+     * At tau=0, the total loss hazard is a = E_total * k + mu_m.
+     * Rescaling x = a * tau keeps the rapidly decaying part of the integrand
+     * on an O(1) horizontal scale. A second rescaling maps the integration
+     * interval to [0, 1].
+     *
+     * When a*k is very large, the integrand beyond x=60 contributes less than
+     * numerical precision relevant to the model. Truncating there avoids
+     * asking the quadrature routine to explore a vast interval containing
+     * effectively zero probability mass.
      */
-    solution =
-      ode_bdf_tol(
-        non_hunting_death_probability_ode,
-        initial_death_probability,
-        0.0,
-        evaluation_time,
-        rel_tol,
-        abs_tol,
-        max_num_steps,
-        k,
-        hunting_pressure_total,
-        mu_m
-      );
+    real initial_total_hazard =
+      hunting_pressure_total * k + mu_m;
+    real x_upper =
+      fmin(initial_total_hazard * k, 60.0);
+    array[3] real quadrature_parameters = {
+      hunting_pressure_total,
+      initial_total_hazard,
+      x_upper
+    };
 
     death_during_hunting =
-      solution[1][1];
+      mu_m
+      * x_upper
+      / initial_total_hazard
+      * integrate_1d(
+          non_hunting_death_probability_integrand,
+          0.0,
+          1.0,
+          quadrature_parameters,
+          { rel_tol, abs_tol },
+          { max_num_steps },
+          rel_tol
+        );
 
-    if (
-      !(
-        death_during_hunting
-        >= -probability_tolerance
-      )
-    ) {
+    if (!(death_during_hunting >= 0.0)) {
       reject(
-        "Non-hunting death ODE returned a materially negative value; ",
-        "death_during_hunting=", death_during_hunting,
-        ", tolerance=", probability_tolerance,
+        "Non-hunting death quadrature returned a negative or non-finite ",
+        "value; death_during_hunting=", death_during_hunting,
         ", hunting_pressure_total=", hunting_pressure_total,
         ", mu_m=", mu_m
       );
     }
-
-    death_during_hunting =
-      fmax(0.0, death_during_hunting);
   }
 
   /*

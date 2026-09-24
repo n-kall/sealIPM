@@ -1,21 +1,45 @@
 functions {
-  #include functions/ode.stanfunctions
-  #include functions/logitnormal.stanfunctions
-  #include functions/observation_models/aerial_counts.stanfunctions
-  #include functions/observation_models/hunting_bags.stanfunctions
-  #include functions/observation_models/hunting_composition.stanfunctions
-  #include functions/observation_models/bycatch_composition.stanfunctions
-  #include functions/observation_models/pregnancy.stanfunctions
-  #include functions/observation_models/reproductive_signs.stanfunctions
-  #include functions/statespace.stanfunctions
+ #include functions/ode.stanfunctions
+ #include functions/logitnormal.stanfunctions
+ #include functions/observation_models/aerial_counts.stanfunctions
+ #include functions/observation_models/hunting_bags.stanfunctions
+ #include functions/observation_models/hunting_composition.stanfunctions
+ #include functions/observation_models/bycatch_composition.stanfunctions
+ #include functions/observation_models/pregnancy.stanfunctions
+ #include functions/observation_models/reproductive_signs.stanfunctions
+ #include functions/statespace.stanfunctions
 }
 
 data {
+
+  // --------------------------------
+  // PROCESS AND ALGORITHM PARAMETERS
+  // --------------------------------
+
 
   int<lower=1> n_state_years; // number of modeled years for the state process
   int<lower=1> n_age_classes; // number of age classes per sex
 
   vector[2 * n_age_classes] population_init; // initial population structure
+
+  int<lower=1> population_burn_in; // number of iterations for initializing the population
+
+  // Hunting/reproductive timing
+  real<lower=0> t_mate_to_preg; // time from mating to pregnancy
+  real<lower=0> t_birth_to_start_hunt; // time from birth to start of hunting period
+  real<lower=0> t_birth_to_end_hunt; // time from birth to end of hunting period
+  real<lower=0> t_hunt; // length of hunting gp_periodic_cov
+
+  // ODE solver settings
+  real<lower=0> rel_tol;
+  real<lower=0> abs_tol;
+  int<lower=1> max_num_steps;
+  real<lower=0> fate_probability_tolerance;
+  int<lower=0, upper=1> prior_only;
+
+  //---------------
+  // COVARIATE DATA
+  //---------------
 
   // Environmental covariates
   vector[n_state_years + 1] herring_index_baltic_proper_gulf_finland; // herring weight-at-age for Baltic Proper + Gulf of Finland for previous year
@@ -24,13 +48,6 @@ data {
   // Hunting quotas
   array[n_state_years] int<lower=0> hunting_quota_sweden; // Sweden's hunting quota
   array[n_state_years] int<lower=0> hunting_quota_finland; // Finland's hunting quota
-
-
-  // Hunting/reproductive timing
-  real<lower=0> t_mate_to_preg; // time from mating to pregnancy
-  real<lower=0> t_birth_to_start_hunt; // time from birth to start of hunting period
-  real<lower=0> t_birth_to_end_hunt; // time from birth to end of hunting period
-  real<lower=0> t_hunt; // length of hunting gp_periodic_cov
 
   // ----------------------------
   // OBSERVATIONS
@@ -63,7 +80,6 @@ data {
   int<lower=0, upper=n_state_years> n_bycatch_years;
   array[n_bycatch_years] int<lower=1, upper=n_state_years> bycatch_comp_year; // which year is it from (1 is first year)
   array[n_bycatch_years, 2 * n_age_classes] int<lower=0> obs_bycatch_comp; // reported bycatch compositions
-
 
   // Pregnancy observations
   int<lower=0, upper=n_state_years> n_pregnancy_years; // total number of surveyed years
@@ -104,7 +120,7 @@ data {
   real<lower=0> prior_hunting_selectivity_sd;
   real<lower=0> prior_bycatch_selectivity_sd;
 
-  // Hunting effort SD: cauchy(location, scale), constrained positive
+  // Hunting effort SD: t4(location, scale), constrained positive
   real<lower=0> prior_hunting_effort_sd_location;
   real<lower=0> prior_hunting_effort_sd_scale;
 
@@ -112,7 +128,7 @@ data {
   real<lower=0> prior_herring_intercept_scaled_sd;
   real<lower=0> prior_herring_slope_sd;
 
-  // Male mortality log offsets: cauchy(location, scale)
+  // Male mortality log offsets: t4(location, scale)
   real prior_male_pup_mortality_offset_location;
   real<lower=0> prior_male_pup_mortality_offset_scale;
 
@@ -125,19 +141,6 @@ data {
 
   // Harvest bag observation coefficient of variation
   real<lower=0> harvest_bag_cv;
-
-  // ----------------------------
-  // ALGORITHM SETTINGS
-  // ----------------------------
-  int<lower=1> population_burn_in; // number of iterations for initializing the population
-
-  // ODE solver settings
-  real<lower=0> rel_tol;
-  real<lower=0> abs_tol;
-  int<lower=1> max_num_steps;
-  real<lower=0> fate_probability_tolerance;
-  int<lower=0, upper=1> prior_only;
-
 }
 
 transformed data {
@@ -147,50 +150,42 @@ transformed data {
   // aging matrix
   matrix[n_demo_groups, n_demo_groups] aging_matrix = create_aging_matrix(n_demo_groups, n_age_classes);
 
-
 }
 
 parameters {
-  // observations
+  // aerial survey
   real<lower=0, upper=1> aerial_count_mu; // mu (maybe need to account for different probability of haul-out for pups and adults)
   real<lower=0> aerial_count_overdispersion; // r
 
-  // Biases
+  // selectivity
   vector[n_demo_groups] hunting_selectivity_sweden_sc; // g_sw
   vector[n_demo_groups] hunting_selectivity_finland_sc; // g_fi
   vector[n_demo_groups] bycatch_selectivity_sc; // g_bc
 
+  // hunting effort
   real<lower=0> hunting_effort_sd_sweden; // sigma_sw
   real<lower=0> hunting_effort_sd_finland; // sigma_fi
   vector<lower=0>[n_state_years] epsilon_h_sw; //
   vector<lower=0>[n_state_years] epsilon_h_fi;
 
+  // survival curve
   real<lower=0, upper=1> survival_shape; // c
 
-
-  //Natural mortality
+  // natural mortality
   real<lower=0.8, upper=1> phi_a;
   real<lower=0, upper=1> phi_sc;
   real male_pup_survival_offset; // nu_0
   real male_adult_survival_offset; // nu_5+
 
-  //Birth rate
+  // birth rate
   real<lower=0> carrying_capacity; // K_max
-
   real<lower=0, upper=1> max_baseline_birth_rate; // b0_max
   real<lower=0, upper=1> min_baseline_birth_rate_prop; // b0_min / b0_max
-
   real<lower=0, upper=1> birth_rate_at_carrying_capacity_prop; // bk / b0
-
-
   real herring_intercept_scaled; // alpha_sc
   real herring_slope;            // beta
-
   real<lower=0, upper=1> herring_weight; // w
-
-
   real<lower=0, upper=1> density_dependence_scaled; // theta0
-
 
   // state process
   real<lower=0> population_init_size; // n_0
@@ -264,14 +259,6 @@ transformed parameters {
     phi_a
   );
 
-  // TODO: address the issue that this can be a log of negative and give NaN
-  // this needs to be true: log(birth_rate_at_carrying_capacity / reference_baseline_birth_rate) < density_dependence_intercept
-  // can be the stronger version of birth_rate_at_carrying_capacity < reference_baseline_birth_rate
-  // but also need density_dependence_intercept > 0
-  // try with just a prior on density_dependence_slope without all this computation
-  // calculate bk / b_bar_0 for each iter
-  // log(bk/b_bar0) / theta0 must be < 1
-  // theta0 must be greater than log(bk/b_bar0)
   real density_dependence_slope = compute_density_dependence_slope(
     birth_rate_at_carrying_capacity,
     reference_baseline_birth_rate,
@@ -279,6 +266,7 @@ transformed parameters {
     carrying_capacity
   );
 
+  // check when density dependence slope is a bad value
   if (
     is_nan(density_dependence_slope) ||
   is_inf(density_dependence_slope)
@@ -318,6 +306,7 @@ transformed parameters {
     );
   }
 
+  // reporting probabilities
   vector<lower=0, upper=1>[n_state_years] pi_s =
   report_placental_mean * exp(-epsilon_placental * report_placental_sd);
   vector<lower=0, upper=1>[n_state_years] pi_c =
@@ -343,37 +332,29 @@ transformed parameters {
   // STATE PROCESS OUTPUTS
   // ----------------------------
 
-  vector<lower=0, upper=1>[n_state_years] birth_rate;
-  vector<lower=0, upper=1>[n_state_years] pregnancy_rate;
+  vector<lower=0, upper=1>[n_state_years] birth_rate; // yearly birth rate
+  vector<lower=0, upper=1>[n_state_years] pregnancy_rate; // yearly pregnancy rate
 
-  vector[n_state_years] population_total;
+  vector[n_state_years] population_total; // yearly total population estimate
 
-  matrix[n_demo_groups, n_state_years] population_comp;
+  matrix[n_demo_groups, n_state_years] population_comp; // yearly demographic composition
 
-  matrix[n_demo_groups, n_state_years] survivors;
-  matrix[n_demo_groups, n_state_years] deaths_or_bycatch;
-  matrix[n_demo_groups, n_state_years] hunted_sweden;
-  matrix[n_demo_groups, n_state_years] hunted_finland;
-  matrix[n_demo_groups, n_state_years] bycatch_expected;
+  matrix[n_demo_groups, n_state_years] survivors; // yearly survivors per demo group
+  matrix[n_demo_groups, n_state_years] deaths_or_bycatch; // yearly deaths or bycatch
+  matrix[n_demo_groups, n_state_years] hunted_sweden; // yearly hunted in sweden
+  matrix[n_demo_groups, n_state_years] hunted_finland; // yearly hunted in finland
+  matrix[n_demo_groups, n_state_years] bycatch_expected; // yearly bycatch expected
 
-  vector[n_state_years] hunting_bag_total_sweden;
-  vector[n_state_years] hunting_bag_total_finland;
+  vector[n_state_years] hunting_bag_total_sweden; // yearly total hunting bag sweden
+  vector[n_state_years] hunting_bag_total_finland; // yearly total hunting bag finland
 
-  vector<lower=0>[n_state_years] hunted_total;
+  vector<lower=0>[n_state_years] hunted_total; // yearly total hunted
 
-  matrix[4, n_state_years] reproductive_probs;
-
-
-  // ----------------------------
-  // STATE PROCESS TUPLES
-  // ----------------------------
-
-  tuple(vector[n_demo_groups], real, real) init_state;
+  matrix[4, n_state_years] reproductive_probs; // yearly probabilities of reproductive signs
 
 
-  real initial_birth_rate;
-
-  initial_birth_rate =
+    // starting birth rate
+  real initial_birth_rate =
   update_birth_rate(
     baseline_birth_rate[1],
     density_dependence_intercept,
@@ -381,6 +362,25 @@ transformed parameters {
     sum(population_init)
   );
 
+
+  // ----------------------------
+  // STATE PROCESS TUPLES
+  // ----------------------------
+
+  // starting demographics
+  tuple(vector[n_demo_groups], real, real) init_state =
+initialize_population_with_burnin(
+  population_init,
+  population_init_size,
+  population_burn_in,
+  initial_birth_rate,
+  aging_matrix,
+  S_diag,
+  n_age_classes
+);
+
+
+// check for invalid birth rate at carrying capacity
   if (
     is_nan(birth_rate_at_carrying_capacity) ||
   is_inf(birth_rate_at_carrying_capacity)
@@ -403,19 +403,6 @@ transformed parameters {
     );
   }
 
-
-  init_state =
-initialize_population_with_burnin(
-  population_init,
-  population_init_size,
-  population_burn_in,
-  initial_birth_rate,
-  aging_matrix,
-  S_diag,
-  n_age_classes
-);
-
-
   (birth_rate,
   pregnancy_rate,
   population_total,
@@ -428,8 +415,7 @@ initialize_population_with_burnin(
   hunting_bag_total_sweden,
   hunting_bag_total_finland,
   hunted_total,
-  reproductive_probs) =
-  run_state_process_from_first_population(
+  reproductive_probs) = run_state_process_from_first_population(
     n_state_years,
     n_age_classes,
     init_state.1,
@@ -475,7 +461,7 @@ initialize_population_with_burnin(
 
   // Natural mortality
   // phi_a ~ uniform(0,1); // implied prior by constraints
-  real lprior_phi_sc = beta_lpdf(phi_sc | 2, 1); // try to keep pup survival away from zero
+  real lprior_phi_sc = beta_lpdf(phi_sc | 1, 1);
   lprior += lprior_phi_sc;
 
   real lprior_male_pup_survival_offset = normal_lpdf(male_pup_survival_offset | prior_male_pup_mortality_offset_location, prior_male_pup_mortality_offset_scale);
@@ -638,6 +624,101 @@ generated quantities {
   // ----------------------------
   // IN-SAMPLE PREDICTIONS
   // ----------------------------
+  // Generate one prediction for every observed aerial-survey year.
+  array[n_aerial_years] int aerial_count_pred =
+    aerial_count_rng(
+      aerial_year,
+      population_total,
+      aerial_count_mu,
+      aerial_count_overdispersion
+    );
+
+  // Generate one prediction for every observed national hunting bag.
+  array[n_hunting_bag_years_sweden] real harvest_bags_sweden_pred =
+    harvest_bags_rng(
+      hunting_bag_year_sweden,
+      hunting_bag_total_sweden,
+      harvest_bag_cv
+    );
+
+  array[n_hunting_bag_years_finland] real harvest_bags_finland_pred =
+    harvest_bags_rng(
+      hunting_bag_year_finland,
+      hunting_bag_total_finland,
+      harvest_bag_cv
+    );
+
+  // Composition predictions use the same sample size as the corresponding
+  // observed year.
+  array[n_hunting_comp_years_sweden] int
+    hunting_sample_size_sweden_pred;
+  array[n_hunting_comp_years_finland] int
+    hunting_sample_size_finland_pred;
+  array[n_bycatch_years] int
+    bycatch_sample_size_pred;
+  array[n_reproductive_years] int
+    reproductive_signs_sample_size_pred;
+
+  for (i in 1:n_hunting_comp_years_sweden) {
+    hunting_sample_size_sweden_pred[i] =
+      sum(obs_hunting_comp_sweden[i]);
+  }
+
+  for (i in 1:n_hunting_comp_years_finland) {
+    hunting_sample_size_finland_pred[i] =
+      sum(obs_hunting_comp_finland[i]);
+  }
+
+  for (i in 1:n_bycatch_years) {
+    bycatch_sample_size_pred[i] =
+      sum(obs_bycatch_comp[i]);
+  }
+
+  for (i in 1:n_reproductive_years) {
+    reproductive_signs_sample_size_pred[i] =
+      sum(obs_reproductive_signs_finland[i]);
+  }
+
+  array[n_hunting_comp_years_sweden, n_demo_groups] int
+    hunting_comp_sweden_pred =
+      hunting_comp_rng(
+        hunting_comp_year_sweden,
+        hunted_sweden,
+        hunting_bag_total_sweden,
+        hunting_sample_size_sweden_pred
+      );
+
+  array[n_hunting_comp_years_finland, n_demo_groups] int
+    hunting_comp_finland_pred =
+      hunting_comp_rng(
+        hunting_comp_year_finland,
+        hunted_finland,
+        hunting_bag_total_finland,
+        hunting_sample_size_finland_pred
+      );
+
+  array[n_bycatch_years, n_demo_groups] int bycatch_comp_pred =
+    bycatch_comp_rng(
+      bycatch_comp_year,
+      bycatch_expected,
+      bycatch_bias,
+      bycatch_sample_size_pred
+    );
+
+  array[n_pregnancy_years] int pregnancy_count_pred =
+    pregnancy_rng(
+      pregnancy_count_year,
+      pregnancy_sample_size,
+      pregnancy_rate
+    );
+
+  array[n_reproductive_years, 4] int
+    reproductive_signs_finland_pred =
+      reproductive_signs_rng(
+        reproductive_signs_year,
+        reproductive_probs,
+        reproductive_signs_sample_size_pred
+      );
 
 
   // ----------------------------
