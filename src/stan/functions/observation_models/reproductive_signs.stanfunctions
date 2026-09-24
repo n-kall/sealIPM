@@ -1,0 +1,91 @@
+/**
+ * @brief reproductive_signs_lpmf
+ *
+ * Description.
+ *
+ * @param obs_reproductive_signs Description.
+ * @param reproductive_signs_year Description.
+ * @param reproductive_probs Description.
+ * @return Description of return value.
+ */
+real reproductive_signs_lpmf(
+  array[,] int obs_reproductive_signs,
+  array[] int reproductive_signs_year,
+  matrix reproductive_probs
+) {
+  int n_obs = size(obs_reproductive_signs);
+  real lp = 0;
+  for (i in 1:n_obs) {
+    int t = reproductive_signs_year[i];
+    lp += multinomial_lpmf(
+      obs_reproductive_signs[i] | reproductive_probs[, t]
+    );
+  }
+  return lp;
+}
+
+
+
+
+/**
+ * @brief reproductive_signs_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param obs_reproductive_signs Description.
+ * @param reproductive_signs_year Description.
+ * @param reproductive_probs Description.
+ * @return Description of return value.
+ */
+vector reproductive_signs_pointwise_log_lik(
+  array[,] int obs_reproductive_signs,
+  array[] int reproductive_signs_year,
+  matrix reproductive_probs
+) {
+  int n_obs = size(obs_reproductive_signs);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = reproductive_signs_year[i];
+    log_lik[i] = multinomial_lpmf(
+      obs_reproductive_signs[i] |
+      reproductive_probs[, t]
+    );
+  }
+
+  return log_lik;
+}
+
+/**
+ * @brief reproductive_signs_rng
+ *
+ * Description.
+ *
+ * @param reproductive_signs_year Description.
+ * @param reproductive_probs Description.
+ * @param reproductive_signs_sample_size Description.
+ * @return Description of return value.
+ */
+array[,] int reproductive_signs_rng(
+  array[] int reproductive_signs_year,
+  matrix reproductive_probs,
+  array[] int reproductive_signs_sample_size
+) {
+  int n_obs = size(reproductive_signs_year);
+  int K = rows(reproductive_probs);
+  array[n_obs, K] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = reproductive_signs_year[i];
+    if (reproductive_signs_sample_size[i] == 0) {
+      y_sim[i] = rep_array(0, K);
+    } else {
+      y_sim[i] = multinomial_rng(
+        reproductive_probs[, t],
+        reproductive_signs_sample_size[i]
+      );
+    }
+  }
+
+  return y_sim;
+}

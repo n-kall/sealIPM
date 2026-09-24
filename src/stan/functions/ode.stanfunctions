@@ -1,0 +1,538 @@
+/**
+ * @brief Differential equation for expected hunting in one country.
+ *
+ * This function reproduces the country-specific hunting equation used in the
+ * original implementation. It is retained for backward compatibility and for
+ * direct comparisons with the original model. New state-process code should
+ * use `compute_joint_fate_probabilities()` below.
+ *
+ * @param tau Time since the beginning of the modeled hunting interval.
+ * @param H Current cumulative expected hunting count. The derivative does not
+ *   depend on this value because the expected alive population is available
+ *   analytically.
+ * @param n0 Population size at the beginning of the modeled interval.
+ * @param k Hunting-time parameter and integration endpoint.
+ * @param E_1 Hunting-pressure coefficient for the focal country.
+ * @param E_2 Hunting-pressure coefficient for the competing country.
+ * @param mu Instantaneous non-hunting mortality rate.
+ * @return Derivative of cumulative expected hunting for the focal country.
+ */
+vector dH_dt(
+  real tau,
+  vector H,
+  real n0,
+  real k,
+  real E_1,
+  real E_2,
+  real mu
+) {
+  real alive =
+    n0
+    * exp(
+        -(E_1 + E_2)
+        * (k * tau - square(tau) / 2.0)
+        - mu * tau
+      );
+
+  real dH =
+    alive
+    * E_1
+    * (k - tau);
+
+  return rep_vector(dH, 1);
+}
+
+/**
+ * @brief Differential equation for non-hunting death during hunting.
+ *
+ * Implements the non-hunting death equation from the competing-risks model:
+ *
+ *   dD / dtau = mu_m * alive(tau)
+ *
+ * where the alive probability follows the analytic solution
+ *
+ *   alive(tau) = exp(
+ *     -E_total * (k * tau - tau^2 / 2)
+ *     -mu_m * tau
+ *   ).
+ *
+ * This scalar ODE is preferable to numerically integrating total hunting,
+ * because total hunting approaches one under extreme hunting pressure whereas
+ * non-hunting death approaches zero. Total hunting is subsequently obtained
+ * as the remaining probability mass, which enforces probability conservation.
+ *
+ * @param tau Time since the beginning of the modeled hunting interval.
+ * @param cumulative_death Current cumulative non-hunting death probability.
+ *   The derivative does not depend on the current cumulative value.
+ * @param k Hunting-time parameter and integration endpoint.
+ * @param hunting_pressure_total Sum of Swedish and Finnish hunting pressures.
+ * @param mu_m Instantaneous non-hunting mortality rate.
+ * @return Derivative of cumulative non-hunting death probability.
+ */
+vector non_hunting_death_probability_ode(
+  real tau,
+  vector cumulative_death,
+  real k,
+  real hunting_pressure_total,
+  real mu_m
+) {
+  real alive_probability =
+    exp(
+      -hunting_pressure_total
+      * (k * tau - square(tau) / 2.0)
+      - mu_m * tau
+    );
+
+  return rep_vector(
+    mu_m * alive_probability,
+    1
+  );
+}
+
+/**
+ * @brief Positive integrand for non-hunting death during hunting.
+ *
+ * Unlike an ODE solve, direct one-dimensional quadrature integrates the
+ * non-negative hazard contribution itself. This avoids the negative solver
+ * overshoot that can occur when hunting pressure is large and almost all of
+ * the integral is concentrated immediately after the start of hunting.
+ *
+ * The original time coordinate is rescaled before this function is called.
+ * If `a = E_total * k + mu_m`, `x = a * tau`, and
+ * `x = x_upper * unit_interval`, this function evaluates the remaining
+ * dimensionless integrand on `[0, 1]`. Keeping the numerical integral away
+ * from zero prevents `integrate_1d` from imposing an unattainable absolute
+ * error through its relative-error criterion.
+ *
+ * `theta` contains, in order, total hunting pressure, `a`, and
+ * `x_upper`. The complementary coordinate and data arrays are unused but are
+ * required by `integrate_1d`.
+ */
+real non_hunting_death_probability_integrand(
+  real unit_interval,
+  real unit_interval_complement,
+  array[] real theta,
+  data array[] real x_r,
+  data array[] int x_i
+) {
+  real hunting_pressure_total = theta[1];
+  real initial_total_hazard = theta[2];
+  real x_upper = theta[3];
+  real x = x_upper * unit_interval;
+  real tau = x / initial_total_hazard;
+
+  return exp(
+    -x
+    + hunting_pressure_total * square(tau) / 2.0
+  );
+}
+
+/**
+ * @brief Calculate expected demographic hunting pressure.
+ *
+ * Converts a quota into demographic hunting-pressure coefficients. The
+ * linearly declining hunting hazard integrates to `E * tau_h^2 / 2` over the
+ * interval from zero to `tau_h`, which explains the factor of two and the
+ * squared hunting-time parameter.
+ *
+ * Returns exact zero pressure when the quota is zero. Demographic groups with
+ * zero abundance are permitted and receive exact zero pressure.
+ *
+ * @param Q Annual hunting quota.
+ * @param epsilon_h Standardized hunting-effort reduction.
+ * @param sigma_h Standard deviation of hunting-effort variation.
+ * @param tau_h Hunting-time parameter used by the model.
+ * @param g Demographic hunting selectivity on the log scale.
+ * @param N Demographic population composition.
+ * @return Hunting-pressure coefficient for each demographic group.
+ */
+vector expected_hunting_pressure(
+  int Q,
+  real epsilon_h,
+  real sigma_h,
+  real tau_h,
+  vector g,
+  vector N
+) {
+  int K = size(g);
+
+  if (Q == 0) {
+    return rep_vector(0.0, K);
+  }
+
+  if (!(Q > 0)) {
+    reject(
+      "expected_hunting_pressure requires a non-negative quota; Q=",
+      Q
+    );
+  }
+
+  if (!(tau_h > 0.0)) {
+    reject(
+      "expected_hunting_pressure requires tau_h > 0; tau_h=",
+      tau_h
+    );
+  }
+
+  if (!(min(N) >= 0.0)) {
+    reject(
+      "expected_hunting_pressure requires non-negative population counts; ",
+      "N=", N
+    );
+  }
+
+  if (!(sum(N) > 0.0)) {
+    reject(
+      "expected_hunting_pressure requires a positive population when Q > 0."
+    );
+  }
+
+  {
+    vector[K] log_num =
+      g
+      + log(Q)
+      + log(2.0)
+      - 2.0 * log(tau_h)
+      - epsilon_h * sigma_h;
+
+    real log_denom =
+      log_sum_exp(g + log(N));
+
+    vector[K] pressure =
+      exp(log_num - log_denom);
+
+    for (demo in 1:K) {
+      if (N[demo] == 0.0) {
+        pressure[demo] = 0.0;
+      }
+    }
+
+    return pressure;
+  }
+}
+
+/**
+ * @brief Validate and normalize demographic fate probabilities.
+ *
+ * Stan function arguments are immutable, so the input vector is copied before
+ * small numerical deviations are clamped. Materially negative probabilities
+ * or material failures of probability conservation are rejected.
+ *
+ * @param probability Numerically evaluated fate probabilities.
+ * @param probability_tolerance Maximum accepted simplex deviation.
+ * @return Valid probability simplex.
+ */
+vector normalize_joint_fate_probabilities(
+  vector probability,
+  data real probability_tolerance
+) {
+  vector[num_elements(probability)] normalized_probability =
+    probability;
+
+  real probability_sum =
+    sum(normalized_probability);
+
+  if (!(probability_tolerance > 0.0)) {
+    reject(
+      "normalize_joint_fate_probabilities requires a positive tolerance; ",
+      "probability_tolerance=", probability_tolerance
+    );
+  }
+
+  /*
+   * The !(x >= limit) form also rejects NaN because comparisons involving
+   * NaN evaluate to false.
+   */
+  if (!(min(normalized_probability) >= -probability_tolerance)) {
+    reject(
+      "Joint fate calculation returned a materially negative probability; ",
+      "probability=", normalized_probability,
+      ", tolerance=", probability_tolerance
+    );
+  }
+
+  if (
+    !(probability_sum >= 1.0 - probability_tolerance)
+    || !(probability_sum <= 1.0 + probability_tolerance)
+  ) {
+    reject(
+      "Joint fate calculation failed probability conservation; probability=",
+      normalized_probability,
+      ", sum=", probability_sum,
+      ", tolerance=", probability_tolerance
+    );
+  }
+
+  /*
+   * Clamp only small boundary violations that passed the tolerance check.
+   */
+  for (fate_id in 1:num_elements(normalized_probability)) {
+    normalized_probability[fate_id] =
+      fmax(0.0, normalized_probability[fate_id]);
+  }
+
+  probability_sum =
+    sum(normalized_probability);
+
+  if (!(probability_sum > 0.0)) {
+    reject(
+      "Joint fate probabilities sum to zero or are non-finite; probability=",
+      normalized_probability
+    );
+  }
+
+  /*
+   * Restore an exact simplex after any tolerated boundary correction.
+   */
+  return normalized_probability / probability_sum;
+}
+
+/**
+ * @brief Compute annual joint demographic fate probabilities.
+ *
+ * Implements the paper's competing-risk model using:
+ *
+ * 1. analytic annual survival;
+ * 2. positive one-dimensional quadrature of non-hunting death while hunting
+ *    is active;
+ * 3. analytic non-hunting death after hunting;
+ * 4. total hunting as the remaining annual probability mass; and
+ * 5. an exact proportional split of hunting between Sweden and Finland.
+ *
+ * The proportional country split is exact because both national hunting
+ * hazards have the same temporal shape, `E_country * (k - tau)`, and differ
+ * only through their pressure coefficients.
+ *
+ * This function preserves the timing convention used by the model:
+ * `t_birth_to_end_hunt` is used as both `k` and the integration endpoint.
+ *
+ * The returned ordering is:
+ *
+ * 1. survived the annual interval;
+ * 2. died from non-hunting causes;
+ * 3. hunted in Sweden;
+ * 4. hunted in Finland.
+ *
+ * @param t_birth_to_end_hunt Hunting-time parameter and integration endpoint.
+ * @param hunting_pressure_sweden Swedish hunting-pressure coefficient.
+ * @param hunting_pressure_finland Finnish hunting-pressure coefficient.
+ * @param mu_m Instantaneous annual non-hunting mortality rate.
+ * @param rel_tol Relative one-dimensional quadrature tolerance.
+ * @param abs_tol Retained for API compatibility with the former ODE solver.
+ * @param max_num_steps Retained for API compatibility with the former ODE
+ *   solver.
+ * @param probability_tolerance Maximum accepted simplex deviation.
+ * @return Four annual competing-risk probabilities.
+ */
+vector compute_joint_fate_probabilities(
+  data real t_birth_to_end_hunt,
+  real hunting_pressure_sweden,
+  real hunting_pressure_finland,
+  real mu_m,
+  data real rel_tol,
+  data real abs_tol,
+  data int max_num_steps,
+  data real probability_tolerance
+) {
+  vector[4] probability;
+
+  real k =
+    t_birth_to_end_hunt;
+
+  real hunting_pressure_total =
+    hunting_pressure_sweden
+    + hunting_pressure_finland;
+
+  real alive_at_end_hunting;
+  real death_during_hunting;
+  real death_after_hunting;
+  real total_hunting_probability;
+
+  if (!(k >= 0.0 && k <= 1.0)) {
+    reject(
+      "compute_joint_fate_probabilities requires ",
+      "t_birth_to_end_hunt in [0, 1]; received ",
+      k
+    );
+  }
+
+  if (
+    !(hunting_pressure_sweden >= 0.0)
+    || !(hunting_pressure_finland >= 0.0)
+    || !(mu_m >= 0.0)
+  ) {
+    reject(
+      "compute_joint_fate_probabilities requires non-negative hazards; ",
+      "hunting_pressure_sweden=", hunting_pressure_sweden,
+      ", hunting_pressure_finland=", hunting_pressure_finland,
+      ", mu_m=", mu_m
+    );
+  }
+
+  /*
+   * With no hunting, all annual fates are available analytically. This avoids
+   * introducing numerical integration error into an exact zero-quota case.
+   */
+  if (hunting_pressure_total == 0.0 || k == 0.0) {
+    probability[1] =
+      exp(-mu_m);
+
+    probability[2] =
+      1.0 - probability[1];
+
+    probability[3] =
+      0.0;
+
+    probability[4] =
+      0.0;
+
+    return normalize_joint_fate_probabilities(
+      probability,
+      probability_tolerance
+    );
+  }
+
+  /*
+   * Probability of remaining alive at the end of the modeled hunting
+   * interval. The integrated total hunting hazard is E_total * k^2 / 2.
+   */
+  alive_at_end_hunting =
+    exp(
+      -hunting_pressure_total
+      * square(k)
+      / 2.0
+      - mu_m * k
+    );
+
+  /*
+   * Annual survival includes non-hunting mortality during the remainder of
+   * the annual interval.
+   */
+  probability[1] =
+    alive_at_end_hunting
+    * exp(
+        -mu_m
+        * (1.0 - k)
+      );
+
+  /*
+   * Integrate non-hunting mortality accumulated while hunting is active.
+   * When mu_m is exactly zero, this contribution is exactly zero.
+   */
+  if (mu_m == 0.0) {
+    death_during_hunting =
+      0.0;
+  } else {
+    /*
+     * At tau=0, the total loss hazard is a = E_total * k + mu_m.
+     * Rescaling x = a * tau keeps the rapidly decaying part of the integrand
+     * on an O(1) horizontal scale. A second rescaling maps the integration
+     * interval to [0, 1].
+     *
+     * When a*k is very large, the integrand beyond x=60 contributes less than
+     * numerical precision relevant to the model. Truncating there avoids
+     * asking the quadrature routine to explore a vast interval containing
+     * effectively zero probability mass.
+     */
+    real initial_total_hazard =
+      hunting_pressure_total * k + mu_m;
+    real x_upper =
+      fmin(initial_total_hazard * k, 60.0);
+    array[3] real quadrature_parameters = {
+      hunting_pressure_total,
+      initial_total_hazard,
+      x_upper
+    };
+
+    death_during_hunting =
+      mu_m
+      * x_upper
+      / initial_total_hazard
+      * integrate_1d(
+          non_hunting_death_probability_integrand,
+          0.0,
+          1.0,
+          quadrature_parameters,
+          { rel_tol, abs_tol },
+          { max_num_steps },
+          rel_tol
+        );
+
+    if (!(death_during_hunting >= 0.0)) {
+      reject(
+        "Non-hunting death quadrature returned a negative or non-finite ",
+        "value; death_during_hunting=", death_during_hunting,
+        ", hunting_pressure_total=", hunting_pressure_total,
+        ", mu_m=", mu_m
+      );
+    }
+  }
+
+  /*
+   * Animals alive at the end of hunting remain exposed only to non-hunting
+   * mortality for the remainder of the annual interval.
+   */
+  death_after_hunting =
+    alive_at_end_hunting
+    * (
+        1.0
+        - exp(
+            -mu_m
+            * (1.0 - k)
+          )
+      );
+
+  probability[2] =
+    death_during_hunting
+    + death_after_hunting;
+
+  /*
+   * Hunting receives the remaining annual probability mass. This enforces the
+   * competing-risk identity by construction and prevents independently
+   * integrated hunting probabilities from summing above one.
+   */
+  total_hunting_probability =
+    1.0
+    - probability[1]
+    - probability[2];
+
+  if (
+    !(
+      total_hunting_probability
+      >= -probability_tolerance
+    )
+  ) {
+    reject(
+      "Calculated total hunting probability is materially negative; ",
+      "total_hunting_probability=", total_hunting_probability,
+      ", survival_probability=", probability[1],
+      ", death_probability=", probability[2],
+      ", tolerance=", probability_tolerance,
+      ", hunting_pressure_total=", hunting_pressure_total,
+      ", mu_m=", mu_m
+    );
+  }
+
+  total_hunting_probability =
+    fmax(0.0, total_hunting_probability);
+
+  /*
+   * Both countries have the same temporal hazard shape, so their cumulative
+   * hunting probabilities are exactly proportional to their pressure
+   * coefficients.
+   */
+  probability[3] =
+    total_hunting_probability
+    * hunting_pressure_sweden
+    / hunting_pressure_total;
+
+  probability[4] =
+    total_hunting_probability
+    * hunting_pressure_finland
+    / hunting_pressure_total;
+
+  return normalize_joint_fate_probabilities(
+    probability,
+    probability_tolerance
+  );
+}

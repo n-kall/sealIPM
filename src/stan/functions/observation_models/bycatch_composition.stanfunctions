@@ -1,0 +1,104 @@
+/**
+ * @brief bycatch_comp_lpmf
+ *
+ * Description.
+ *
+ * @param bycatch_composition Description.
+ * @param bycatch_comp_year Description.
+ * @param bycatch_expected Description.
+ * @param bias Description.
+ * @return Description of return value.
+ */
+real bycatch_comp_lpmf(
+  array[,] int bycatch_composition,
+  array[] int bycatch_comp_year,
+  matrix bycatch_expected,
+  vector bias
+) {
+  int n_obs = size(bycatch_composition);
+  vector[rows(bycatch_expected)] w = exp(bias);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = bycatch_comp_year[i];
+    lp += multinomial_lpmf(
+      bycatch_composition[i] |
+      (w .* bycatch_expected[, t]) /
+        dot_product(w, bycatch_expected[, t])
+    );
+  }
+  return lp;
+}
+
+
+/**
+ * @brief bycatch_comp_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param bycatch_composition Description.
+ * @param bycatch_comp_year Description.
+ * @param bycatch_expected Description.
+ * @param bias Description.
+ * @return Description of return value.
+ */
+vector bycatch_comp_pointwise_log_lik(
+  array[,] int bycatch_composition,
+  array[] int bycatch_comp_year,
+  matrix bycatch_expected,
+  vector bias
+) {
+  int n_obs = size(bycatch_composition);
+  vector[rows(bycatch_expected)] w = exp(bias);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = bycatch_comp_year[i];
+    log_lik[i] = multinomial_lpmf(
+      bycatch_composition[i] |
+      (w .* bycatch_expected[, t]) /
+        dot_product(w, bycatch_expected[, t])
+    );
+  }
+  return log_lik;
+}
+
+
+/**
+ * @brief bycatch_comp_rng
+ *
+ * Description.
+ *
+ * @param bycatch_comp_year Description.
+ * @param bycatch_expected Description.
+ * @param bias Description.
+ * @param bycatch_sample_size Description.
+ * @return Description of return value.
+ */
+array[,] int bycatch_comp_rng(
+  array[] int bycatch_comp_year,
+  matrix bycatch_expected,
+  vector bias,
+  array[] int bycatch_sample_size
+) {
+  int n_obs = size(bycatch_comp_year);
+  int K = rows(bycatch_expected);
+  vector[K] w = exp(bias);
+  array[n_obs, K] int y_sim;
+
+  for (i in 1:n_obs) {
+    int t = bycatch_comp_year[i];
+    real denom = dot_product(w, bycatch_expected[, t]);
+
+    if (bycatch_sample_size[i] == 0 || denom <= 0) {
+      y_sim[i] = rep_array(0, K);
+    } else {
+      y_sim[i] = multinomial_rng(
+        (w .* bycatch_expected[, t]) / denom,
+        bycatch_sample_size[i]
+      );
+    }
+  }
+
+  return y_sim;
+}

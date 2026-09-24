@@ -1,0 +1,96 @@
+/**
+ * @brief harvest_bags_lpdf
+ *
+ * Description.
+ *
+ * @param hunting_count Description.
+ * @param hunting_year Description.
+ * @param hunted_total Description.
+ * @param harvest_bag_cv Description.
+ * @return Description of return value.
+ */
+real harvest_bags_lpdf(
+  array[] real hunting_count,   // observed count
+  array[] int hunting_year,   // year
+  vector hunted_total,    // total
+  real harvest_bag_cv
+) {
+  int n_obs = size(hunting_count);
+  real lp = 0;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    lp += normal_lpdf(
+      hunting_count[i] |
+      hunted_total[t],
+      harvest_bag_cv * hunted_total[t]
+    );
+  }
+
+  return lp;
+}
+
+/**
+ * @brief harvest_bags_pointwise_log_lik
+ *
+ * Description.
+ *
+ * @param hunting_count Observed count of reported hunted seals
+ * @param hunting_year Years of data
+ * @param hunted_total Total hunted
+ * @param harvest_bag_cv variation in hunting reports
+ * @return pointwise log-likelihood
+ */
+vector harvest_bags_pointwise_log_lik(
+  array[] real hunting_count,   // observed count
+  array[] int hunting_year,   // year
+  vector hunted_total,    // total
+  real harvest_bag_cv
+) {
+  int n_obs = size(hunting_count);
+  vector[n_obs] log_lik;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    log_lik[i] = normal_lpdf(
+      hunting_count[i] |
+      hunted_total[t],
+      harvest_bag_cv * hunted_total[t]
+    );
+  }
+
+  return log_lik;
+}
+
+/**
+ * @brief harvest_bags_rng
+ *
+ * Description.
+ *
+ * @param hunting_year Description.
+ * @param hunted_total Description.
+ * @param harvest_bag_cv Description.
+ * @return Description of return value.
+ */
+array[] real harvest_bags_rng(
+  array[] int hunting_year,
+  vector hunted_total,
+  real harvest_bag_cv
+) {
+  int n_obs = size(hunting_year);
+  array[n_obs] real y_sim;
+
+  for (i in 1:n_obs) {
+    int t = hunting_year[i];
+    if (hunted_total[t] > 0) {
+      y_sim[i] = normal_rng(
+        hunted_total[t],
+        harvest_bag_cv * hunted_total[t]
+      );
+    } else {
+      y_sim[i] = 0.0;
+    }
+  }
+
+  return y_sim;
+}

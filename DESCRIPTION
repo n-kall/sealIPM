@@ -10,7 +10,6 @@ Description: Fit integrated population models for Baltic grey or ringed seals.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
 Additional_repositories:
     https://stan-dev.r-universe.dev
 Imports:
@@ -32,3 +31,4 @@ Suggests:
     patchwork
 URL: https://n-kall.github.io/sealIPM
 VignetteBuilder: knitr, quarto
+Config/roxygen2/version: 8.1.0
