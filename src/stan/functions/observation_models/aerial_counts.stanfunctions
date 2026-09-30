@@ -1,14 +1,12 @@
 /**
  * @brief aerial_count_lpmf
  *
- * Description.
- *
  * @param obs_aerial_count Observed count
  * @param aerial_year Year for each observation
  * @param population_total Total population
  * @param mu Unscaled count observation rate
  * @param overdispersion Overdispersion in counts
- * @return log probability
+ * @return log probability mass based on negative binomial model
  */
 real aerial_count_lpmf(
   array[] int obs_aerial_count, //
@@ -38,12 +36,12 @@ real aerial_count_lpmf(
  *
  * Description.
  *
- * @param obs_aerial_count Description.
- * @param aerial_year Description.
- * @param population_total Description.
- * @param mu Description.
- * @param overdispersion Description.
- * @return Description of return value.
+ * @param obs_aerial_count Vector of observed aerial count
+ * @param aerial_year vector specifying which years are the counts from
+ * @param population_total Vector of total population estimates per year
+ * @param mu Mean observation probability
+ * @param overdispersion Overdispersion 
+ * @return vector of log-likelihood values for each year
  */
 vector aerial_count_pointwise_log_lik(
   array[] int obs_aerial_count, // observed count

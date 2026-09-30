@@ -147,6 +147,14 @@ real euler_lotka_birth_rate(
 
 /**
  * @brief Compute demographic mortality rates.
+ *
+ * @param phi_pup Female pup survival rate
+ * @param phi_adult Female adult survival rate
+ * @param c Shape of lograithmic curve
+ * @param n_age_classes Number of age classes
+ * @param male_pup_offset Male pup survival offset
+ * @param male_adult_offset Male adult survival offset
+ * @return vector of mortality rates for each demographic group
  */
 vector mortality_rates(
   real phi_pup,
@@ -192,6 +200,11 @@ vector mortality_rates(
 
 /**
  * @brief Create the female and male ageing matrix.
+ *
+ *
+ * @param n_demo_groups Number of demographic groups
+ * @param n_age_groups Number of age groups
+ * @return aging matrix
  */
 matrix create_aging_matrix(
   data int n_demo_groups,
@@ -214,7 +227,17 @@ matrix create_aging_matrix(
 }
 
 /**
- * @brief Advance the continuous population and add stochastic births.
+ * @brief update_population_from_survivors
+ *
+ * Advance the continuous population and add stochastic births.
+ *
+ * @param previous_survivors vector of previous survivors in each demo group
+ * @param aging_mat aging matrix
+ * @param birth_rate birth rate
+ * @param epsilon_birth birth rate epsilon
+ * @param epsilon_sex birth sex epsilon
+ * @param n_age_classes number of age classes
+ * @return vector of new population
  */
 vector update_population_from_survivors(
   vector previous_survivors,
@@ -248,6 +271,15 @@ vector update_population_from_survivors(
 
 /**
  * @brief Initialise the population composition with a burn-in.
+ *
+ * @param population_init vector of initial population composition
+ * @param population_init_size initial population size
+ * @param population_burn_in number of burn in steps
+ * @param birth_rate_year birth rate for the first year
+ * @param aging_matrix Aging matrix
+ * @param S_diag Survival diag
+ * @param n_age_classes Number of age classes
+ * @return tuple of: population composition, birth rate, population total
  */
 tuple(vector, real, real) initialize_population_with_burnin(
   data vector population_init,
@@ -293,6 +325,16 @@ tuple(vector, real, real) initialize_population_with_burnin(
 
 /**
  * @brief Compute demographic hunting pressure for one country.
+ *
+ * Description.
+ *
+ * @param hunting_quota Hunting quota for the country
+ * @param hunting_selectivity vector of hunting selectivity for demographics
+ * @param population_comp vector of population
+ * @param hunting_effort_sd standard deviation of hunting effort
+ * @param epsilon_h epsilon hunting
+ * @param t_birth_to_end_hunt time from brith to end of hunt
+ * @return vector of hunting pressure per demographic group
  */
 vector compute_hunting_pressure(
   data int hunting_quota,
@@ -570,43 +612,41 @@ row_vector allocate_fates(
 
 /**
  * @brief Run the continuous fitted state process from the first population.
- */
-/**
- * @brief run_state_process_from_first_population
  *
- * Description.
- *
- * @param n_state_years Description.
- * @param n_age_classes Description.
- * @param population_comp_first Description.
- * @param birth_rate_first Description.
- * @param population_total_first Description.
- * @param baseline_birth_rate Description.
- * @param density_dependence_intercept Description.
- * @param density_dependence_slope Description.
- * @param aging_matrix Description.
- * @param mu_m Description.
- * @param hunting_selectivity_sweden Description.
- * @param hunting_selectivity_finland Description.
- * @param hunting_quota_sweden Description.
- * @param hunting_quota_finland Description.
- * @param hunting_effort_sd_sweden Description.
- * @param hunting_effort_sd_finland Description.
- * @param epsilon_h_sw Description.
- * @param epsilon_h_fi Description.
- * @param t_mate_to_preg Description.
- * @param t_birth_to_end_hunt Description.
- * @param epsilon_birth Description.
- * @param epsilon_sex Description.
- * @param transition_noise_raw Description.
- * @param pi_s Description.
- * @param pi_c Description.
- * @param prob_of_ca Description.
- * @param rel_tol Description.
- * @param abs_tol Description.
- * @param max_num_steps Description.
- * @param fate_probability_tolerance Description.
- * @return Description of return value.
+ * @param n_state_years Number of years to run state process
+ * @param n_age_classes Number of age classes
+ * @param population_comp_first First population composition
+ * @param birth_rate_first First birth rate
+ * @param population_total_first Fist population total
+ * @param baseline_birth_rate Baseline birth rate for each year
+ * @param density_dependence_intercept Density dependence intercept
+ * @param density_dependence_slope Density dependence slope
+ * @param aging_matrix Aging matrix
+ * @param mu_m Mortality rates
+ * @param hunting_selectivity_sweden Hunting selectivity for Sweden
+ * @param hunting_selectivity_finland Huntint selectivity for Finland
+ * @param hunting_quota_sweden Hunting quota for Sweden
+ * @param hunting_quota_finland Hunting quota for Finland
+ * @param hunting_effort_sd_sweden Hunting effort standard deviation for Sweden
+ * @param hunting_effort_sd_finland Hunting effort standard deviation for Finland
+ * @param epsilon_h_sw Hunting epsilon Sweden
+ * @param epsilon_h_fi Hunting epsilon Finland
+ * @param t_mate_to_preg Time from mating to pregnancy
+ * @param t_birth_to_end_hunt Time from birth to end of hunting period
+ * @param epsilon_birth Birth epsilon
+ * @param epsilon_sex Sex epsilon
+ * @param transition_noise_raw Transition noise (raw)
+ * @param pi_s placental scar probability
+ * @param pi_c CA detection probability
+ * @param prob_of_ca probability of CA
+ * @param rel_tol relative tolerance for ODE solver
+ * @param abs_tol absolute tolerance for ODE solver
+ * @param max_num_steps max number of steps for ODE solver
+ * @param fate_probability_tolerance tolerance for fate probabilities
+ * @return tuple with outputs: birth_rate, pregnancy_rate, population_total,
+    population_comp, survivors, deaths_or_bycatch, hunted_sweden,
+    hunted_finland, bycatch_expected, hunting_bag_total_sweden,
+    hunting_bag_total_finland, hunted_total, reproductive_probs
  */
 tuple(
   vector,

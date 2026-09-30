@@ -1,12 +1,11 @@
 /**
  * @brief reproductive_signs_lpmf
  *
- * Description.
  *
- * @param obs_reproductive_signs Description.
- * @param reproductive_signs_year Description.
- * @param reproductive_probs Description.
- * @return Description of return value.
+ * @param obs_reproductive_signs observed reproductive signs
+ * @param reproductive_signs_year which years were observed
+ * @param reproductive_probs probability of reproductive signs
+ * @return log probability based on multinomial model
  */
 real reproductive_signs_lpmf(
   array[,] int obs_reproductive_signs,
@@ -30,13 +29,11 @@ real reproductive_signs_lpmf(
 /**
  * @brief reproductive_signs_pointwise_log_lik
  *
- * Description.
- *
- * @param obs_reproductive_signs Description.
- * @param reproductive_signs_year Description.
- * @param reproductive_probs Description.
- * @return Description of return value.
- */
+ * @param obs_reproductive_signs observed reproductive signs
+ * @param reproductive_signs_year which years were observed
+ * @param reproductive_probs probability of reproductive signs
+ * @return pointwise log-likelihood
+*/
 vector reproductive_signs_pointwise_log_lik(
   array[,] int obs_reproductive_signs,
   array[] int reproductive_signs_year,
@@ -59,12 +56,10 @@ vector reproductive_signs_pointwise_log_lik(
 /**
  * @brief reproductive_signs_rng
  *
- * Description.
- *
- * @param reproductive_signs_year Description.
- * @param reproductive_probs Description.
- * @param reproductive_signs_sample_size Description.
- * @return Description of return value.
+ * @param obs_reproductive_signs observed reproductive signs
+ * @param reproductive_signs_year which years were observed
+ * @param reproductive_probs probability of reproductive signs
+ * @return simulated observations based on multinomial model
  */
 array[,] int reproductive_signs_rng(
   array[] int reproductive_signs_year,

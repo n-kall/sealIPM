@@ -1,13 +1,11 @@
 /**
  * @brief pregnancy_lpmf
  *
- * Description.
- *
- * @param pregnancy_count Description.
- * @param pregnancy_count_year Description.
- * @param pregnancy_sample_size Description.
- * @param pregnancy_rate Description.
- * @return Description of return value.
+ * @param pregnancy_count Observed counts of pregnancy signs
+ * @param pregnancy_count_year Which years are the counts from
+ * @param pregnancy_sample_size Sample sizes for the survey
+ * @param pregnancy_rate Pregnancy rate
+ * @return log probability mass based on binomial model
  */
 real pregnancy_lpmf(
   array[] int pregnancy_count,
@@ -33,13 +31,12 @@ real pregnancy_lpmf(
 /**
  * @brief pregnancy_pointwise_log_lik
  *
- * Description.
  *
- * @param pregnancy_count Description.
- * @param pregnancy_count_year Description.
- * @param pregnancy_sample_size Description.
- * @param pregnancy_rate Description.
- * @return Description of return value.
+ * @param pregnancy_count Observed counts of pregnancy signs
+ * @param pregnancy_count_year Which years are the counts from
+ * @param pregnancy_sample_size Sample sizes for the survey
+ * @param pregnancy_rate Pregnancy rate
+ * @return vector of log-likelihood values for each year
  */
 vector pregnancy_pointwise_log_lik(
   array[] int pregnancy_count,
@@ -67,12 +64,11 @@ vector pregnancy_pointwise_log_lik(
 /**
  * @brief pregnancy_rng
  *
- * Description.
- *
- * @param pregnancy_count_year Description.
- * @param pregnancy_sample_size Description.
- * @param pregnancy_rate Description.
- * @return Description of return value.
+ * @param pregnancy_count Observed counts of pregnancy signs
+ * @param pregnancy_count_year Which years are the counts from
+ * @param pregnancy_sample_size Sample sizes for the survey
+ * @param pregnancy_rate Pregnancy rate
+ * @return vector generated pregnancy observations for each year
  */
 array[] int pregnancy_rng(
   array[] int pregnancy_count_year,

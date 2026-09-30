@@ -1,13 +1,12 @@
 /**
  * @brief hunting_comp_lpmf
  *
- * Description.
  *
- * @param hunting_composition Description.
- * @param hunting_year Description.
- * @param hunted Description.
- * @param hunted_total Description.
- * @return Description of return value.
+ * @param hunting_composition Observed composition of hunted samples
+ * @param hunting_year Years of observation
+ * @param hunted Expected hunted in each demographic group
+ * @param hunted_total Total hunted
+ * @return log probability based on multinomial model
  */
 real hunting_comp_lpmf(
   array[,] int hunting_composition,
@@ -32,13 +31,11 @@ real hunting_comp_lpmf(
 /**
  * @brief hunting_comp_pointwise_log_lik
  *
- * Description.
- *
- * @param hunting_composition Description.
- * @param hunting_year Description.
- * @param hunted Description.
- * @param hunted_total Description.
- * @return Description of return value.
+ * @param hunting_composition Observed composition of hunted samples
+ * @param hunting_year Years of observation
+ * @param hunted Expected hunted in each demographic group
+ * @param hunted_total Total hunted
+ * @return pointwise log likelihood
  */
 vector hunting_comp_pointwise_log_lik(
   array[,] int hunting_composition,
@@ -63,13 +60,11 @@ vector hunting_comp_pointwise_log_lik(
 /**
  * @brief hunting_comp_rng
  *
- * Description.
- *
- * @param hunting_year Description.
- * @param hunted Description.
- * @param hunted_total Description.
- * @param hunting_sample_size Description.
- * @return Description of return value.
+ * @param hunting_composition Observed composition of hunted samples
+ * @param hunting_year Years of observation
+ * @param hunted Expected hunted in each demographic group
+ * @param hunted_total Total hunted
+ * @return simulated observations
  */
 array[,] int hunting_comp_rng(
   array[] int hunting_year,

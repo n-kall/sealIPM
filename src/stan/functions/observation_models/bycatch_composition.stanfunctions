@@ -1,22 +1,20 @@
 /**
  * @brief bycatch_comp_lpmf
  *
- * Description.
- *
- * @param bycatch_composition Description.
- * @param bycatch_comp_year Description.
- * @param bycatch_expected Description.
- * @param bias Description.
- * @return Description of return value.
+ * @param bycatch_composition Observed bycatch composition
+ * @param bycatch_comp_year Years of observation
+ * @param bycatch_expected Expected counts in each group
+ * @param selectivity Bycatch selectivity
+ * @return log probability based on multinomial model
  */
 real bycatch_comp_lpmf(
   array[,] int bycatch_composition,
   array[] int bycatch_comp_year,
   matrix bycatch_expected,
-  vector bias
+  vector selectivity
 ) {
   int n_obs = size(bycatch_composition);
-  vector[rows(bycatch_expected)] w = exp(bias);
+  vector[rows(bycatch_expected)] w = exp(selectivity);
   real lp = 0;
 
   for (i in 1:n_obs) {
@@ -34,19 +32,17 @@ real bycatch_comp_lpmf(
 /**
  * @brief bycatch_comp_pointwise_log_lik
  *
- * Description.
- *
- * @param bycatch_composition Description.
- * @param bycatch_comp_year Description.
- * @param bycatch_expected Description.
- * @param bias Description.
- * @return Description of return value.
- */
+ * @param bycatch_composition Observed bycatch composition
+ * @param bycatch_comp_year Years of observation
+ * @param bycatch_expected Expected counts in each group
+ * @param selectivity Bycatch selectivity
+ * @return pointwise log likelihood
+*/
 vector bycatch_comp_pointwise_log_lik(
   array[,] int bycatch_composition,
   array[] int bycatch_comp_year,
   matrix bycatch_expected,
-  vector bias
+  vector selectivity
 ) {
   int n_obs = size(bycatch_composition);
   vector[rows(bycatch_expected)] w = exp(bias);
@@ -67,23 +63,21 @@ vector bycatch_comp_pointwise_log_lik(
 /**
  * @brief bycatch_comp_rng
  *
- * Description.
- *
- * @param bycatch_comp_year Description.
- * @param bycatch_expected Description.
- * @param bias Description.
- * @param bycatch_sample_size Description.
- * @return Description of return value.
+ * @param bycatch_composition Observed bycatch composition
+ * @param bycatch_comp_year Years of observation
+ * @param bycatch_expected Expected counts in each group
+ * @param selectivity Bycatch selectivity
+ * @return simulated observations
  */
 array[,] int bycatch_comp_rng(
   array[] int bycatch_comp_year,
   matrix bycatch_expected,
-  vector bias,
+  vector selectivity,
   array[] int bycatch_sample_size
 ) {
   int n_obs = size(bycatch_comp_year);
   int K = rows(bycatch_expected);
-  vector[K] w = exp(bias);
+  vector[K] w = exp(selectivity);
   array[n_obs, K] int y_sim;
 
   for (i in 1:n_obs) {
