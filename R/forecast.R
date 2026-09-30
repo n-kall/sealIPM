@@ -7,7 +7,8 @@
 #' @param fit A fitted IPM object.
 #' @param actual_data Raw data
 #' @param scenario_data List of quotas and optionally herring indices. Use the function `build_scenario_data` to create it.
-#' @param future_years Consecutive calendar years to forecast.
+#' @param future_years Consecutive integer years in increasing order, starting
+#'   immediately after the final fitted year.
 #' @param ... Passed to `generate_quantities()`.
 #' @return A CmdStan generated-quantities fit.
 #' @export
@@ -28,22 +29,12 @@ forecast_ipm <- function(
         )
     }
 
-    future_years <- sort(as.integer(future_years))
+    future_years <- validate_state_years(future_years, "future_years")
+    fitted_years <- validate_state_years(fit$years, "fit$years")
 
-    if (
-        length(future_years) < 1L ||
-            anyNA(future_years) ||
-            anyDuplicated(future_years) ||
-            !identical(
-                future_years,
-                seq.int(
-                    future_years[1L],
-                    length.out = length(future_years)
-                )
-            )
-    ) {
+    if (future_years[1L] != max(fitted_years) + 1) {
         stop(
-            "`future_years` must contain consecutive, unique years.",
+            "`future_years` must start immediately after the final fitted year.",
             call. = FALSE
         )
     }

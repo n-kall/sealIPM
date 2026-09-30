@@ -44,7 +44,7 @@ default_priors <- function(species) {
             prior_reproductive_process_sd_location = 0,
             prior_reproductive_process_sd_scale = 0.1,
 
-            harvest_bag_cv = 0.05,
+            hunting_bag_cv = 0.05,
 
             population_burn_in = 20,
             rel_tol = 1e-6,

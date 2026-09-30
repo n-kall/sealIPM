@@ -4,7 +4,7 @@
 #'
 #' @param data list of dataframes
 #' @param species which species
-#' @param years years for the state process
+#' @param years Consecutive integer years in increasing order for the state process.
 #' @param prior_spec priors
 #' @param method Stan method
 #' @param init Initialisation function or draws passed to Stan
@@ -23,6 +23,7 @@ fit_ipm <- function(
     ...
 ) {
     method <- match.arg(method)
+    years <- validate_state_years(years)
 
     if (!species %in% c("grey", "ringed")) {
         stop(

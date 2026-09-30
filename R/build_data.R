@@ -421,6 +421,7 @@ build_grey_pregnancy_status <- function(pregnancy, years) {
 }
 
 build_grey_stan_data <- function(data, years, prior_spec, prior_only) {
+    years <- validate_state_years(years)
     process_years <- c(min(years) - 1, years)
 
     c(

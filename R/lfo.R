@@ -1,10 +1,8 @@
 extract_future_log_lik <- function(forecast) {
-    variables <- c(
-        "log_lik_future_joint"
-    )
-
+    # Stan sums the conditional likelihood over the entire forecast horizon.
+    # Averaging over draws integrates over parameter and future-state uncertainty.
     forecast$draws(
-        variables = variables,
+        variables = "log_lik",
         format = "draws_matrix"
     )
 }
