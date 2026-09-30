@@ -6,9 +6,8 @@
 #'
 #' @param fit A fitted IPM object.
 #' @param actual_data Raw data
-#' @param scenario_data List of quotas and optionally herring indices. Use he function `build_scenario_data` to create it.
+#' @param scenario_data List of quotas and optionally herring indices. Use the function `build_scenario_data` to create it.
 #' @param future_years Consecutive calendar years to forecast.
-#' @param species Either `"grey"` or `"ringed"`.
 #' @param ... Passed to `generate_quantities()`.
 #' @return A CmdStan generated-quantities fit.
 #' @export
@@ -17,16 +16,8 @@ forecast_ipm <- function(
     actual_data = NULL,
     scenario_data = NULL,
     future_years,
-    species = fit$species,
     ...
 ) {
-    if (!species %in% c("grey", "ringed")) {
-        stop(
-            "`species` must be one of 'grey' or 'ringed'.",
-            call. = FALSE
-        )
-    }
-
     if (
         (is.null(actual_data) && is.null(scenario_data)) ||
             !is.null(actual_data) && !is.null(scenario_data)
@@ -56,6 +47,8 @@ forecast_ipm <- function(
             call. = FALSE
         )
     }
+
+    species <- fit$species
 
     forecast_model <- get_species_forecast_model(species)
 

@@ -1,15 +1,17 @@
 library(sealIPM)
 library(patchwork)
+library(bayesplot)
 
 fit_full <- fit_ipm(
     data = grey_seal_data,
     species = "grey",
-    years = 2005:2020,
+    years = 2005:2023,
     iter_warmup = 500,
     iter_sampling = 500,
     chains = 1,
     seed = 123,
-    refresh = 100
+    refresh = 100,
+    method = "sample"
 )
 
 saveRDS(fit_full, "fit_full.RDS")

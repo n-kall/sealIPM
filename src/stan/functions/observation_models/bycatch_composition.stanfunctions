@@ -45,7 +45,7 @@ vector bycatch_comp_pointwise_log_lik(
   vector selectivity
 ) {
   int n_obs = size(bycatch_composition);
-  vector[rows(bycatch_expected)] w = exp(bias);
+  vector[rows(bycatch_expected)] w = exp(selectivity);
   vector[n_obs] log_lik;
 
   for (i in 1:n_obs) {

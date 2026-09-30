@@ -3,4 +3,5 @@
 export(build_scenario_data)
 export(fit_ipm)
 export(forecast_ipm)
+export(forecast_plot)
 importFrom(rlang,.data)

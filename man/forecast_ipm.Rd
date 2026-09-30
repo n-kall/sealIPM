@@ -4,25 +4,16 @@
 \alias{forecast_ipm}
 \title{Forecast IPM}
 \usage{
-forecast_ipm(
-  fit,
-  actual_data = NULL,
-  scenario_data = NULL,
-  future_years,
-  species = fit$species,
-  ...
-)
+forecast_ipm(fit, actual_data = NULL, scenario_data = NULL, future_years, ...)
 }
 \arguments{
 \item{fit}{A fitted IPM object.}
 
 \item{actual_data}{Raw data}
 
-\item{scenario_data}{List of quotas and optionally herring indices. Use he function \code{build_scenario_data} to create it.}
+\item{scenario_data}{List of quotas and optionally herring indices. Use the function \code{build_scenario_data} to create it.}
 
 \item{future_years}{Consecutive calendar years to forecast.}
-
-\item{species}{Either \code{"grey"} or \code{"ringed"}.}
 
 \item{...}{Passed to \code{generate_quantities()}.}
 }
