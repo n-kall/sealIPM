@@ -10,6 +10,7 @@ library(patchwork)
 
 stan_file <- "src/stan/grey_seal_IPM_forecast.stan"
 
+
 if (!exists("m", inherits = FALSE)) {
     m <- cmdstan_model(
         stan_file,

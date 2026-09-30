@@ -28,7 +28,9 @@ Suggests:
     priorsense,
     tidyverse,
     tinytable,
-    patchwork
+    patchwork,
+    testthat (>= 3.0.0)
 URL: https://n-kall.github.io/sealIPM
 VignetteBuilder: knitr, quarto
 Config/roxygen2/version: 8.1.0
+Config/testthat/edition: 3
