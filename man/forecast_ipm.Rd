@@ -13,7 +13,8 @@ forecast_ipm(fit, actual_data = NULL, scenario_data = NULL, future_years, ...)
 
 \item{scenario_data}{List of quotas and optionally herring indices. Use the function \code{build_scenario_data} to create it.}
 
-\item{future_years}{Consecutive calendar years to forecast.}
+\item{future_years}{Consecutive integer years in increasing order, starting
+immediately after the final fitted year.}
 
 \item{...}{Passed to \code{generate_quantities()}.}
 }

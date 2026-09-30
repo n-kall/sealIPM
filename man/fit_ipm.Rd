@@ -20,7 +20,7 @@ fit_ipm(
 
 \item{species}{which species}
 
-\item{years}{years for the state process}
+\item{years}{Consecutive integer years in increasing order for the state process.}
 
 \item{prior_spec}{priors}
 
