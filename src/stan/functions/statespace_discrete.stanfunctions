@@ -342,8 +342,7 @@ tuple(
 
       for (demo in 1:n_demo_groups) {
         if (population_current[demo] > 0) {
-          // One joint solve returns mutually consistent probabilities for
-          // survival, non-hunting death, Swedish hunting, and Finnish hunting.
+
           vector[4] fate_probability = compute_joint_fate_probabilities(
             t_birth_to_end_hunt,
             hunting_pressure_sweden[demo],

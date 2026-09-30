@@ -2,6 +2,15 @@
 
 /**
  * @brief Compute baseline birth rates from herring indices.
+ *
+ * @param min_baseline_birth_rate Minimum baseline birth rate
+ * @param max_baseline_birth_rate Maximum baseline birth rate
+ * @param herring_intercept_scaled Intercept for herring regression
+ * @param herring_slope Slope for herring regression
+ * @param herring_weight Weight for herring indices 
+ * @param herring_index_baltic_proper_gulf_finland Vector of yearly herring weight-at-age indices Baltic Proper and Gulf of Finland
+ * @param herring_index_gulf_bothnia Vector of yearling herring weight-at-age indices Gulf of Bothnia
+ * @return vector of baseline herring-dependent birth rates
  */
 vector compute_baseline_birth_rate(
   real min_baseline_birth_rate,
@@ -34,6 +43,10 @@ vector compute_baseline_birth_rate(
 
 /**
  * @brief Compute the density-dependence intercept.
+ *
+ * @param max_baseline_birth_rate Maximum baseline birth rate
+ * @param density_dependence_scaled Density dependence parameter
+ * @return Density dependence intercept
  */
 real compute_density_dependence_intercept(
   real max_baseline_birth_rate,
@@ -48,6 +61,13 @@ real compute_density_dependence_intercept(
 
 /**
  * @brief Compute the density-dependence slope.
+ *
+ *
+ * @param birth_rate_at_carrying_capacity Birth rate at carrying capacity
+ * @param reference_baseline_birth_rate Birth rate at zero population density
+ * @param density_dependence_intercept Density dependence intercept parameter
+ * @param carrying_capacity Carrying capacity
+ * @return Density dependence slope
  */
 real compute_density_dependence_slope(
   real birth_rate_at_carrying_capacity,
@@ -69,6 +89,12 @@ real compute_density_dependence_slope(
 
 /**
  * @brief Update the density-dependent birth rate.
+ *
+ * @param b0 Baseline birth rate
+ * @param theta0 Density dependence intercept
+ * @param theta1 Density dependence slope
+ * @param N_tot_prev Previous population total
+ * @return Updated density-dependent birth rate
  */
 real update_birth_rate(
   real b0,
@@ -81,6 +107,13 @@ real update_birth_rate(
 
 /**
  * @brief Update the pregnancy rate.
+ *
+ * @param baseline_birth_rate Baseline birth rate
+ * @param theta0 Density dependence intercept
+ * @param theta1 Density dependence slope
+ * @param N_tot Total population
+ * @param tau_s Time after implantation
+ * @return Updated density-dependent pregnancy rate
  */
 real update_pregnancy_rate(
   real baseline_birth_rate,
@@ -92,6 +125,25 @@ real update_pregnancy_rate(
   return baseline_birth_rate
          * exp(theta0 * (1.0 - tau_s * exp(theta1 * N_tot)));
 }
+
+
+/**
+ * @brief Compute the Euler-Lotka birth rate.
+ *
+ * @param mu_m Vector of mortality rates for each age class
+ * @param n_age_classes Integer of number of age classes
+ * @param phi_a Survival rate for adults
+ * @return Birth rate based on Euler-Lotka
+ */
+real euler_lotka_birth_rate(
+  vector mu_m,
+  data int n_age_classes,
+  real phi_a
+) {
+  return exp(sum(mu_m[1:(n_age_classes - 1)]))
+         * ((-phi_a + 2.0) - phi_a);
+}
+
 
 /**
  * @brief Compute demographic mortality rates.
@@ -293,6 +345,22 @@ vector compute_hunting_pressure(
  * Finland. All four fates come from one probability-conserving ODE solve for
  * each demographic group.
  */
+/**
+ * @brief compute_joint_expected_fate_counts
+ *
+ * Description.
+ *
+ * @param population_comp vector of population composition
+ * @param hunting_pressure_sweden vector of hunting pressure from Sweden
+ * @param hunting_pressure_finland vector of hunting pressure from Finland
+ * @param mortality_rate Mortality rate
+ * @param t_birth_to_end_hunt Time from birth to end of hunting period
+ * @param rel_tol Relative tolerance for ode solver
+ * @param abs_tol Absolute tolerance for ode solver
+ * @param max_num_steps Maximum number of steps for ode solver
+ * @param fate_probability_tolerance Tolerance for fate probabilities
+ * @return Matrix of expected fate counts. Columns are survived, died or bycaught, hunted in Sweden, hunted in Finland.
+ */
 matrix compute_joint_expected_fate_counts(
   vector population_comp,
   vector hunting_pressure_sweden,
@@ -406,9 +474,16 @@ void validate_expected_fate_counts(
 }
 
 /**
- * @brief Allocate one demographic group among active fates.
+ * @brief Allocate one demographic group to fates
+ *
+ * @param expected_counts Expected counts for each fate
+ * @param z Standard normal innovations for one fewer than total fates
+ * @param population_count Total population
+ * @param sw_active Is hunting in Sweden possible? (0 = no, 1 = yes)
+ * @param fi_active Is hunting in Finland possible?  (0 = no, 1 = yes)
+ * @return row_vector of allocated counts into each fate
  */
-row_vector allocate_active_fates(
+row_vector allocate_fates(
   row_vector expected_counts,
   row_vector z,
   real population_count,
@@ -419,7 +494,7 @@ row_vector allocate_active_fates(
 
   if (sw_active && fi_active) {
     vector[4] allocation_active =
-      multinomial_allocation_active(
+      multinomial_allocation(
         expected_counts',
         z',
         population_count
@@ -437,7 +512,7 @@ row_vector allocate_active_fates(
     expected_active[3] = expected_counts[3];
 
     allocation_active =
-      multinomial_allocation_active(
+      multinomial_allocation(
         expected_active,
         z[1:2]',
         population_count
@@ -459,7 +534,7 @@ row_vector allocate_active_fates(
     expected_active[3] = expected_counts[4];
 
     allocation_active =
-      multinomial_allocation_active(
+      multinomial_allocation(
         expected_active,
         z[1:2]',
         population_count
@@ -480,7 +555,7 @@ row_vector allocate_active_fates(
     expected_active[2] = expected_counts[2];
 
     allocation_active =
-      multinomial_allocation_active(
+      multinomial_allocation(
         expected_active,
         z[1:1]',
         population_count
@@ -495,6 +570,43 @@ row_vector allocate_active_fates(
 
 /**
  * @brief Run the continuous fitted state process from the first population.
+ */
+/**
+ * @brief run_state_process_from_first_population
+ *
+ * Description.
+ *
+ * @param n_state_years Description.
+ * @param n_age_classes Description.
+ * @param population_comp_first Description.
+ * @param birth_rate_first Description.
+ * @param population_total_first Description.
+ * @param baseline_birth_rate Description.
+ * @param density_dependence_intercept Description.
+ * @param density_dependence_slope Description.
+ * @param aging_matrix Description.
+ * @param mu_m Description.
+ * @param hunting_selectivity_sweden Description.
+ * @param hunting_selectivity_finland Description.
+ * @param hunting_quota_sweden Description.
+ * @param hunting_quota_finland Description.
+ * @param hunting_effort_sd_sweden Description.
+ * @param hunting_effort_sd_finland Description.
+ * @param epsilon_h_sw Description.
+ * @param epsilon_h_fi Description.
+ * @param t_mate_to_preg Description.
+ * @param t_birth_to_end_hunt Description.
+ * @param epsilon_birth Description.
+ * @param epsilon_sex Description.
+ * @param transition_noise_raw Description.
+ * @param pi_s Description.
+ * @param pi_c Description.
+ * @param prob_of_ca Description.
+ * @param rel_tol Description.
+ * @param abs_tol Description.
+ * @param max_num_steps Description.
+ * @param fate_probability_tolerance Description.
+ * @return Description of return value.
  */
 tuple(
   vector,
@@ -657,7 +769,7 @@ tuple(
         );
 
         realized_fate[demo, ] =
-          allocate_active_fates(
+          allocate_fates(
             expected_fate_counts[demo, ],
             transition_noise_year[demo, ],
             population_comp[demo, year],
@@ -720,16 +832,4 @@ tuple(
     hunted_total,
     reproductive_probs
   );
-}
-
-/**
- * @brief Compute the Euler-Lotka birth rate.
- */
-real euler_lotka_birth_rate(
-  vector mu_m,
-  data int n_age_classes,
-  real phi_a
-) {
-  return exp(sum(mu_m[1:(n_age_classes - 1)]))
-         * ((-phi_a + 2.0) - phi_a);
 }

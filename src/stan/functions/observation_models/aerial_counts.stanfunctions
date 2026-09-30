@@ -33,7 +33,6 @@ real aerial_count_lpmf(
   return lp;
 }
 
-
 /**
  * @brief aerial_count_pointwise_log_lik
  *
