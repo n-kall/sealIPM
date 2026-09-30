@@ -1,17 +1,17 @@
 /**
- * @brief harvest_bags_lpdf
+ * @brief hunting_bags_lpdf
  *
  * @param hunting_count Observed count of reported hunted seals
  * @param hunting_year Years of data
  * @param hunted_total Total hunted
-* @param harvest_bag_cv variation in hunting reports
+* @param hunting_bag_cv variation in hunting reports
 * @return log probability density based on normal model
  */
-real harvest_bags_lpdf(
+real hunting_bags_lpdf(
   array[] real hunting_count,   // observed count
   array[] int hunting_year,   // year
   vector hunted_total,    // total
-  real harvest_bag_cv
+  real hunting_bag_cv
 ) {
   int n_obs = size(hunting_count);
   real lp = 0;
@@ -21,7 +21,7 @@ real harvest_bags_lpdf(
     lp += normal_lpdf(
       hunting_count[i] |
       hunted_total[t],
-      harvest_bag_cv * hunted_total[t]
+      hunting_bag_cv * hunted_total[t]
     );
   }
 
@@ -29,19 +29,19 @@ real harvest_bags_lpdf(
 }
 
 /**
- * @brief harvest_bags_pointwise_log_lik
+ * @brief hunting_bags_pointwise_log_lik
  *
  * @param hunting_count Observed count of reported hunted seals
  * @param hunting_year Years of data
  * @param hunted_total Total hunted
- * @param harvest_bag_cv variation in hunting reports
+ * @param hunting_bag_cv variation in hunting reports
  * @return pointwise log-likelihood
  */
-vector harvest_bags_pointwise_log_lik(
+vector hunting_bags_pointwise_log_lik(
   array[] real hunting_count,   // observed count
   array[] int hunting_year,   // year
   vector hunted_total,    // total
-  real harvest_bag_cv
+  real hunting_bag_cv
 ) {
   int n_obs = size(hunting_count);
   vector[n_obs] log_lik;
@@ -51,7 +51,7 @@ vector harvest_bags_pointwise_log_lik(
     log_lik[i] = normal_lpdf(
       hunting_count[i] |
       hunted_total[t],
-      harvest_bag_cv * hunted_total[t]
+      hunting_bag_cv * hunted_total[t]
     );
   }
 
@@ -59,18 +59,18 @@ vector harvest_bags_pointwise_log_lik(
 }
 
 /**
- * @brief harvest_bags_rng
+ * @brief hunting_bags_rng
  *
  * @param hunting_count Observed count of reported hunted seals
  * @param hunting_year Years of data
  * @param hunted_total Total hunted
- * @param harvest_bag_cv variation in hunting reports
+ * @param hunting_bag_cv variation in hunting reports
  * @return simulated observations from normal model
 */
-array[] real harvest_bags_rng(
+array[] real hunting_bags_rng(
   array[] int hunting_year,
   vector hunted_total,
-  real harvest_bag_cv
+  real hunting_bag_cv
 ) {
   int n_obs = size(hunting_year);
   array[n_obs] real y_sim;
@@ -80,7 +80,7 @@ array[] real harvest_bags_rng(
     if (hunted_total[t] > 0) {
       y_sim[i] = normal_rng(
         hunted_total[t],
-        harvest_bag_cv * hunted_total[t]
+        hunting_bag_cv * hunted_total[t]
       );
     } else {
       y_sim[i] = 0.0;

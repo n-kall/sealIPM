@@ -6,8 +6,8 @@ fit_full <- fit_ipm(
     data = grey_seal_data,
     species = "grey",
     years = 2005:2023,
-    iter_warmup = 500,
-    iter_sampling = 500,
+    iter_warmup = 100,
+    iter_sampling = 100,
     chains = 1,
     seed = 123,
     refresh = 100,
@@ -53,6 +53,7 @@ p <- sealIPM:::forecast_plot(
 
 p
 
+sealIPM:::pp_check(fit_full, "aerial_count")
 
 ypred_aerial <- fit_full$fit$draws() |>
     posterior::subset_draws(variable = "aerial_count_pred", regex = TRUE)
@@ -60,7 +61,7 @@ ypred_aerial <- fit_full$fit$draws() |>
 y_aerial <- fit_full$stan_data$obs_aerial_count
 
 loglik_aerial <- fit_full$fit$draws() |>
-    posterior::subset_draws(variable = "log_lik_aerial", regex = TRUE)
+    posterior::subset_draws(variable = "log_lik_aerial_count", regex = TRUE)
 
 
 ppc_loo_intervals(
@@ -94,3 +95,6 @@ ppc_loo_intervals(
         y_hunting_bag_fi,
         ypred_hunting_bag_fi
     )
+
+
+pp_check(fit_full, "aerial_count")

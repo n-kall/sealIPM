@@ -139,8 +139,8 @@ data {
   real prior_reproductive_process_sd_location;
   real<lower=0> prior_reproductive_process_sd_scale;
 
-  // Harvest bag observation coefficient of variation
-  real<lower=0> harvest_bag_cv;
+  // Hunting bag observation coefficient of variation
+  real<lower=0> hunting_bag_cv;
 }
 
 transformed data {
@@ -565,18 +565,18 @@ model {
       aerial_count_overdispersion
     );
 
-    // Harvest totals
-    target += harvest_bags_lpdf(
+    // Hunting totals
+    target += hunting_bags_lpdf(
       obs_hunting_bag_finland |
       hunting_bag_year_finland,
       hunting_bag_total_finland,
-      harvest_bag_cv
+      hunting_bag_cv
     );
-    target += harvest_bags_lpdf(
+    target += hunting_bags_lpdf(
       obs_hunting_bag_sweden |
       hunting_bag_year_sweden,
       hunting_bag_total_sweden,
-      harvest_bag_cv
+      hunting_bag_cv
     );
 
     // Hunting comp
@@ -634,18 +634,18 @@ generated quantities {
     );
 
   // Generate one prediction for every observed national hunting bag.
-  array[n_hunting_bag_years_sweden] real harvest_bags_sweden_pred =
-    harvest_bags_rng(
+  array[n_hunting_bag_years_sweden] real hunting_bags_sweden_pred =
+    hunting_bags_rng(
       hunting_bag_year_sweden,
       hunting_bag_total_sweden,
-      harvest_bag_cv
+      hunting_bag_cv
     );
 
-  array[n_hunting_bag_years_finland] real harvest_bags_finland_pred =
-    harvest_bags_rng(
+  array[n_hunting_bag_years_finland] real hunting_bags_finland_pred =
+    hunting_bags_rng(
       hunting_bag_year_finland,
       hunting_bag_total_finland,
-      harvest_bag_cv
+      hunting_bag_cv
     );
 
   // Composition predictions use the same sample size as the corresponding
@@ -726,8 +726,7 @@ generated quantities {
   // ----------------------------
 
   // Aerial surveys
-  vector[n_aerial_years] log_lik_aerial;
-  log_lik_aerial =
+  vector[n_aerial_years] log_lik_aerial_count = 
     aerial_count_pointwise_log_lik(
       obs_aerial_count,
       aerial_year,
@@ -737,27 +736,24 @@ generated quantities {
     );
 
   // Hunting bag totals
-  vector[n_hunting_bag_years_finland] log_lik_harvest_bags_finland;
-  log_lik_harvest_bags_finland =
-    harvest_bags_pointwise_log_lik(
+  vector[n_hunting_bag_years_finland] log_lik_hunting_bags_finland =
+    hunting_bags_pointwise_log_lik(
       obs_hunting_bag_finland,
       hunting_bag_year_finland,
       hunting_bag_total_finland,
-      harvest_bag_cv
+      hunting_bag_cv
     );
 
-  vector[n_hunting_bag_years_sweden] log_lik_harvest_bags_sweden;
-  log_lik_harvest_bags_sweden =
-    harvest_bags_pointwise_log_lik(
+  vector[n_hunting_bag_years_sweden] log_lik_hunting_bags_sweden =
+    hunting_bags_pointwise_log_lik(
       obs_hunting_bag_sweden,
       hunting_bag_year_sweden,
       hunting_bag_total_sweden,
-      harvest_bag_cv
+      hunting_bag_cv
     );
 
   // Hunting composition
-  vector[n_hunting_comp_years_finland] log_lik_hunting_comp_finland;
-  log_lik_hunting_comp_finland =
+  vector[n_hunting_comp_years_finland] log_lik_hunting_comp_finland = 
     hunting_comp_pointwise_log_lik(
       obs_hunting_comp_finland,
       hunting_comp_year_finland,
@@ -765,8 +761,7 @@ generated quantities {
       hunting_bag_total_finland
     );
 
-  vector[n_hunting_comp_years_sweden] log_lik_hunting_comp_sweden;
-  log_lik_hunting_comp_sweden =
+  vector[n_hunting_comp_years_sweden] log_lik_hunting_comp_sweden = 
     hunting_comp_pointwise_log_lik(
       obs_hunting_comp_sweden,
       hunting_comp_year_sweden,
@@ -775,8 +770,7 @@ generated quantities {
     );
 
   // Bycatch
-  vector[n_bycatch_years] log_lik_bycatch;
-  log_lik_bycatch =
+  vector[n_bycatch_years] log_lik_bycatch_comp = 
     bycatch_comp_pointwise_log_lik(
       obs_bycatch_comp,
       bycatch_comp_year,
@@ -785,8 +779,7 @@ generated quantities {
     );
 
   // Pregnancy
-  vector[n_pregnancy_years] log_lik_pregnancy;
-  log_lik_pregnancy =
+  vector[n_pregnancy_years] log_lik_pregnancy_count = 
     pregnancy_pointwise_log_lik(
       obs_pregnancy_count,
       pregnancy_count_year,
@@ -795,8 +788,7 @@ generated quantities {
     );
 
   // Reproductive signs
-  vector[n_reproductive_years] log_lik_reproductive_signs;
-  log_lik_reproductive_signs =
+  vector[n_reproductive_years] log_lik_reproductive_signs = 
     reproductive_signs_pointwise_log_lik(
       obs_reproductive_signs_finland,
       reproductive_signs_year,

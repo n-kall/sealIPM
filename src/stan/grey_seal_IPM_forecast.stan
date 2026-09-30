@@ -47,7 +47,7 @@ data {
   real<lower=1e-15> fate_probability_tolerance;
 
   // Observation-model coefficient of variation for reported hunting bags.
-  real<lower=0> harvest_bag_cv;
+  real<lower=0> hunting_bag_cv;
 
   // Sample sizes used for posterior predictive observation generation.
   array[n_future_years] int<lower=0>
@@ -300,18 +300,18 @@ generated quantities {
     aerial_count_overdispersion
   );
 
-  array[n_future_years] real future_harvest_bags_sweden =
-    harvest_bags_rng(
+  array[n_future_years] real future_hunting_bags_sweden =
+    hunting_bags_rng(
       future_year,
       hunting_bag_total_sweden_future,
-      harvest_bag_cv
+      hunting_bag_cv
     );
 
-  array[n_future_years] real future_harvest_bags_finland =
-    harvest_bags_rng(
+  array[n_future_years] real future_hunting_bags_finland =
+    hunting_bags_rng(
       future_year,
       hunting_bag_total_finland_future,
-      harvest_bag_cv
+      hunting_bag_cv
     );
 
   array[n_future_years, n_demo_groups] int future_hunting_comp_finland =
@@ -359,10 +359,10 @@ generated quantities {
   vector[n_future_aerial] log_lik_future_aerial =
     rep_vector(0.0, n_future_aerial);
   vector[n_future_hunting_bag_sweden]
-    log_lik_future_harvest_bags_sweden =
+    log_lik_future_hunting_bags_sweden =
       rep_vector(0.0, n_future_hunting_bag_sweden);
   vector[n_future_hunting_bag_finland]
-    log_lik_future_harvest_bags_finland =
+    log_lik_future_hunting_bags_finland =
       rep_vector(0.0, n_future_hunting_bag_finland);
   vector[n_future_hunting_comp_sweden]
     log_lik_future_hunting_comp_sweden =
@@ -389,22 +389,22 @@ generated quantities {
   }
 
   if (n_future_hunting_bag_sweden > 0) {
-    log_lik_future_harvest_bags_sweden =
-      harvest_bags_pointwise_log_lik(
+    log_lik_future_hunting_bags_sweden =
+      hunting_bags_pointwise_log_lik(
         future_obs_hunting_bag_sweden,
         hunting_bag_year_sweden,
         hunting_bag_total_sweden_future,
-        harvest_bag_cv
+        hunting_bag_cv
       );
   }
 
   if (n_future_hunting_bag_finland > 0) {
-    log_lik_future_harvest_bags_finland =
-      harvest_bags_pointwise_log_lik(
+    log_lik_future_hunting_bags_finland =
+      hunting_bags_pointwise_log_lik(
         future_obs_hunting_bag_finland,
         hunting_bag_year_finland,
         hunting_bag_total_finland_future,
-        harvest_bag_cv
+        hunting_bag_cv
       );
   }
 
@@ -458,8 +458,8 @@ generated quantities {
   // Combined conditional log likelihood for the simulated future state path.
   real log_lik =
     sum(log_lik_future_aerial)
-    + sum(log_lik_future_harvest_bags_sweden)
-    + sum(log_lik_future_harvest_bags_finland)
+    + sum(log_lik_future_hunting_bags_sweden)
+    + sum(log_lik_future_hunting_bags_finland)
     + sum(log_lik_future_hunting_comp_sweden)
     + sum(log_lik_future_hunting_comp_finland)
     + sum(log_lik_future_bycatch)
