@@ -23,15 +23,18 @@
  * - @f$ b_{\min}^0 @f$: `birth_rate_baseline_min`
  * - @f$ b_{\max}^0 @f$: `birth_rate_baseline_max`
  * - @f$ \beta @f$: `herring_slope`
- * - @f$ \alpha @f$: `herring_slope * herring_intercept_scaled`
+ * - @f$ \alpha @f$: `-herring_slope * herring_birth_rate_midpoint`
  * - @f$ w @f$: `herring_weight`
  *
  * The code uses the equivalent logistic predictor
- * `herring_slope * (herring_intercept_scaled + weighted_h)`
+ * `herring_slope * (weighted_h - herring_birth_rate_midpoint)`
+ * The midpoint is -alpha / beta in weighted herring-index units
+ * At the midpoint the baseline birth rate is halfway between its limits
+ * If the slope is zero the curve is constant and the midpoint is not identified
  *
  * @param birth_rate_baseline_min Minimum baseline birth rate
  * @param birth_rate_baseline_max Maximum baseline birth rate
- * @param herring_intercept_scaled Intercept for herring regression
+ * @param herring_birth_rate_midpoint Weighted herring index where the baseline birth rate is halfway between its limits
  * @param herring_slope Slope for herring regression
  * @param herring_weight Weight for herring indices 
  * @param herring_index_baltic_proper_gulf_finland Vector of yearly herring weight-at-age indices Baltic Proper and Gulf of Finland
@@ -41,7 +44,7 @@
 vector compute_baseline_birth_rate(
   real birth_rate_baseline_min,
   real birth_rate_baseline_max,
-  real herring_intercept_scaled,
+  real herring_birth_rate_midpoint,
   real herring_slope,
   real herring_weight,
   data vector herring_index_baltic_proper_gulf_finland,
@@ -60,7 +63,7 @@ vector compute_baseline_birth_rate(
       + (birth_rate_baseline_max - birth_rate_baseline_min)
         * inv_logit(
             herring_slope
-            * (herring_intercept_scaled + weighted_h)
+            * (weighted_h - herring_birth_rate_midpoint)
           );
   }
 

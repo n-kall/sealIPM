@@ -9,11 +9,10 @@ default_priors <- function(species) {
     if (species == "grey") {
         out <- list(
             population_init = rep(1 / n_demo, n_demo) * 20000,
-            n_demo = n_demo,
             pregnancy_exposure_scaled = 1 / 36,
+            # Shared hunting onset and duration in years
             t_birth_to_start_hunt = 1.5 / 12,
-            t_birth_to_end_hunt = 8 / 12,
-            t_hunt = 5.5 / 12,
+            hunting_duration = 8 / 12,
 
             selectivity_cholesky = selectivity_cholesky,
 
@@ -33,16 +32,15 @@ default_priors <- function(species) {
             prior_hunting_effort_sd_location = 0,
             prior_hunting_effort_sd_scale = 0.1,
 
-            prior_herring_intercept_scaled_sd = 4,
+            # Midpoint in standardized weighted herring-index units
+            prior_herring_birth_rate_midpoint_sd = 4,
             prior_herring_slope_sd = 3,
 
-            prior_male_pup_mortality_offset_location = 0,
-            prior_male_pup_mortality_offset_scale = 0.2,
-            prior_male_adult_mortality_offset_location = 0.88,
-            prior_male_adult_mortality_offset_scale = 0.2,
-
-            prior_reproductive_process_sd_location = 0,
-            prior_reproductive_process_sd_scale = 0.1,
+            # Positive male log mortality offsets reduce survival
+            prior_male_pup_mortality_log_offset_location = 0,
+            prior_male_pup_mortality_log_offset_scale = 0.2,
+            prior_male_adult_mortality_log_offset_location = 0.88,
+            prior_male_adult_mortality_log_offset_scale = 0.2,
 
             hunting_bag_cv = 0.05,
 

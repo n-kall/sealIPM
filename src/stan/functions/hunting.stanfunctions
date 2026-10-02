@@ -24,7 +24,7 @@
  * - @f$ Q_t^{C} @f$: `hunting_quota`
  * - @f$ g_i^{C} @f$: `hunting_selectivity[i]`, on the log scale
  * - @f$ n_{i,t} @f$: `population_comp[i]`
- * - @f$ k @f$: `t_birth_to_end_hunt`
+ * - @f$ k @f$: `hunting_duration`
  * - @f$ \sigma_C @f$: `hunting_effort_sd`
  * - @f$ z_t^{C} @f$: `hunting_effort_noise`, a standardized non-negative innovation
  * - @f$ \epsilon_t^{C}=\sigma_C z_t^{C} @f$: the paper's effort reduction
@@ -43,7 +43,7 @@
  * @param population_comp vector of population
  * @param hunting_effort_sd standard deviation of hunting effort
  * @param hunting_effort_noise Standardized hunting effort reduction
- * @param t_birth_to_end_hunt Hunting interval length used to calibrate the declining hazard
+ * @param hunting_duration Hunting interval length used to calibrate the declining hazard
  * @return vector of hunting pressure per demographic group
  */
 vector compute_hunting_pressure(
@@ -52,7 +52,7 @@ vector compute_hunting_pressure(
   vector population_comp,
   real hunting_effort_sd,
   real hunting_effort_noise,
-  data real t_birth_to_end_hunt
+  data real hunting_duration
 ) {
   int n_demo_groups = num_elements(population_comp);
   vector[n_demo_groups] pressure;
@@ -61,10 +61,10 @@ vector compute_hunting_pressure(
     return rep_vector(0.0, n_demo_groups);
   }
 
-  if (!(t_birth_to_end_hunt > 0.0)) {
+  if (!(hunting_duration > 0.0)) {
     reject(
       "compute_hunting_pressure requires ",
-      "t_birth_to_end_hunt > 0; received ", t_birth_to_end_hunt
+      "hunting_duration > 0; received ", hunting_duration
     );
   }
 
@@ -91,7 +91,7 @@ vector compute_hunting_pressure(
       hunting_selectivity
       + log(hunting_quota)
       + log(2.0)
-      - 2.0 * log(t_birth_to_end_hunt)
+      - 2.0 * log(hunting_duration)
       - hunting_effort_noise * hunting_effort_sd
       - log_denominator
     );
@@ -225,7 +225,7 @@ vector hunting_count_derivative(
  *
  * Mapping from paper notation to code
  * - @f$ \tau_0 @f$: `t_birth_to_start_hunt`, time from birth to hunting onset
- * - @f$ k @f$: `t_birth_to_end_hunt`, used as hunting duration despite its name
+ * - @f$ k @f$: `hunting_duration`, shared season duration in years
  * - @f$ E_{i,t}^{\mathrm{sw}} @f$: `hunting_pressure_sweden`
  * - @f$ E_{i,t}^{\mathrm{fi}} @f$: `hunting_pressure_finland`
  * - @f$ \mu_i @f$: `non_hunting_mortality_rate`, a mortality hazard rather than a death probability
@@ -263,7 +263,7 @@ vector hunting_count_derivative(
  * materially invalid probabilities acceptable
  *
  * @param t_birth_to_start_hunt Time from birth to hunting onset in years
- * @param t_birth_to_end_hunt Hunting duration in years, restricted to the interval from zero to one
+ * @param hunting_duration Hunting duration in years, restricted to the interval from zero to one
  * @param hunting_pressure_sweden Non-negative Swedish hunting-pressure coefficient
  * @param hunting_pressure_finland Non-negative Finnish hunting-pressure coefficient
  * @param non_hunting_mortality_rate Non-negative annual non-hunting mortality hazard
@@ -277,7 +277,7 @@ vector hunting_count_derivative(
  */
 vector compute_fate_probabilities(
   data real t_birth_to_start_hunt,
-  data real t_birth_to_end_hunt,
+  data real hunting_duration,
   real hunting_pressure_sweden,
   real hunting_pressure_finland,
   real non_hunting_mortality_rate,
@@ -288,7 +288,7 @@ vector compute_fate_probabilities(
 ) {
   vector[4] probability;
   real probability_sum;
-  real k = t_birth_to_end_hunt;
+  real k = hunting_duration;
   real survival_to_hunting_start =
     exp(-non_hunting_mortality_rate * t_birth_to_start_hunt);
   vector[1] initial_hunting = rep_vector(0.0, 1);
@@ -296,7 +296,7 @@ vector compute_fate_probabilities(
 
   if (!(k >= 0.0 && k <= 1.0)) {
     reject(
-      "compute_fate_probabilities requires t_birth_to_end_hunt in [0, 1]; ",
+      "compute_fate_probabilities requires hunting_duration in [0, 1]; ",
       "received ", k
     );
   }

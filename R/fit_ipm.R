@@ -131,16 +131,16 @@ grey_init_fun <- function(n_state_years, n_demo, prior_spec = default_priors("gr
         pup_to_adult_survival_ratio = stats::runif(1, 0.8, 0.99),
         mortality_age_shape = stats::runif(1, 0, 1),
 
-        male_pup_survival_offset = stats::rnorm(
-            1, prior_spec$prior_male_pup_mortality_offset_location,
-            prior_spec$prior_male_pup_mortality_offset_scale
+        male_pup_mortality_log_offset = stats::rnorm(
+            1, prior_spec$prior_male_pup_mortality_log_offset_location,
+            prior_spec$prior_male_pup_mortality_log_offset_scale
         ),
-        male_adult_survival_offset = stats::rnorm(
-            1, prior_spec$prior_male_adult_mortality_offset_location,
-            prior_spec$prior_male_adult_mortality_offset_scale
+        male_adult_mortality_log_offset = stats::rnorm(
+            1, prior_spec$prior_male_adult_mortality_log_offset_location,
+            prior_spec$prior_male_adult_mortality_log_offset_scale
         ),
 
-        # Hunting selectivity / bias
+        # Hunting and bycatch selectivity
         hunting_selectivity_sweden_sc = stats::rnorm(
             n_demo, 0, 0.2 * prior_spec$prior_hunting_selectivity_sd
         ),
@@ -165,7 +165,8 @@ grey_init_fun <- function(n_state_years, n_demo, prior_spec = default_priors("gr
         birth_rate_baseline_min_max_ratio = stats::runif(1, 0.7, 0.95),
         birth_rate_at_capacity_to_baseline_ratio = 0.5, # Set coherently below.
 
-        herring_intercept_scaled = stats::rnorm(1, 0, 0.5),
+        # Negate the previous offset to preserve equivalent seeded starting points
+        herring_birth_rate_midpoint = -stats::rnorm(1, 0, 0.5),
         herring_slope = stats::rnorm(1, 1, 0.5),
         herring_weight = stats::runif(1, 0, 1),
 
@@ -216,7 +217,7 @@ grey_init_fun <- function(n_state_years, n_demo, prior_spec = default_priors("gr
     reference_birth <- out$birth_rate_baseline_max * (
         out$birth_rate_baseline_min_max_ratio +
             (1 - out$birth_rate_baseline_min_max_ratio) *
-                stats::plogis(out$herring_intercept_scaled * out$herring_slope)
+                stats::plogis(-out$herring_birth_rate_midpoint * out$herring_slope)
     )
     for (attempt in seq_len(100L)) {
         log_prop <- log_el_birth - log(reference_birth) + stats::rnorm(1, 0, 0.01)

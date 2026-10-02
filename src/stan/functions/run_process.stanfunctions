@@ -102,7 +102,7 @@ tuple(vector, real, real) initialize_population_with_burnin(
  * @param hunting_effort_noise_finland Standardized Finnish hunting effort reduction
  * @param pregnancy_exposure_scaled Scaled pregnancy exposure coefficient, not raw elapsed time
  * @param t_birth_to_start_hunt Time from birth to hunting onset in years
- * @param t_birth_to_end_hunt Hunting duration in years under the existing timing convention
+ * @param hunting_duration Shared hunting season duration in years
  * @param birth_count_noise Standardized deviation in the number of pups born
  * @param pup_sex_allocation_noise Standardized deviation in the female and male pup allocation
  * @param transition_noise_raw Transition noise (raw)
@@ -115,7 +115,7 @@ tuple(vector, real, real) initialize_population_with_burnin(
  * @param fate_probability_tolerance tolerance for fate probabilities
  * @return tuple with outputs: birth_rate, pregnancy_rate, population_total,
  *   non_pup_population_total, population_comp, survivors, deaths_or_bycatch,
- *   hunted_sweden, hunted_finland, bycatch_expected, hunting_bag_total_sweden,
+ *   hunted_sweden, hunted_finland, non_hunting_deaths_expected, hunting_bag_total_sweden,
  *   hunting_bag_total_finland, hunted_total, reproductive_probs
  */
 tuple(
@@ -154,7 +154,7 @@ tuple(
   vector hunting_effort_noise_finland,
   data real pregnancy_exposure_scaled,
   data real t_birth_to_start_hunt,
-  data real t_birth_to_end_hunt,
+  data real hunting_duration,
   vector birth_count_noise,
   vector pup_sex_allocation_noise,
   matrix transition_noise_raw,
@@ -183,7 +183,7 @@ tuple(
   matrix[n_demo_groups, n_state_years] deaths_or_bycatch;
   matrix[n_demo_groups, n_state_years] hunted_sweden;
   matrix[n_demo_groups, n_state_years] hunted_finland;
-  matrix[n_demo_groups, n_state_years] bycatch_expected;
+  matrix[n_demo_groups, n_state_years] non_hunting_deaths_expected;
 
   // Annual hunting totals
   vector[n_state_years] hunting_bag_total_sweden;
@@ -258,7 +258,7 @@ tuple(
         population_comp[, year],
         hunting_effort_sd_sweden,
         hunting_effort_noise_sweden[year],
-        t_birth_to_end_hunt
+        hunting_duration
       );
 
     // Calculate Finnish hunting pressure from quota and effort
@@ -269,14 +269,14 @@ tuple(
         population_comp[, year],
         hunting_effort_sd_finland,
         hunting_effort_noise_finland[year],
-        t_birth_to_end_hunt
+        hunting_duration
       );
 
     // Calculate expected survival, deaths and hunting counts
     for (demo in 1:n_demo_groups) {
       vector[4] fate_probabilities = compute_fate_probabilities(
         t_birth_to_start_hunt,
-        t_birth_to_end_hunt,
+        hunting_duration,
         hunting_pressure_sweden[demo],
         hunting_pressure_finland[demo],
         non_hunting_mortality_rate[demo],
@@ -315,12 +315,12 @@ tuple(
       }
     }
 
-    // Store realized fates and expected bycatch counts
+    // Store realized fates and expected non-hunting deaths
     survivors[, year] = realized_fate[, 1];
     deaths_or_bycatch[, year] = realized_fate[, 4];
     hunted_sweden[, year] = realized_fate[, 2];
     hunted_finland[, year] = realized_fate[, 3];
-    bycatch_expected[, year] = expected_fate_counts[, 4];
+    non_hunting_deaths_expected[, year] = expected_fate_counts[, 4];
 
     // Sum hunting counts across demographic groups and countries
     hunting_bag_total_sweden[year] =
@@ -367,7 +367,7 @@ tuple(
     deaths_or_bycatch,
     hunted_sweden,
     hunted_finland,
-    bycatch_expected,
+    non_hunting_deaths_expected,
     hunting_bag_total_sweden,
     hunting_bag_total_finland,
     hunted_total,
@@ -405,7 +405,7 @@ tuple(
  * @param hunting_effort_noise_finland Finnish effort reductions.
  * @param pregnancy_exposure_scaled Scaled pregnancy exposure coefficient, not raw elapsed time
  * @param t_birth_to_start_hunt Time from birth to hunting onset in years
- * @param t_birth_to_end_hunt Hunting duration in years under the existing timing convention
+ * @param hunting_duration Shared hunting season duration in years
  * @param placental_scar_detection_probability Placental scar detection probability for each year
  * @param ca_detection_probability Corpus albicans detection probability for each year
  * @param ca_probability_without_birth Corpus-albicans probability without birth.
@@ -440,7 +440,7 @@ tuple(
   vector hunting_effort_noise_finland,
   data real pregnancy_exposure_scaled,
   data real t_birth_to_start_hunt,
-  data real t_birth_to_end_hunt,
+  data real hunting_duration,
   vector placental_scar_detection_probability,
   vector ca_detection_probability,
   real ca_probability_without_birth,
@@ -458,7 +458,7 @@ tuple(
   matrix[n_demo_groups, n_state_years] deaths_or_bycatch;
   matrix[n_demo_groups, n_state_years] hunted_sweden;
   matrix[n_demo_groups, n_state_years] hunted_finland;
-  matrix[n_demo_groups, n_state_years] bycatch_expected;
+  matrix[n_demo_groups, n_state_years] non_hunting_deaths_expected;
   vector[n_state_years] hunting_bag_total_sweden;
   vector[n_state_years] hunting_bag_total_finland;
   vector[n_state_years] hunted_total;
@@ -555,7 +555,7 @@ tuple(
         population_current_real,
         hunting_effort_sd_sweden,
         hunting_effort_noise_sweden[year],
-        t_birth_to_end_hunt
+        hunting_duration
       );
 
       hunting_pressure_finland = compute_hunting_pressure(
@@ -564,7 +564,7 @@ tuple(
         population_current_real,
         hunting_effort_sd_finland,
         hunting_effort_noise_finland[year],
-        t_birth_to_end_hunt
+        hunting_duration
       );
 
       for (demo in 1:n_demo_groups) {
@@ -572,7 +572,7 @@ tuple(
 
           vector[4] fate_probability = compute_fate_probabilities(
             t_birth_to_start_hunt,
-            t_birth_to_end_hunt,
+            hunting_duration,
             hunting_pressure_sweden[demo],
             hunting_pressure_finland[demo],
             non_hunting_mortality_rate[demo],
@@ -611,7 +611,7 @@ tuple(
       deaths_or_bycatch[demo, year] = deaths_current[demo];
       hunted_sweden[demo, year] = hunted_sweden_current[demo];
       hunted_finland[demo, year] = hunted_finland_current[demo];
-      bycatch_expected[demo, year] = expected_deaths_or_bycatch[demo];
+      non_hunting_deaths_expected[demo, year] = expected_deaths_or_bycatch[demo];
       survivors_previous[demo] = survivors_current[demo];
     }
 
@@ -644,7 +644,7 @@ tuple(
     deaths_or_bycatch,
     hunted_sweden,
     hunted_finland,
-    bycatch_expected,
+    non_hunting_deaths_expected,
     hunting_bag_total_sweden,
     hunting_bag_total_finland,
     hunted_total,

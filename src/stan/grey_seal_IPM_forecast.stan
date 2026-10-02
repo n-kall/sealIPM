@@ -36,8 +36,7 @@ data {
   // Hunting and reproductive timing, expressed as fractions of a year.
   real<lower=0, upper=1> pregnancy_exposure_scaled;
   real<lower=0, upper=1> t_birth_to_start_hunt;
-  real<lower=0, upper=1> t_birth_to_end_hunt; // hunting duration under the existing timing convention
-  real<lower=0, upper=1> t_hunt;
+  real<lower=0, upper=1> hunting_duration; // shared hunting duration in years
 
   // ODE solver controls used by the joint competing-risks fate ODE.
   real<lower=1e-15> rel_tol;
@@ -150,7 +149,7 @@ parameters {
   // Herring-dependent baseline birth-rate parameters.
   real<lower=0, upper=1> birth_rate_baseline_max;
   real<lower=0, upper=1> birth_rate_baseline_min_max_ratio;
-  real herring_intercept_scaled;
+  real herring_birth_rate_midpoint; // -alpha / beta in weighted herring-index units
   real herring_slope;
   real<lower=0, upper=1> herring_weight;
   real<lower=0, upper=1> density_dependence_scaled;
@@ -191,7 +190,7 @@ generated quantities {
     birth_rate_baseline_future = compute_baseline_birth_rate(
       birth_rate_baseline_min,
       birth_rate_baseline_max,
-      herring_intercept_scaled,
+      herring_birth_rate_midpoint,
       herring_slope,
       herring_weight,
       future_herring_index_baltic_proper_gulf_finland,
@@ -219,7 +218,8 @@ generated quantities {
   matrix<lower=0>[n_demo_groups, n_future_years] deaths_or_bycatch_future;
   matrix<lower=0>[n_demo_groups, n_future_years] hunted_sweden_future;
   matrix<lower=0>[n_demo_groups, n_future_years] hunted_finland_future;
-  matrix<lower=0>[n_demo_groups, n_future_years] bycatch_expected_future;
+  // Expected natural deaths plus bycatch, not bycatch counts alone
+  matrix<lower=0>[n_demo_groups, n_future_years] non_hunting_deaths_expected_future;
   vector<lower=0>[n_future_years] hunting_bag_total_sweden_future;
   vector<lower=0>[n_future_years] hunting_bag_total_finland_future;
   vector<lower=0>[n_future_years] hunted_total_future;
@@ -261,7 +261,7 @@ generated quantities {
     deaths_or_bycatch_future,
     hunted_sweden_future,
     hunted_finland_future,
-    bycatch_expected_future,
+    non_hunting_deaths_expected_future,
     hunting_bag_total_sweden_future,
     hunting_bag_total_finland_future,
     hunted_total_future,
@@ -285,7 +285,7 @@ generated quantities {
     hunting_effort_noise_finland_future,
     pregnancy_exposure_scaled,
     t_birth_to_start_hunt,
-    t_birth_to_end_hunt,
+    hunting_duration,
     placental_scar_detection_probability_future,
     ca_detection_probability_future,
     ca_probability_without_birth,
@@ -344,7 +344,7 @@ generated quantities {
   array[n_future_years, n_demo_groups] int future_bycatch_comp =
     bycatch_comp_rng(
       future_year,
-      bycatch_expected_future,
+      non_hunting_deaths_expected_future,
       bycatch_selectivity,
       future_bycatch_sample_size
     );
@@ -443,7 +443,7 @@ generated quantities {
     log_lik_future_bycatch = bycatch_comp_pointwise_log_lik(
       future_obs_bycatch_comp,
       bycatch_year,
-      bycatch_expected_future,
+      non_hunting_deaths_expected_future,
       bycatch_selectivity
     );
   }

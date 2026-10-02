@@ -1,28 +1,38 @@
 /**
+ * @file
+ * @brief Bycatch sample composition conditional on expected non-hunting deaths
+ *
+ * The process combines natural mortality and bycatch in one non-hunting fate
+ * Its expected counts provide the demographic composition before applying
+ * bycatch selectivity and normalizing to sample probabilities
+ * These counts are not an estimate of the number of seals killed by bycatch
+ */
+
+/**
  * @brief bycatch_comp_lpmf
  *
  * @param bycatch_composition Observed bycatch composition
  * @param bycatch_comp_year Years of observation
- * @param bycatch_expected Expected counts in each group
+ * @param non_hunting_deaths_expected Expected natural deaths plus bycatch in each demographic group
  * @param selectivity Bycatch selectivity
  * @return log probability based on multinomial model
  */
 real bycatch_comp_lpmf(
   array[,] int bycatch_composition,
   array[] int bycatch_comp_year,
-  matrix bycatch_expected,
+  matrix non_hunting_deaths_expected,
   vector selectivity
 ) {
   int n_obs = size(bycatch_composition);
-  vector[rows(bycatch_expected)] w = exp(selectivity);
+  vector[rows(non_hunting_deaths_expected)] w = exp(selectivity);
   real lp = 0;
 
   for (i in 1:n_obs) {
     int t = bycatch_comp_year[i];
     lp += multinomial_lpmf(
       bycatch_composition[i] |
-      (w .* bycatch_expected[, t]) /
-        dot_product(w, bycatch_expected[, t])
+      (w .* non_hunting_deaths_expected[, t]) /
+        dot_product(w, non_hunting_deaths_expected[, t])
     );
   }
   return lp;
@@ -34,26 +44,26 @@ real bycatch_comp_lpmf(
  *
  * @param bycatch_composition Observed bycatch composition
  * @param bycatch_comp_year Years of observation
- * @param bycatch_expected Expected counts in each group
+ * @param non_hunting_deaths_expected Expected natural deaths plus bycatch in each demographic group
  * @param selectivity Bycatch selectivity
  * @return pointwise log likelihood
 */
 vector bycatch_comp_pointwise_log_lik(
   array[,] int bycatch_composition,
   array[] int bycatch_comp_year,
-  matrix bycatch_expected,
+  matrix non_hunting_deaths_expected,
   vector selectivity
 ) {
   int n_obs = size(bycatch_composition);
-  vector[rows(bycatch_expected)] w = exp(selectivity);
+  vector[rows(non_hunting_deaths_expected)] w = exp(selectivity);
   vector[n_obs] log_lik;
 
   for (i in 1:n_obs) {
     int t = bycatch_comp_year[i];
     log_lik[i] = multinomial_lpmf(
       bycatch_composition[i] |
-      (w .* bycatch_expected[, t]) /
-        dot_product(w, bycatch_expected[, t])
+      (w .* non_hunting_deaths_expected[, t]) /
+        dot_product(w, non_hunting_deaths_expected[, t])
     );
   }
   return log_lik;
@@ -64,31 +74,31 @@ vector bycatch_comp_pointwise_log_lik(
  * @brief bycatch_comp_rng
  *
  * @param bycatch_comp_year Years of observation
- * @param bycatch_expected Expected counts in each group
+ * @param non_hunting_deaths_expected Expected natural deaths plus bycatch in each demographic group
  * @param selectivity Bycatch selectivity
  * @param bycatch_sample_size total number of bycaught
  * @return simulated observations
  */
 array[,] int bycatch_comp_rng(
   array[] int bycatch_comp_year,
-  matrix bycatch_expected,
+  matrix non_hunting_deaths_expected,
   vector selectivity,
   array[] int bycatch_sample_size
 ) {
   int n_obs = size(bycatch_comp_year);
-  int K = rows(bycatch_expected);
+  int K = rows(non_hunting_deaths_expected);
   vector[K] w = exp(selectivity);
   array[n_obs, K] int y_sim;
 
   for (i in 1:n_obs) {
     int t = bycatch_comp_year[i];
-    real denom = dot_product(w, bycatch_expected[, t]);
+    real denom = dot_product(w, non_hunting_deaths_expected[, t]);
 
     if (bycatch_sample_size[i] == 0 || denom <= 0) {
       y_sim[i] = rep_array(0, K);
     } else {
       y_sim[i] = multinomial_rng(
-        (w .* bycatch_expected[, t]) / denom,
+        (w .* non_hunting_deaths_expected[, t]) / denom,
         bycatch_sample_size[i]
       );
     }
