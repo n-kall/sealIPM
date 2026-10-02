@@ -79,6 +79,7 @@ tuple(vector, real, real) initialize_population_with_burnin(
  * The annual loop obtains probabilities from compute_fate_probabilities,
  * multiplies them by population counts, and calls allocate_fates for the
  * continuous approximation described in Section 2.4
+ *
  * Columns follow the paper order: survival, Swedish hunting, Finnish hunting,
  * other death or bycatch
  *

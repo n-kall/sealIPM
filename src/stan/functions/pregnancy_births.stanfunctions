@@ -16,6 +16,7 @@
  * @f]
  *
  * This is the intrinsic birth rate before population density effects
+ *
  * The herring indices describe normalized weight-at-age in the Baltic Proper
  * and Gulf of Finland (BP+GoF) and the Gulf of Bothnia (GoB)
  *
@@ -28,8 +29,11 @@
  *
  * The code uses the equivalent logistic predictor
  * `herring_slope * (weighted_h - herring_birth_rate_midpoint)`
+ *
  * The midpoint is -alpha / beta in weighted herring-index units
+ *
  * At the midpoint the baseline birth rate is halfway between its limits
+ *
  * If the slope is zero the curve is constant and the midpoint is not identified
  *
  * @param birth_rate_baseline_min Minimum baseline birth rate
@@ -87,6 +91,7 @@ vector compute_baseline_birth_rate(
  *
  * This transformation is the implementation's parameterization, not a
  * separately numbered equation in the paper
+ *
  * The code uses @f$ b_{\max}^0 @f$ rather than the maximum over yearly
  * baseline birth rates appearing in Equation (78)
  *
@@ -143,6 +148,7 @@ real compute_density_dependence_intercept(
  *
  * The implementation takes the logarithm of the supplied ratio internally
  * and uses log1p_exp to avoid constructing a potentially overflowing quotient
+ *
  * The non-degenerate density-suppression case requires positive intercept
  * and carrying capacity and @f$ 0 < b_K/\bar b_0 < 1 @f$
  *
@@ -181,6 +187,7 @@ real compute_density_dependence_slope(
  *
  * The baseline already includes herring effects and this function adds
  * suppression by the previous year's total seal population
+ *
  * The code evaluates the density penalty internally in log space
  *
  * @param birth_rate_baseline Baseline birth rate
@@ -222,6 +229,7 @@ real update_birth_rate(
  * @f]
  *
  * In the paper @f$ \tau_s @f$ is elapsed time in years after implantation
+ *
  * The code argument `pregnancy_exposure_scaled` receives the already scaled exposure
  * @f[
  * s = \frac{16}{9}\tau_s^2,\qquad
@@ -230,6 +238,7 @@ real update_birth_rate(
  *
  * The default `pregnancy_exposure_scaled = 1/36` equals
  * @f$ (16/9)(1.5/12)^2 @f$, corresponding to sampling 1.5 months after implantation
+ *
  * Do not pass an unscaled time in years directly to this function
  *
  * Mapping from paper notation to code
@@ -273,7 +282,9 @@ real update_pregnancy_rate(
  * @f]
  *
  * The factor of two accounts for the equal female and male pup sex ratio
+ *
  * This is the replacement birth rate in the absence of hunting
+ *
  * Since @f$ \phi_{f,i}=\exp(-\mu_{f,i}) @f$, the equivalent expression is
  * @f[
  * b_K = 2(1-\phi_{f,5+})\exp\left(\sum_{i=0}^{4}\mu_{f,i}\right)
@@ -286,7 +297,9 @@ real update_pregnancy_rate(
  *
  * The implementation generalizes the sum to the supplied number of age classes
  * and computes the replacement rate on the log scale internally
+ *
  * Set `log_scale` to one to return that log value directly for likelihood calculations
+ *
  * A mathematical replacement rate above one indicates that replacement
  * cannot be achieved with at most one pup per adult female per year
  *

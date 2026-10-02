@@ -15,7 +15,9 @@
  * @f]
  *
  * Section 2.4 describes a continuous log-Gaussian approximation for fitting
+ *
  * This function uses a logistic-normal approximation rather than an exact multinomial draw
+ *
  * For the active categories, it constructs log-ratio means and a
  * covariance factor from adjusted expected counts and returns
  * @f[
@@ -24,7 +26,9 @@
  * @f]
  *
  * This last expression documents the implementation, not a numbered paper equation
+ *
  * It gives continuous non-negative allocations summing to the supplied population
+ *
  * It does not imply exact multinomial moments
  *
  * Mapping from paper notation to code
@@ -35,6 +39,7 @@
  *
  * Category order matches Equation (3): survival, Swedish hunting, Finnish hunting,
  * other death or bycatch
+ *
  * Countries with zero quotas are omitted from the active categories and their
  * allocations remain exactly zero, using one fewer innovation than active fates
  *

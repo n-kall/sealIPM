@@ -35,9 +35,13 @@
  * - @f$ \nu_{5+} @f$: `male_adult_mortality_log_offset`
  *
  * Female age classes precede male age classes in the returned vector
+ *
  * With six age classes, age is one less than the code index `age_index`
+ *
  * The code generalizes the denominator five to `n_age_classes - 1`
+ *
  * These rates include natural mortality and bycatch but exclude hunting
+ *
  * A positive male log mortality offset multiplies mortality by exp(offset)
  * and therefore reduces survival, rather than increasing it
  *

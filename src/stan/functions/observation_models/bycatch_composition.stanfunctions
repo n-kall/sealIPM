@@ -3,8 +3,10 @@
  * @brief Bycatch sample composition conditional on expected non-hunting deaths
  *
  * The process combines natural mortality and bycatch in one non-hunting fate
+ *
  * Its expected counts provide the demographic composition before applying
  * bycatch selectivity and normalizing to sample probabilities
+ *
  * These counts are not an estimate of the number of seals killed by bycatch
  */
 

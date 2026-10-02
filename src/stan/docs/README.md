@@ -26,3 +26,13 @@ relative to the generated HTML directory.
 Edit `mainpage.md`, `DoxygenLayout.xml`, or `sealipm.css` here, not the generated
 files in `html/`. The documentation filter affects parsing only: source
 listings retain the original Stan syntax. No model equations are changed.
+
+Tuple return types are displayed as `tuple` rather than a C++ template signature
+The `@return` description gives the contents and their order
+The filter preserves newlines so source links retain the original line numbers
+
+Doxygen joins consecutive prose lines into a single paragraph
+Use an empty comment line (` *`) between separate statements or paragraphs
+Keep wrapped sentences together and use `<br>` only when a line break within
+the same paragraph is intentional
+See [Doxygen paragraph formatting](https://www.doxygen.nl/manual/markdown.html)

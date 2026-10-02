@@ -7,7 +7,7 @@ from pathlib import Path
 path = Path(sys.argv[1])
 text = path.read_text(encoding="utf-8")
 
-# Convert Stan tuple return types to C++-style template types.
+# Present Stan tuple types as a simple return type for Doxygen's C++ parser.
 #
 # Example:
 #   tuple(
@@ -17,17 +17,14 @@ text = path.read_text(encoding="utf-8")
 #   )
 #
 # becomes:
-#   std::tuple<
-#     vector,
-#     real,
-#     matrix
-#   >
+#   tuple
 #
 # The pattern is restricted to tuple contents without parentheses, which
 # matches Stan type lists such as vector, real, matrix, and int.
+# Retain line numbers so source links still point to the original Stan lines.
 text = re.sub(
     r"\btuple\s*\(([^()]*)\)",
-    r"std::tuple<\1>",
+    lambda match: "tuple" + "\n" * match.group(0).count("\n"),
     text,
     flags=re.DOTALL,
 )

@@ -31,11 +31,17 @@
  *
  * The factor @f$ 2/k^2 @f$ follows from integrating the linearly declining
  * hazard @f$ E_{i,t}^{C}(k-\tau) @f$ over the hunting interval
+ *
  * The constant-population approximation calibrates the quota-based pressure
+ *
  * The subsequent ODE calculation accounts for depletion during hunting
+ *
  * A zero quota returns zero pressure and positive quotas use log-space arithmetic
+ *
  * The same function is used for continuous fitting and discrete forecasting
+ *
  * Empty demographic groups are allowed and receive exactly zero pressure
+ *
  * A positive quota requires a positive total population
  *
  * @param hunting_quota Hunting quota for the country
@@ -136,8 +142,10 @@ vector compute_hunting_pressure(
  *
  * The derivative does not depend on cumulative_hunting_count because the population is available
  * analytically rather than included as another ODE state
+ *
  * The caller integrates only from zero to k, outside which the paper sets
  * the hunting derivative to zero
+ *
  * The vector state and separate arguments implement Stan's current solver
  * interface without changing the differential equation
  *
@@ -183,6 +191,7 @@ vector hunting_count_derivative(
  *
  * Equations (32), (34), and (35) in Vanko et al (2026), Appendix B, supply
  * the four probabilities used in the multinomial transition of Equation (3)
+ *
  * Annual survival is evaluated analytically
  * @f[
  * \rho_{i,t}^{S}=\exp\left[-\frac{k^2}{2}
@@ -201,12 +210,15 @@ vector hunting_count_derivative(
  *
  * This implementation integrates hunting_count_derivative twice from zero to k with initial
  * hunting count zero and population_at_hunting_start equal to one
+ *
  * Sweden is the focal country in the first solve and Finland in the second
+ *
  * The resulting counts per unit hunting-onset population are multiplied by
  * survival from birth to hunting onset to obtain birth-referenced probabilities
+ *
  * A zero focal pressure or zero hunting duration skips that solve and returns zero hunting
  *
- * Timing convention relative to Appendix B
+ * @par Timing convention relative to Appendix B
  * Equation (26) distinguishes population just after birth from population
  * at hunting onset
  * @f[
@@ -220,6 +232,7 @@ vector hunting_count_derivative(
  * \left(k\tau-\frac{\tau^2}{2}\right)-\mu_i\tau\right]\,d\tau
  * @f]
  * The pre-hunting factor is applied after each unit-population solve
+ *
  * Annual survival already includes the full annual mortality hazard and is
  * not multiplied by this factor again
  *
@@ -231,27 +244,33 @@ vector hunting_count_derivative(
  * - @f$ \mu_i @f$: `non_hunting_mortality_rate`, a mortality hazard rather than a death probability
  *
  * The RK45 implementation uses ode_rk45_tol with explicit tolerances and a step limit
+ *
  * These settings and the final probability correction are numerical controls,
  * not additional parameters of the paper's biological model
+ *
  * Only probability violations within probability_tolerance are corrected
+ *
  * The continuous process runner computes conditional expected counts as
  * @f$ \mathbb{E}[\mathbf{u}_{i,t}^{1}\mid n_{i,t},\boldsymbol{\rho}_{i,t}]
  * =n_{i,t}\boldsymbol{\rho}_{i,t} @f$, derived from Equation (3)
  * It then passes these counts to allocate_fates
+ *
  * The discrete runner instead uses the probabilities in multinomial_rng
  *
- * Numerical probability safeguards
+ * @par Numerical probability safeguards
  * Equation (3) in Vanko et al (2026) requires a probability simplex
  * @f[
  * \rho^I\geq0,\qquad
  * \rho^S+\rho^{H^{\mathrm{sw}}}+\rho^{H^{\mathrm{fi}}}+\rho^D=1
  * @f]
  * Equation (35) defines other death as the remainder after survival and hunting
+ *
  * Numerical ODE solutions can leave small negative remainders or small
  * deviations from a unit sum due to solver and floating-point error
  *
  * This correction is an implementation safeguard, not a numbered equation or
  * additional biological assumption in the paper
+ *
  * After checking the original probabilities and their sum against the tolerance,
  * it applies
  * @f[
@@ -259,6 +278,7 @@ vector hunting_count_derivative(
  * \frac{\max(0,\rho^I)}{\sum_J\max(0,\rho^J)}
  * @f]
  * Materially negative probabilities and material conservation errors are rejected
+ *
  * The tolerance is not a statistical variance parameter and does not make
  * materially invalid probabilities acceptable
  *
