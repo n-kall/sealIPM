@@ -64,7 +64,6 @@ vector pregnancy_pointwise_log_lik(
 /**
  * @brief pregnancy_rng
  *
- * @param pregnancy_count Observed counts of pregnancy signs
  * @param pregnancy_count_year Which years are the counts from
  * @param pregnancy_sample_size Sample sizes for the survey
  * @param pregnancy_rate Pregnancy rate

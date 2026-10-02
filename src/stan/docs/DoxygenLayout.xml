@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Keep the default page layouts; simplify only the navigation. -->
+<doxygenlayout version="1.0">
+  <navindex>
+    <tab type="mainpage" visible="yes" title="Overview"/>
+    <tab type="files" visible="yes" title="Stan reference">
+      <tab type="filelist" visible="yes" title="Function files"/>
+      <tab type="globals" visible="yes" title="Function index"/>
+    </tab>
+  </navindex>
+</doxygenlayout>

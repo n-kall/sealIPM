@@ -1,0 +1,90 @@
+/**
+ * @file
+ * @brief Demographic non-hunting mortality rates
+ */
+
+/**
+ * @brief Compute demographic mortality rates
+ *
+ * Equation (4) in Vanko et al (2026), Section 2.2.1, interpolates non-hunting
+ * mortality between pups and adults for each sex
+ * @f[
+ * \log(\mu_{a,s}) = \log(\mu_{0,s})
+ * + \left(\frac{a}{5}\right)^c
+ * \left[\log(\mu_{5+,s})-\log(\mu_{0,s})\right],\qquad 1\le a\le4
+ * @f]
+ *
+ * Female endpoint mortality rates are obtained from annual survival probabilities
+ * @f[
+ * \mu_{0,f}=-\log(\phi_{0,f}),\qquad
+ * \mu_{5+,f}=-\log(\phi_{5+,f})
+ * @f]
+ *
+ * Equations (60) and (61) in Appendix D.2 express male mortality as deviations
+ * from female mortality on the log scale
+ * @f[
+ * \log(\mu_{0,m})=\log(\mu_{0,f})+\nu_0,\qquad
+ * \log(\mu_{5+,m})=\log(\mu_{5+,f})+\nu_{5+}
+ * @f]
+ *
+ * Mapping from paper notation to code
+ * - @f$ \phi_{0,f} @f$: `female_pup_survival_probability`
+ * - @f$ \phi_{5+,f} @f$: `female_adult_survival_probability`
+ * - @f$ c @f$: `mortality_age_shape`
+ * - @f$ \nu_0 @f$: `male_pup_offset`
+ * - @f$ \nu_{5+} @f$: `male_adult_offset`
+ *
+ * Female age classes precede male age classes in the returned vector
+ * With six age classes, age is one less than the code index `age_index`
+ * The code generalizes the denominator five to `n_age_classes - 1`
+ * These rates include natural mortality and bycatch but exclude hunting
+ *
+ * @param female_pup_survival_probability Female pup survival rate
+ * @param female_adult_survival_probability Female adult survival rate
+ * @param mortality_age_shape Shape of the logarithmic age-mortality curve
+ * @param n_age_classes Number of age classes
+ * @param male_pup_offset Male pup survival offset
+ * @param male_adult_offset Male adult survival offset
+ * @return vector of mortality rates for each demographic group
+ */
+vector mortality_rates(
+  real female_pup_survival_probability,
+  real female_adult_survival_probability,
+  real mortality_age_shape,
+  data int n_age_classes,
+  real male_pup_offset,
+  real male_adult_offset
+) {
+  int n_demo_groups = 2 * n_age_classes;
+  vector[n_demo_groups] non_hunting_mortality_rate;
+  real female_pup_mortality_rate = -log(female_pup_survival_probability);
+  real female_adult_mortality_rate = -log(female_adult_survival_probability);
+  real male_pup_mortality_rate = exp(log(female_pup_mortality_rate) + male_pup_offset);
+  real male_adult_mortality_rate = exp(log(female_adult_mortality_rate) + male_adult_offset);
+
+  non_hunting_mortality_rate[1] = female_pup_mortality_rate;
+  non_hunting_mortality_rate[n_age_classes] = female_adult_mortality_rate;
+
+  for (age_index in 2:(n_age_classes - 1)) {
+    real age_mortality_weight = ((age_index - 1.0) / (n_age_classes - 1.0))^mortality_age_shape;
+
+    non_hunting_mortality_rate[age_index] = exp(
+      log(female_pup_mortality_rate)
+      + age_mortality_weight * (log(female_adult_mortality_rate) - log(female_pup_mortality_rate))
+    );
+  }
+
+  non_hunting_mortality_rate[n_age_classes + 1] = male_pup_mortality_rate;
+  non_hunting_mortality_rate[n_demo_groups] = male_adult_mortality_rate;
+
+  for (age_index in 2:(n_age_classes - 1)) {
+    real age_mortality_weight = ((age_index - 1.0) / (n_age_classes - 1.0))^mortality_age_shape;
+
+    non_hunting_mortality_rate[n_age_classes + age_index] = exp(
+      log(male_pup_mortality_rate)
+      + age_mortality_weight * (log(male_adult_mortality_rate) - log(male_pup_mortality_rate))
+    );
+  }
+
+  return non_hunting_mortality_rate;
+}

@@ -1,0 +1,408 @@
+/**
+ * @file
+ * @brief Hunting pressure, hunting ODE, and annual demographic fate probabilities
+ */
+
+/**
+ * @brief Compute demographic hunting pressure for one country
+ *
+ * Combines Equations (64), (71), and (72) in Vanko et al (2026), Appendix D
+ * with the log selectivity in Equation (73)
+ * @f[
+ * E_{i,t}^{C}=\Psi_i^{C}\exp(-\epsilon_t^{C})\widehat E_t^{C},\qquad
+ * \widehat E_t^{C}=\frac{2Q_t^{C}}{k^2\sum_j n_{j,t}\Psi_j^{C}},\qquad
+ * \Psi_i^{C}=\exp(g_i^{C})
+ * @f]
+ *
+ * The equivalent expression evaluated by the code is
+ * @f[
+ * E_{i,t}^{C}=\frac{2Q_t^{C}\exp(g_i^{C}-\sigma_C z_t^{C})}
+ * {k^2\sum_j n_{j,t}\exp(g_j^{C})}
+ * @f]
+ *
+ * Mapping from paper notation to code
+ * - @f$ Q_t^{C} @f$: `hunting_quota`
+ * - @f$ g_i^{C} @f$: `hunting_selectivity[i]`, on the log scale
+ * - @f$ n_{i,t} @f$: `population_comp[i]`
+ * - @f$ k @f$: `t_birth_to_end_hunt`
+ * - @f$ \sigma_C @f$: `hunting_effort_sd`
+ * - @f$ z_t^{C} @f$: `hunting_effort_noise`, a standardized non-negative innovation
+ * - @f$ \epsilon_t^{C}=\sigma_C z_t^{C} @f$: the paper's effort reduction
+ *
+ * The factor @f$ 2/k^2 @f$ follows from integrating the linearly declining
+ * hazard @f$ E_{i,t}^{C}(k-\tau) @f$ over the hunting interval
+ * The constant-population approximation calibrates the quota-based pressure
+ * The subsequent ODE calculation accounts for depletion during hunting
+ * A zero quota returns zero pressure and positive quotas use log-space arithmetic
+ * The same function is used for continuous fitting and discrete forecasting
+ * Empty demographic groups are allowed and receive exactly zero pressure
+ * A positive quota requires a positive total population
+ *
+ * @param hunting_quota Hunting quota for the country
+ * @param hunting_selectivity vector of hunting selectivity for demographics
+ * @param population_comp vector of population
+ * @param hunting_effort_sd standard deviation of hunting effort
+ * @param hunting_effort_noise Standardized hunting effort reduction
+ * @param t_birth_to_end_hunt Hunting interval length used to calibrate the declining hazard
+ * @return vector of hunting pressure per demographic group
+ */
+vector compute_hunting_pressure(
+  data int hunting_quota,
+  vector hunting_selectivity,
+  vector population_comp,
+  real hunting_effort_sd,
+  real hunting_effort_noise,
+  data real t_birth_to_end_hunt
+) {
+  int n_demo_groups = num_elements(population_comp);
+  vector[n_demo_groups] pressure;
+
+  if (hunting_quota == 0) {
+    return rep_vector(0.0, n_demo_groups);
+  }
+
+  if (!(t_birth_to_end_hunt > 0.0)) {
+    reject(
+      "compute_hunting_pressure requires ",
+      "t_birth_to_end_hunt > 0; received ", t_birth_to_end_hunt
+    );
+  }
+
+  if (!(min(population_comp) >= 0.0)) {
+    reject(
+      "compute_hunting_pressure requires non-negative counts; ",
+      "population_comp=", population_comp
+    );
+  }
+
+  if (!(sum(population_comp) > 0.0)) {
+    reject(
+      "compute_hunting_pressure requires a positive total ",
+      "population when the quota is positive."
+    );
+  }
+
+  {
+    vector[n_demo_groups] log_population = log(population_comp);
+    real log_denominator =
+      log_sum_exp(hunting_selectivity + log_population);
+
+    pressure = exp(
+      hunting_selectivity
+      + log(hunting_quota)
+      + log(2.0)
+      - 2.0 * log(t_birth_to_end_hunt)
+      - hunting_effort_noise * hunting_effort_sd
+      - log_denominator
+    );
+  }
+
+  for (demo in 1:n_demo_groups) {
+    if (population_comp[demo] == 0.0) {
+      pressure[demo] = 0.0;
+    }
+  }
+
+  return pressure;
+}
+
+/**
+ * @brief Evaluate the hunting-count derivative for one country
+ *
+ * Equations (5) and (6) in Vanko et al (2026), Section 2.2.1, and
+ * Equations (18), (19), and (33) in Appendix B specify
+ * @f[
+ * \frac{dH_{i,t}^{C}}{d\tau}
+ * =\widetilde n_{i,t}(\tau)E_{i,t}^{C}(k-\tau),
+ * \qquad 0\leq\tau\leq k
+ * @f]
+ * Substituting the surviving population from Equation (22) gives
+ * @f[
+ * \widetilde n_{i,t}(\tau)=\widetilde n_{i,t}^{0}
+ * \exp\left[-(E_{i,t}^{\mathrm{sw}}+E_{i,t}^{\mathrm{fi}})
+ * \left(k\tau-\frac{\tau^2}{2}\right)-\mu_i\tau\right]
+ * @f]
+ * The focal hunting count therefore depends on population depletion by both
+ * countries' hunting and non-hunting mortality
+ *
+ * Mapping from paper notation to code
+ * - @f$ \tau @f$: `time_since_hunting_start`, elapsed time since hunting starts
+ * - @f$ H_{i,t}^{C} @f$: `cumulative_hunting_count[1]`, cumulative expected focal-country hunting
+ * - @f$ \widetilde n_{i,t}^{0} @f$: `population_at_hunting_start`, population at the start of the integration
+ * - @f$ k @f$: `hunting_duration`, hunting duration and integration endpoint
+ * - @f$ E_{i,t}^{C} @f$: `hunting_pressure_focal`, focal-country hunting pressure
+ * - The other country's hunting pressure: `hunting_pressure_competing`
+ * - @f$ \mu_i @f$: `non_hunting_mortality_rate`, annual non-hunting mortality hazard
+ *
+ * The derivative does not depend on cumulative_hunting_count because the population is available
+ * analytically rather than included as another ODE state
+ * The caller integrates only from zero to k, outside which the paper sets
+ * the hunting derivative to zero
+ * The vector state and separate arguments implement Stan's current solver
+ * interface without changing the differential equation
+ *
+ * @param time_since_hunting_start Elapsed time since hunting starts in years
+ * @param cumulative_hunting_count One-element vector of cumulative expected focal-country hunting
+ * @param population_at_hunting_start Population at the beginning of the hunting interval
+ * @param hunting_duration Hunting duration in years
+ * @param hunting_pressure_focal Focal-country hunting-pressure coefficient
+ * @param hunting_pressure_competing Competing-country hunting-pressure coefficient
+ * @param non_hunting_mortality_rate Annual instantaneous non-hunting mortality hazard
+ * @return One-element vector containing the focal hunting-count derivative
+ * @see compute_fate_probabilities
+ */
+vector hunting_count_derivative(
+  real time_since_hunting_start,
+  vector cumulative_hunting_count,
+  real population_at_hunting_start,
+  real hunting_duration,
+  real hunting_pressure_focal,
+  real hunting_pressure_competing,
+  real non_hunting_mortality_rate
+) {
+  // Expected population remaining during the hunting interval
+  real expected_alive_population =
+    population_at_hunting_start
+    * exp(
+        -(hunting_pressure_focal + hunting_pressure_competing)
+        * (hunting_duration * time_since_hunting_start - square(time_since_hunting_start) / 2.0)
+        - non_hunting_mortality_rate * time_since_hunting_start
+      );
+
+  // Instantaneous hunting count for the focal country
+  real hunting_count_rate =
+    expected_alive_population
+    * hunting_pressure_focal
+    * (hunting_duration - time_since_hunting_start);
+
+  return rep_vector(hunting_count_rate, 1);
+}
+
+/**
+ * @brief Calculate annual survival, hunting, and other-death probabilities
+ *
+ * Equations (32), (34), and (35) in Vanko et al (2026), Appendix B, supply
+ * the four probabilities used in the multinomial transition of Equation (3)
+ * Annual survival is evaluated analytically
+ * @f[
+ * \rho_{i,t}^{S}=\exp\left[-\frac{k^2}{2}
+ * (E_{i,t}^{\mathrm{sw}}+E_{i,t}^{\mathrm{fi}})-\mu_i\right]
+ * @f]
+ * The paper obtains each hunting probability from its integrated hunting count
+ * @f[
+ * \rho_{i,t}^{H^C}=\frac{H_{i,t}^{C}(k)}{n_{i,t}},
+ * \qquad C\in\{\mathrm{sw},\mathrm{fi}\}
+ * @f]
+ * The remaining probability combines natural mortality and bycatch
+ * @f[
+ * \rho_{i,t}^{D}=1-\rho_{i,t}^{S}
+ * -\rho_{i,t}^{H^{\mathrm{sw}}}-\rho_{i,t}^{H^{\mathrm{fi}}}
+ * @f]
+ *
+ * This implementation integrates hunting_count_derivative twice from zero to k with initial
+ * hunting count zero and population_at_hunting_start equal to one
+ * Sweden is the focal country in the first solve and Finland in the second
+ * The resulting counts per unit hunting-onset population are multiplied by
+ * survival from birth to hunting onset to obtain birth-referenced probabilities
+ * A zero focal pressure or zero hunting duration skips that solve and returns zero hunting
+ *
+ * Timing convention relative to Appendix B
+ * Equation (26) distinguishes population just after birth from population
+ * at hunting onset
+ * @f[
+ * \widetilde n_{i,t}^{0}=n_{i,t}\exp(-\mu_i\tau_0)
+ * @f]
+ * Substituting this into Equation (34) gives the birth-referenced probability
+ * @f[
+ * \rho_{i,t}^{H^C}=\exp(-\mu_i\tau_0)
+ * \int_0^k E_{i,t}^{C}(k-\tau)
+ * \exp\left[-(E_{i,t}^{\mathrm{sw}}+E_{i,t}^{\mathrm{fi}})
+ * \left(k\tau-\frac{\tau^2}{2}\right)-\mu_i\tau\right]\,d\tau
+ * @f]
+ * The pre-hunting factor is applied after each unit-population solve
+ * Annual survival already includes the full annual mortality hazard and is
+ * not multiplied by this factor again
+ *
+ * Mapping from paper notation to code
+ * - @f$ \tau_0 @f$: `t_birth_to_start_hunt`, time from birth to hunting onset
+ * - @f$ k @f$: `t_birth_to_end_hunt`, used as hunting duration despite its name
+ * - @f$ E_{i,t}^{\mathrm{sw}} @f$: `hunting_pressure_sweden`
+ * - @f$ E_{i,t}^{\mathrm{fi}} @f$: `hunting_pressure_finland`
+ * - @f$ \mu_i @f$: `non_hunting_mortality_rate`, a mortality hazard rather than a death probability
+ *
+ * The RK45 implementation uses ode_rk45_tol with explicit tolerances and a step limit
+ * These settings and the final probability correction are numerical controls,
+ * not additional parameters of the paper's biological model
+ * Only probability violations within probability_tolerance are corrected
+ * The continuous process runner computes conditional expected counts as
+ * @f$ \mathbb{E}[\mathbf{u}_{i,t}^{1}\mid n_{i,t},\boldsymbol{\rho}_{i,t}]
+ * =n_{i,t}\boldsymbol{\rho}_{i,t} @f$, derived from Equation (3)
+ * It then passes these counts to allocate_fates
+ * The discrete runner instead uses the probabilities in multinomial_rng
+ *
+ * Numerical probability safeguards
+ * Equation (3) in Vanko et al (2026) requires a probability simplex
+ * @f[
+ * \rho^I\geq0,\qquad
+ * \rho^S+\rho^{H^{\mathrm{sw}}}+\rho^{H^{\mathrm{fi}}}+\rho^D=1
+ * @f]
+ * Equation (35) defines other death as the remainder after survival and hunting
+ * Numerical ODE solutions can leave small negative remainders or small
+ * deviations from a unit sum due to solver and floating-point error
+ *
+ * This correction is an implementation safeguard, not a numbered equation or
+ * additional biological assumption in the paper
+ * After checking the original probabilities and their sum against the tolerance,
+ * it applies
+ * @f[
+ * \widehat\rho^I=
+ * \frac{\max(0,\rho^I)}{\sum_J\max(0,\rho^J)}
+ * @f]
+ * Materially negative probabilities and material conservation errors are rejected
+ * The tolerance is not a statistical variance parameter and does not make
+ * materially invalid probabilities acceptable
+ *
+ * @param t_birth_to_start_hunt Time from birth to hunting onset in years
+ * @param t_birth_to_end_hunt Hunting duration in years, restricted to the interval from zero to one
+ * @param hunting_pressure_sweden Non-negative Swedish hunting-pressure coefficient
+ * @param hunting_pressure_finland Non-negative Finnish hunting-pressure coefficient
+ * @param non_hunting_mortality_rate Non-negative annual non-hunting mortality hazard
+ * @param rel_tol Relative tolerance for the hunting ODE solves
+ * @param abs_tol Absolute tolerance for the hunting ODE solves
+ * @param max_num_steps Maximum number of steps for each hunting ODE solve
+ * @param probability_tolerance Absolute tolerance for final probability validation
+ * @return Probabilities in paper order: survival, Swedish hunting, Finnish hunting, other death or bycatch
+ * @see hunting_count_derivative
+ * @see allocate_fates
+ */
+vector compute_fate_probabilities(
+  data real t_birth_to_start_hunt,
+  data real t_birth_to_end_hunt,
+  real hunting_pressure_sweden,
+  real hunting_pressure_finland,
+  real non_hunting_mortality_rate,
+  data real rel_tol,
+  data real abs_tol,
+  data int max_num_steps,
+  data real probability_tolerance
+) {
+  vector[4] probability;
+  real probability_sum;
+  real k = t_birth_to_end_hunt;
+  real survival_to_hunting_start =
+    exp(-non_hunting_mortality_rate * t_birth_to_start_hunt);
+  vector[1] initial_hunting = rep_vector(0.0, 1);
+  array[1] real times = { k };
+
+  if (!(k >= 0.0 && k <= 1.0)) {
+    reject(
+      "compute_fate_probabilities requires t_birth_to_end_hunt in [0, 1]; ",
+      "received ", k
+    );
+  }
+  if (!(t_birth_to_start_hunt >= 0.0 && t_birth_to_start_hunt <= 1.0 - k)) {
+    reject(
+      "compute_fate_probabilities requires birth-to-hunting time in [0, 1 - k]; ",
+      "received ", t_birth_to_start_hunt, ", hunting duration=", k
+    );
+  }
+  if (
+    !(hunting_pressure_sweden >= 0.0)
+    || !(hunting_pressure_finland >= 0.0)
+    || !(non_hunting_mortality_rate >= 0.0)
+  ) {
+    reject(
+      "compute_fate_probabilities requires non-negative hazards; ",
+      "hunting_pressure_sweden=", hunting_pressure_sweden,
+      ", hunting_pressure_finland=", hunting_pressure_finland,
+      ", non_hunting_mortality_rate=", non_hunting_mortality_rate
+    );
+  }
+
+  // Integrate Swedish hunting and account for survival to hunting onset
+  probability[2] = 0.0;
+  if (k > 0.0 && hunting_pressure_sweden > 0.0) {
+    array[1] vector[1] hunted_sweden = ode_rk45_tol(
+      hunting_count_derivative, initial_hunting, 0.0, times,
+      rel_tol, abs_tol, max_num_steps,
+      1.0, k, hunting_pressure_sweden, hunting_pressure_finland, non_hunting_mortality_rate
+    );
+    probability[2] = survival_to_hunting_start * hunted_sweden[1][1];
+  }
+
+  // Integrate Finnish hunting and account for survival to hunting onset
+  probability[3] = 0.0;
+  if (k > 0.0 && hunting_pressure_finland > 0.0) {
+    array[1] vector[1] hunted_finland = ode_rk45_tol(
+      hunting_count_derivative, initial_hunting, 0.0, times,
+      rel_tol, abs_tol, max_num_steps,
+      1.0, k, hunting_pressure_finland, hunting_pressure_sweden, non_hunting_mortality_rate
+    );
+    probability[3] = survival_to_hunting_start * hunted_finland[1][1];
+  }
+
+  // Calculate survival and remaining non-hunting death probability
+  probability[1] =
+    exp(-(hunting_pressure_sweden + hunting_pressure_finland) * square(k) / 2.0)
+    * exp(-non_hunting_mortality_rate);
+  probability[4] =
+    1.0 - probability[1] - probability[2] - probability[3];
+
+  // Validate the probability simplex before correcting small numerical errors
+  probability_sum =
+    sum(probability);
+
+  if (!(probability_tolerance > 0.0)) {
+    reject(
+      "compute_fate_probabilities requires a positive tolerance; ",
+      "probability_tolerance=", probability_tolerance
+    );
+  }
+
+  /*
+   * The !(x >= limit) form also rejects NaN because comparisons involving
+   * NaN evaluate to false
+   */
+  if (!(min(probability) >= -probability_tolerance)) {
+    reject(
+      "Joint fate calculation returned a materially negative probability; ",
+      "probability=", probability,
+      ", tolerance=", probability_tolerance
+    );
+  }
+
+  if (
+    !(probability_sum >= 1.0 - probability_tolerance)
+    || !(probability_sum <= 1.0 + probability_tolerance)
+  ) {
+    reject(
+      "Joint fate calculation failed probability conservation; probability=",
+      probability,
+      ", sum=", probability_sum,
+      ", tolerance=", probability_tolerance
+    );
+  }
+
+  /*
+   * Clamp only small boundary violations that passed the tolerance check
+   */
+  for (fate_id in 1:num_elements(probability)) {
+    probability[fate_id] =
+      fmax(0.0, probability[fate_id]);
+  }
+
+  probability_sum =
+    sum(probability);
+
+  if (!(probability_sum > 0.0)) {
+    reject(
+      "Joint fate probabilities sum to zero or are non-finite; probability=",
+      probability
+    );
+  }
+
+  /*
+   * Restore an exact simplex after any tolerated boundary correction
+   */
+  return probability / probability_sum;
+}

@@ -60,10 +60,10 @@ vector hunting_comp_pointwise_log_lik(
 /**
  * @brief hunting_comp_rng
  *
- * @param hunting_composition Observed composition of hunted samples
  * @param hunting_year Years of observation
  * @param hunted Expected hunted in each demographic group
  * @param hunted_total Total hunted
+ * @param hunting_sample_size number of seals checked
  * @return simulated observations
  */
 array[,] int hunting_comp_rng(

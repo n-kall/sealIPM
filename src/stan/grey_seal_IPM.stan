@@ -1,13 +1,16 @@
 functions {
- #include functions/ode.stanfunctions
- #include functions/logitnormal.stanfunctions
  #include functions/observation_models/aerial_counts.stanfunctions
  #include functions/observation_models/hunting_bags.stanfunctions
  #include functions/observation_models/hunting_composition.stanfunctions
  #include functions/observation_models/bycatch_composition.stanfunctions
  #include functions/observation_models/pregnancy.stanfunctions
  #include functions/observation_models/reproductive_signs.stanfunctions
- #include functions/statespace.stanfunctions
+ #include functions/pregnancy_births.stanfunctions
+ #include functions/deaths.stanfunctions
+ #include functions/aging.stanfunctions
+ #include functions/hunting.stanfunctions
+ #include functions/fates.stanfunctions
+ #include functions/run_process.stanfunctions
 }
 
 data {
@@ -25,9 +28,9 @@ data {
   int<lower=1> population_burn_in; // number of iterations for initializing the population
 
   // Hunting/reproductive timing
-  real<lower=0> t_mate_to_preg; // time from mating to pregnancy
+  real<lower=0> pregnancy_exposure_scaled; // Scaled pregnancy exposure coefficient, not raw elapsed time
   real<lower=0> t_birth_to_start_hunt; // time from birth to start of hunting period
-  real<lower=0> t_birth_to_end_hunt; // time from birth to end of hunting period
+  real<lower=0> t_birth_to_end_hunt; // hunting duration under the existing timing convention
   real<lower=0> t_hunt; // length of hunting gp_periodic_cov
 
   // ODE solver settings
@@ -98,7 +101,7 @@ data {
   // ----------------------------
 
   // Prior covariance/Cholesky structure for selectivity biases
-  matrix[2 * n_age_classes, 2 * n_age_classes] bias_cholesky_factor;
+  matrix[2 * n_age_classes, 2 * n_age_classes] selectivity_cholesky;
 
   // Initial population size: lognormal(log_mean, log_sd)
   real prior_initial_population_log_mean;
@@ -165,43 +168,43 @@ parameters {
   // hunting effort
   real<lower=0> hunting_effort_sd_sweden; // sigma_sw
   real<lower=0> hunting_effort_sd_finland; // sigma_fi
-  vector<lower=0>[n_state_years] epsilon_h_sw; //
-  vector<lower=0>[n_state_years] epsilon_h_fi;
+  vector<lower=0>[n_state_years] hunting_effort_noise_sweden; //
+  vector<lower=0>[n_state_years] hunting_effort_noise_finland;
 
   // survival curve
-  real<lower=0, upper=1> survival_shape; // c
+  real<lower=0, upper=1> mortality_age_shape; // c
 
   // natural mortality
-  real<lower=0.8, upper=1> phi_a;
-  real<lower=0, upper=1> phi_sc;
+  real<lower=0.8, upper=1> female_adult_survival_probability;
+  real<lower=0, upper=1> pup_to_adult_survival_ratio;
   real male_pup_survival_offset; // nu_0
   real male_adult_survival_offset; // nu_5+
 
   // birth rate
   real<lower=0> carrying_capacity; // K_max
-  real<lower=0, upper=1> max_baseline_birth_rate; // b0_max
-  real<lower=0, upper=1> min_baseline_birth_rate_prop; // b0_min / b0_max
-  real<lower=0, upper=1> birth_rate_at_carrying_capacity_prop; // bk / b0
+  real<lower=0, upper=1> birth_rate_baseline_max; // b0_max
+  real<lower=0, upper=1> birth_rate_baseline_min_max_ratio; // Minimum baseline birth rate divided by maximum
+  real<lower=0, upper=1> birth_rate_at_capacity_to_baseline_ratio; // Birth rate at carrying capacity divided by reference baseline birth rate
   real herring_intercept_scaled; // alpha_sc
   real herring_slope;            // beta
   real<lower=0, upper=1> herring_weight; // w
-  real<lower=0, upper=1> density_dependence_scaled; // theta0
+  real<lower=0, upper=1> density_dependence_scaled; // Scaled parameter used to derive the density dependence intercept
 
   // state process
   real<lower=0> population_init_size; // n_0
-  vector[n_state_years] epsilon_birth; //
-  vector[n_state_years] epsilon_sex;
+  vector[n_state_years] birth_count_noise; //
+  vector[n_state_years] pup_sex_allocation_noise;
   matrix[3 * n_demo_groups, n_state_years] transition_noise_raw;
 
   // reproductive signs
 
   real<lower=0, upper=1> report_ca_mean;
   real<lower=0, upper=1> report_placental_mean;
-  real<lower=0, upper=1> prob_of_ca;
+  real<lower=0, upper=1> ca_probability_without_birth;
   real<lower=0> report_placental_sd;
   real<lower=0> report_ca_sd;
-  vector<lower=0>[n_state_years] epsilon_ca;
-  vector<lower=0>[n_state_years] epsilon_placental;
+  vector<lower=0>[n_state_years] ca_detection_noise;
+  vector<lower=0>[n_state_years] placental_scar_detection_noise;
 
 }
 
@@ -211,57 +214,58 @@ transformed parameters {
   // TIME-INVARIANT PARAMETERS
   // ----------------------------
 
-  real phi_pup = phi_a * phi_sc;
+  real female_pup_survival_probability = female_adult_survival_probability * pup_to_adult_survival_ratio;
 
   // density dependence
   real density_dependence_intercept = compute_density_dependence_intercept(
-    max_baseline_birth_rate,
+    birth_rate_baseline_max,
     density_dependence_scaled
   );
 
   // natural mortality
-  vector[n_demo_groups] mu_m = mortality_rates(
-    phi_pup,
-    phi_a,
-    survival_shape,
+  vector[n_demo_groups] non_hunting_mortality_rate = mortality_rates(
+    female_pup_survival_probability,
+    female_adult_survival_probability,
+    mortality_age_shape,
     n_age_classes,
     male_pup_survival_offset,
     male_adult_survival_offset
   );
 
-  vector[n_demo_groups] S_diag = exp(-mu_m);
+  vector[n_demo_groups] survival_probability = exp(-non_hunting_mortality_rate);
 
-  // hunting biases
+  // hunting selectivity
+  vector[n_demo_groups] hunting_selectivity_finland = selectivity_cholesky * hunting_selectivity_finland_sc;
+  vector[n_demo_groups] hunting_selectivity_sweden = selectivity_cholesky * hunting_selectivity_sweden_sc;
 
-  vector[n_demo_groups] hunting_selectivity_finland = bias_cholesky_factor * hunting_selectivity_finland_sc;
-  vector[n_demo_groups] hunting_selectivity_sweden = bias_cholesky_factor * hunting_selectivity_sweden_sc;
+  // bycatch selectivity
+  vector[n_demo_groups] bycatch_selectivity = selectivity_cholesky * bycatch_selectivity_sc;
 
-  // bycatch bias
-  vector[n_demo_groups] bycatch_bias = bias_cholesky_factor * bycatch_selectivity_sc;
+  real birth_rate_baseline_min;
 
-  real min_baseline_birth_rate_actual;
+  birth_rate_baseline_min =
+  birth_rate_baseline_max * birth_rate_baseline_min_max_ratio;
 
-  min_baseline_birth_rate_actual =
-  max_baseline_birth_rate * min_baseline_birth_rate_prop;
-
-  real reference_baseline_birth_rate =
-  min_baseline_birth_rate_actual
-  + (max_baseline_birth_rate - min_baseline_birth_rate_actual)
+  // Baseline birth rate at reference herring conditions before density effects
+  real birth_rate_baseline_reference =
+  birth_rate_baseline_min
+  + (birth_rate_baseline_max - birth_rate_baseline_min)
   * inv_logit(herring_intercept_scaled * herring_slope);
 
-  // birth rate at carrying capacity
-  real birth_rate_at_carrying_capacity_el;
-  real birth_rate_at_carrying_capacity = reference_baseline_birth_rate * birth_rate_at_carrying_capacity_prop;
+  // Birth rate required for demographic replacement under the survival schedule
+  real birth_rate_replacement;
+  // Density-adjusted birth rate at carrying capacity under reference herring conditions
+  real birth_rate_at_carrying_capacity = birth_rate_baseline_reference * birth_rate_at_capacity_to_baseline_ratio;
 
-  birth_rate_at_carrying_capacity_el = euler_lotka_birth_rate(
-    mu_m,
+  birth_rate_replacement = compute_birth_rate_replacement(
+    non_hunting_mortality_rate,
     n_age_classes,
-    phi_a
+    female_adult_survival_probability,
+    0
   );
 
   real density_dependence_slope = compute_density_dependence_slope(
-    birth_rate_at_carrying_capacity,
-    reference_baseline_birth_rate,
+    birth_rate_at_capacity_to_baseline_ratio,
     density_dependence_intercept,
     carrying_capacity
   );
@@ -276,14 +280,14 @@ transformed parameters {
     "slope = ", density_dependence_slope,
     ", bK = ", birth_rate_at_carrying_capacity,
     ", reference birth rate = ",
-      reference_baseline_birth_rate,
+      birth_rate_baseline_reference,
     ", bK / reference birth rate = ",
       birth_rate_at_carrying_capacity /
-      reference_baseline_birth_rate,
+      birth_rate_baseline_reference,
     ", log ratio = ",
       log(
         birth_rate_at_carrying_capacity /
-        reference_baseline_birth_rate
+        birth_rate_baseline_reference
       ),
     ", density intercept = ",
       density_dependence_intercept,
@@ -291,13 +295,13 @@ transformed parameters {
       1.0 -
       log(
         birth_rate_at_carrying_capacity /
-        reference_baseline_birth_rate
+        birth_rate_baseline_reference
       ) / density_dependence_intercept,
     ", carrying capacity = ", carrying_capacity,
     ", max baseline birth rate = ",
-      max_baseline_birth_rate,
+      birth_rate_baseline_max,
     ", min baseline birth rate actual = ",
-      min_baseline_birth_rate_actual,
+      birth_rate_baseline_min,
     ", density dependence scaled = ",
       density_dependence_scaled,
     ", herring intercept scaled = ",
@@ -307,10 +311,10 @@ transformed parameters {
   }
 
   // reporting probabilities
-  vector<lower=0, upper=1>[n_state_years] pi_s =
-  report_placental_mean * exp(-epsilon_placental * report_placental_sd);
-  vector<lower=0, upper=1>[n_state_years] pi_c =
-  report_ca_mean * exp(-epsilon_ca * report_ca_sd);
+  vector<lower=0, upper=1>[n_state_years] placental_scar_detection_probability =
+  report_placental_mean * exp(-placental_scar_detection_noise * report_placental_sd);
+  vector<lower=0, upper=1>[n_state_years] ca_detection_probability =
+  report_ca_mean * exp(-ca_detection_noise * report_ca_sd);
 
   // ----------------------------
   // YEAR-TO-YEAR STATE TRANSITION
@@ -318,9 +322,9 @@ transformed parameters {
 
   // precompute baseline birth rates for each year
   // baseline birth rates just depend on herring
-  vector<lower=0, upper=1>[n_state_years + 1] baseline_birth_rate = compute_baseline_birth_rate(
-    min_baseline_birth_rate_actual,
-    max_baseline_birth_rate,
+  vector<lower=0, upper=1>[n_state_years + 1] birth_rate_baseline = compute_baseline_birth_rate(
+    birth_rate_baseline_min,
+    birth_rate_baseline_max,
     herring_intercept_scaled,
     herring_slope,
     herring_weight,
@@ -336,6 +340,7 @@ transformed parameters {
   vector<lower=0, upper=1>[n_state_years] pregnancy_rate; // yearly pregnancy rate
 
   vector[n_state_years] population_total; // yearly total population estimate
+  vector[n_state_years] non_pup_population_total; // yearly population estimate excluding pups (ages 1+)
 
   matrix[n_demo_groups, n_state_years] population_comp; // yearly demographic composition
 
@@ -354,9 +359,9 @@ transformed parameters {
 
 
     // starting birth rate
-  real initial_birth_rate =
+  real birth_rate_initial =
   update_birth_rate(
-    baseline_birth_rate[1],
+    birth_rate_baseline[1],
     density_dependence_intercept,
     density_dependence_slope,
     sum(population_init)
@@ -373,9 +378,9 @@ initialize_population_with_burnin(
   population_init,
   population_init_size,
   population_burn_in,
-  initial_birth_rate,
+  birth_rate_initial,
   aging_matrix,
-  S_diag,
+  survival_probability,
   n_age_classes
 );
 
@@ -388,24 +393,25 @@ initialize_population_with_burnin(
     reject(
     "Invalid birth_rate_at_carrying_capacity: ",
     "bK = ", birth_rate_at_carrying_capacity,
-    ", phi_sc = ", phi_sc,
-    ", phi_a = ", phi_a,
-    ", phi_pup = ", phi_pup,
-    ", survival_shape = ", survival_shape,
+    ", pup_to_adult_survival_ratio = ", pup_to_adult_survival_ratio,
+    ", female_adult_survival_probability = ", female_adult_survival_probability,
+    ", female_pup_survival_probability = ", female_pup_survival_probability,
+    ", mortality_age_shape = ", mortality_age_shape,
     ", female mortality rates = ",
-      mu_m[1:(n_age_classes - 1)],
+      non_hunting_mortality_rate[1:(n_age_classes - 1)],
     ", sum female mortality = ",
-      sum(mu_m[1:(n_age_classes - 1)]),
+      sum(non_hunting_mortality_rate[1:(n_age_classes - 1)]),
     ", survival product = ",
-      exp(sum(-mu_m[1:(n_age_classes - 1)])),
+      exp(sum(-non_hunting_mortality_rate[1:(n_age_classes - 1)])),
     ", numerator = ",
-      2.0 * (1.0 - phi_a)
+      2.0 * (1.0 - female_adult_survival_probability)
     );
   }
 
   (birth_rate,
   pregnancy_rate,
   population_total,
+  non_pup_population_total,
   population_comp,
   survivors,
   deaths_or_bycatch,
@@ -421,27 +427,28 @@ initialize_population_with_burnin(
     init_state.1,
     init_state.2,
     init_state.3,
-    baseline_birth_rate,
+    birth_rate_baseline,
     density_dependence_intercept,
     density_dependence_slope,
     aging_matrix,
-    mu_m,
+    non_hunting_mortality_rate,
     hunting_selectivity_sweden,
     hunting_selectivity_finland,
     hunting_quota_sweden,
     hunting_quota_finland,
     hunting_effort_sd_sweden,
     hunting_effort_sd_finland,
-    epsilon_h_sw,
-    epsilon_h_fi,
-    t_mate_to_preg,
+    hunting_effort_noise_sweden,
+    hunting_effort_noise_finland,
+    pregnancy_exposure_scaled,
+    t_birth_to_start_hunt,
     t_birth_to_end_hunt,
-    epsilon_birth,
-    epsilon_sex,
+    birth_count_noise,
+    pup_sex_allocation_noise,
     transition_noise_raw,
-    pi_s,
-    pi_c,
-    prob_of_ca,
+    placental_scar_detection_probability,
+    ca_detection_probability,
+    ca_probability_without_birth,
     rel_tol,
     abs_tol,
     max_num_steps,
@@ -460,9 +467,9 @@ initialize_population_with_burnin(
   lprior += lprior_population_init_size;
 
   // Natural mortality
-  // phi_a ~ uniform(0,1); // implied prior by constraints
-  real lprior_phi_sc = beta_lpdf(phi_sc | 1, 1);
-  lprior += lprior_phi_sc;
+  // female_adult_survival_probability ~ uniform(0,1); // implied prior by constraints
+  real lprior_pup_to_adult_survival_ratio = beta_lpdf(pup_to_adult_survival_ratio | 1, 1);
+  lprior += lprior_pup_to_adult_survival_ratio;
 
   real lprior_male_pup_survival_offset = normal_lpdf(male_pup_survival_offset | prior_male_pup_mortality_offset_location, prior_male_pup_mortality_offset_scale);
   lprior += lprior_male_pup_survival_offset;
@@ -496,7 +503,11 @@ initialize_population_with_burnin(
   // b0max ~ uniform (0, 1); // implied prior by bounds
   // b0min_sc ~ uniform (0, 1); // implied prior by bounds
 
-  real lprior_birth_rate_diff = normal_lpdf(log(birth_rate_at_carrying_capacity_el / birth_rate_at_carrying_capacity) | 0, 0.05);
+  real lprior_birth_rate_diff = normal_lpdf(
+    compute_birth_rate_replacement(non_hunting_mortality_rate, n_age_classes, female_adult_survival_probability, 1)
+    - log(birth_rate_baseline_reference)
+    - log(birth_rate_at_capacity_to_baseline_ratio) | 0, 0.05
+  );
   lprior += lprior_birth_rate_diff;
 
   real lprior_herring_intercept_scaled = normal_lpdf(herring_intercept_scaled | 0, prior_herring_intercept_scaled_sd);
@@ -515,9 +526,9 @@ initialize_population_with_burnin(
   lprior += lprior_aerial_count_overdispersion;
 
   // Observation of reproductive signs
-  // prob_ca_nonpreg ~ uniform(0, 1); // implied prior by constraints
-  // pi_s_mean ~ uniform(0, 1); // implied prior by constraints
-  // pi_c_mean ~ uniform(0, 1); // implied prior by constraints
+  // ca_probability_without_birth ~ uniform(0, 1); // implied prior by constraints
+  // report_placental_mean ~ uniform(0, 1); // implied prior by constraints
+  // report_ca_mean ~ uniform(0, 1); // implied prior by constraints
 
   real lprior_report_placental_sd = normal_lpdf(report_placental_sd | 0, 0.1);
   lprior += lprior_report_placental_sd;
@@ -535,15 +546,15 @@ model {
   target += lprior;
 
   // standard normals for stochasticity
-  epsilon_h_sw ~ std_normal();
-  epsilon_h_fi ~ std_normal();
+  hunting_effort_noise_sweden ~ std_normal();
+  hunting_effort_noise_finland ~ std_normal();
 
-  epsilon_ca ~ std_normal();
-  epsilon_placental ~ std_normal();
+  ca_detection_noise ~ std_normal();
+  placental_scar_detection_noise ~ std_normal();
 
   // Stochasicity for birth process
-  epsilon_birth ~ std_normal();
-  epsilon_sex ~ std_normal();
+  birth_count_noise ~ std_normal();
+  pup_sex_allocation_noise ~ std_normal();
 
   // Stochasticity for state transitions
   for (i in 1:n_state_years){
@@ -560,7 +571,7 @@ model {
     target += aerial_count_lpmf(
       obs_aerial_count |
       aerial_year,
-      population_total,
+      non_pup_population_total,
       aerial_count_mu,
       aerial_count_overdispersion
     );
@@ -599,7 +610,7 @@ model {
       obs_bycatch_comp |
       bycatch_comp_year,
       bycatch_expected,
-      bycatch_bias
+      bycatch_selectivity
     );
 
     // Pregnancy
@@ -628,7 +639,7 @@ generated quantities {
   array[n_aerial_years] int aerial_count_pred =
     aerial_count_rng(
       aerial_year,
-      population_total,
+      non_pup_population_total,
       aerial_count_mu,
       aerial_count_overdispersion
     );
@@ -701,7 +712,7 @@ generated quantities {
     bycatch_comp_rng(
       bycatch_comp_year,
       bycatch_expected,
-      bycatch_bias,
+      bycatch_selectivity,
       bycatch_sample_size_pred
     );
 
@@ -730,7 +741,7 @@ generated quantities {
     aerial_count_pointwise_log_lik(
       obs_aerial_count,
       aerial_year,
-      population_total,
+      non_pup_population_total,
       aerial_count_mu,
       aerial_count_overdispersion
     );
@@ -775,7 +786,7 @@ generated quantities {
       obs_bycatch_comp,
       bycatch_comp_year,
       bycatch_expected,
-      bycatch_bias
+      bycatch_selectivity
     );
 
   // Pregnancy

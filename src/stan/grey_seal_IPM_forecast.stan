@@ -1,14 +1,16 @@
 functions {
-  #include functions/ode.stanfunctions
-  #include functions/logitnormal.stanfunctions
   #include functions/observation_models/aerial_counts.stanfunctions
   #include functions/observation_models/hunting_bags.stanfunctions
   #include functions/observation_models/hunting_composition.stanfunctions
   #include functions/observation_models/bycatch_composition.stanfunctions
   #include functions/observation_models/pregnancy.stanfunctions
   #include functions/observation_models/reproductive_signs.stanfunctions
-  #include functions/statespace.stanfunctions
-  #include functions/statespace_discrete.stanfunctions
+  #include functions/pregnancy_births.stanfunctions
+  #include functions/deaths.stanfunctions
+  #include functions/aging.stanfunctions
+  #include functions/hunting.stanfunctions
+  #include functions/fates.stanfunctions
+  #include functions/run_process.stanfunctions
 }
 
 data {
@@ -32,9 +34,9 @@ data {
     future_hunting_quota_finland;
 
   // Hunting and reproductive timing, expressed as fractions of a year.
-  real<lower=0, upper=1> t_mate_to_preg;
+  real<lower=0, upper=1> pregnancy_exposure_scaled;
   real<lower=0, upper=1> t_birth_to_start_hunt;
-  real<lower=0, upper=1> t_birth_to_end_hunt;
+  real<lower=0, upper=1> t_birth_to_end_hunt; // hunting duration under the existing timing convention
   real<lower=0, upper=1> t_hunt;
 
   // ODE solver controls used by the joint competing-risks fate ODE.
@@ -146,8 +148,8 @@ parameters {
   real<lower=0> hunting_effort_sd_finland;
 
   // Herring-dependent baseline birth-rate parameters.
-  real<lower=0, upper=1> max_baseline_birth_rate;
-  real<lower=0, upper=1> min_baseline_birth_rate_prop;
+  real<lower=0, upper=1> birth_rate_baseline_max;
+  real<lower=0, upper=1> birth_rate_baseline_min_max_ratio;
   real herring_intercept_scaled;
   real herring_slope;
   real<lower=0, upper=1> herring_weight;
@@ -156,20 +158,20 @@ parameters {
   // Reproductive-sign reporting parameters.
   real<lower=0, upper=1> report_ca_mean;
   real<lower=0, upper=1> report_placental_mean;
-  real<lower=0, upper=1> prob_of_ca;
+  real<lower=0, upper=1> ca_probability_without_birth;
   real<lower=0> report_placental_sd;
   real<lower=0> report_ca_sd;
 
   // Derived fitted demographic parameters carried into the forecast.
   real density_dependence_intercept;
-  vector<lower=0>[n_demo_groups] mu_m;
-  vector[n_demo_groups] S_diag;
+  vector<lower=0>[n_demo_groups] non_hunting_mortality_rate;
+  vector[n_demo_groups] survival_probability;
   vector[n_demo_groups] hunting_selectivity_finland;
   vector[n_demo_groups] hunting_selectivity_sweden;
-  vector[n_demo_groups] bycatch_bias;
+  vector[n_demo_groups] bycatch_selectivity;
 
   real<lower=0, upper=1> birth_rate_at_carrying_capacity;
-  real<lower=0, upper=1> min_baseline_birth_rate_actual;
+  real<lower=0, upper=1> birth_rate_baseline_min;
   real density_dependence_slope;
 
   // Final fitted states. The discrete forecast starts from survivors_final.
@@ -186,9 +188,9 @@ generated quantities {
   // BIRTH-RATE INPUT
   // ------------------------------
   vector<lower=0, upper=1>[n_future_years + 1]
-    baseline_birth_rate_future = compute_baseline_birth_rate(
-      min_baseline_birth_rate_actual,
-      max_baseline_birth_rate,
+    birth_rate_baseline_future = compute_baseline_birth_rate(
+      birth_rate_baseline_min,
+      birth_rate_baseline_max,
       herring_intercept_scaled,
       herring_slope,
       herring_weight,
@@ -199,10 +201,10 @@ generated quantities {
   // ------------------------------
   // FUTURE PROCESS INNOVATIONS
   // ------------------------------
-  vector<lower=0>[n_future_years] epsilon_h_sw_future;
-  vector<lower=0>[n_future_years] epsilon_h_fi_future;
-  vector<lower=0>[n_future_years] epsilon_placental_future;
-  vector<lower=0>[n_future_years] epsilon_ca_future;
+  vector<lower=0>[n_future_years] hunting_effort_noise_sweden_future;
+  vector<lower=0>[n_future_years] hunting_effort_noise_finland_future;
+  vector<lower=0>[n_future_years] placental_scar_detection_noise_future;
+  vector<lower=0>[n_future_years] ca_detection_noise_future;
 
   // ------------------------------
   // FUTURE STATE-PROCESS OUTPUTS
@@ -210,6 +212,8 @@ generated quantities {
   vector<lower=0, upper=1>[n_future_years] birth_rate_future;
   vector<lower=0, upper=1>[n_future_years] pregnancy_rate_future;
   vector<lower=0>[n_future_years] population_total_future;
+  // Aerial surveys use ages 1+ of both sexes, matching the fitted model.
+  vector<lower=0>[n_future_years] non_pup_population_total_future;
   matrix<lower=0>[n_demo_groups, n_future_years] population_comp_future;
   matrix<lower=0>[n_demo_groups, n_future_years] survivors_future;
   matrix<lower=0>[n_demo_groups, n_future_years] deaths_or_bycatch_future;
@@ -222,24 +226,24 @@ generated quantities {
   matrix<lower=0, upper=1>[4, n_future_years] reproductive_probs_future;
 
   for (year in 1:n_future_years) {
-    epsilon_h_sw_future[year] = abs(std_normal_rng());
-    epsilon_h_fi_future[year] = abs(std_normal_rng());
-    epsilon_placental_future[year] = abs(std_normal_rng());
-    epsilon_ca_future[year] = abs(std_normal_rng());
+    hunting_effort_noise_sweden_future[year] = abs(std_normal_rng());
+    hunting_effort_noise_finland_future[year] = abs(std_normal_rng());
+    placental_scar_detection_noise_future[year] = abs(std_normal_rng());
+    ca_detection_noise_future[year] = abs(std_normal_rng());
   }
 
   // Annual reporting probabilities for reproductive signs.
-  vector<lower=0, upper=1>[n_future_years] pi_s_future =
+  vector<lower=0, upper=1>[n_future_years] placental_scar_detection_probability_future =
     report_placental_mean
-    * exp(-epsilon_placental_future * report_placental_sd);
+    * exp(-placental_scar_detection_noise_future * report_placental_sd);
 
-  vector<lower=0, upper=1>[n_future_years] pi_c_future =
+  vector<lower=0, upper=1>[n_future_years] ca_detection_probability_future =
     report_ca_mean
-    * exp(-epsilon_ca_future * report_ca_sd);
+    * exp(-ca_detection_noise_future * report_ca_sd);
 
   // The first future birth rate is updated from the final fitted population.
   real<lower=0, upper=1> birth_rate_future_first = update_birth_rate(
-    baseline_birth_rate_future[1],
+    birth_rate_baseline_future[1],
     density_dependence_intercept,
     density_dependence_slope,
     population_total_final
@@ -267,23 +271,24 @@ generated quantities {
     n_age_classes,
     survivors_final,
     birth_rate_future_first,
-    baseline_birth_rate_future,
+    birth_rate_baseline_future,
     density_dependence_intercept,
     density_dependence_slope,
-    mu_m,
+    non_hunting_mortality_rate,
     hunting_selectivity_sweden,
     hunting_selectivity_finland,
     future_hunting_quota_sweden,
     future_hunting_quota_finland,
     hunting_effort_sd_sweden,
     hunting_effort_sd_finland,
-    epsilon_h_sw_future,
-    epsilon_h_fi_future,
-    t_mate_to_preg,
+    hunting_effort_noise_sweden_future,
+    hunting_effort_noise_finland_future,
+    pregnancy_exposure_scaled,
+    t_birth_to_start_hunt,
     t_birth_to_end_hunt,
-    pi_s_future,
-    pi_c_future,
-    prob_of_ca,
+    placental_scar_detection_probability_future,
+    ca_detection_probability_future,
+    ca_probability_without_birth,
     rel_tol,
     abs_tol,
     max_num_steps,
@@ -293,9 +298,15 @@ generated quantities {
   // ------------------------------
   // POSTERIOR PREDICTIVE OBSERVATIONS
   // ------------------------------
+  for (year in 1:n_future_years) {
+    non_pup_population_total_future[year] =
+      sum(population_comp_future[2:n_age_classes, year])
+      + sum(population_comp_future[(n_age_classes + 2):(2 * n_age_classes), year]);
+  }
+
   array[n_future_years] int future_aerial_count = aerial_count_rng(
     future_year,
-    population_total_future,
+    non_pup_population_total_future,
     aerial_count_mu,
     aerial_count_overdispersion
   );
@@ -334,7 +345,7 @@ generated quantities {
     bycatch_comp_rng(
       future_year,
       bycatch_expected_future,
-      bycatch_bias,
+      bycatch_selectivity,
       future_bycatch_sample_size
     );
 
@@ -382,7 +393,7 @@ generated quantities {
     log_lik_future_aerial = aerial_count_pointwise_log_lik(
       future_obs_aerial_count,
       aerial_year,
-      population_total_future,
+      non_pup_population_total_future,
       aerial_count_mu,
       aerial_count_overdispersion
     );
@@ -433,7 +444,7 @@ generated quantities {
       future_obs_bycatch_comp,
       bycatch_year,
       bycatch_expected_future,
-      bycatch_bias
+      bycatch_selectivity
     );
   }
 

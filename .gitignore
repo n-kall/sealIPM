@@ -1,3 +1,5 @@
 inst/doc
 **/.quarto/
 docs
+!/src/stan/docs/
+!/src/stan/docs/**

@@ -1,17 +1,17 @@
 /**
  * @brief aerial_count_lpmf
  *
- * @param obs_aerial_count Observed count
- * @param aerial_year Year for each observation
- * @param population_total Total population
- * @param mu Unscaled count observation rate
- * @param overdispersion Overdispersion in counts
+ * @param obs_aerial_count vector of observed aerial counts
+ * @param aerial_year vector specifying which years the counts are from (relative to the start year of the process)
+ * @param non_pup_population_total vector of population estimates per year excluding pups (ages 1+)
+ * @param mu real mean observation probability
+ * @param phi real overdispersion parameter
  * @return log probability mass based on negative binomial model
  */
 real aerial_count_lpmf(
   array[] int obs_aerial_count, //
   array[] int aerial_year, // year
-  vector population_total, // N_tot
+  vector non_pup_population_total, // N ages 1+
   real mu, // mean prob
   real phi // overdispersion
 ) {
@@ -23,7 +23,7 @@ real aerial_count_lpmf(
 
     lp += neg_binomial_2_lpmf(
       obs_aerial_count[i] |
-      mu * population_total[t],
+      mu * non_pup_population_total[t],
       phi
     );
   }
@@ -34,19 +34,18 @@ real aerial_count_lpmf(
 /**
  * @brief aerial_count_pointwise_log_lik
  *
- * Description.
  *
- * @param obs_aerial_count Vector of observed aerial count
- * @param aerial_year vector specifying which years are the counts from
- * @param population_total Vector of total population estimates per year
- * @param mu Mean observation probability
- * @param overdispersion Overdispersion 
+ * @param obs_aerial_count vector of observed aerial counts
+ * @param aerial_year vector specifying which years the counts are from (relative to the start year of the process)
+ * @param non_pup_population_total vector of population estimates per year excluding pups (ages 1+)
+ * @param mu real mean observation probability
+ * @param phi real overdispersion parameter
  * @return vector of log-likelihood values for each year
  */
 vector aerial_count_pointwise_log_lik(
   array[] int obs_aerial_count, // observed count
   array[] int aerial_year, // year
-  vector population_total, // N_tot
+  vector non_pup_population_total, // N ages 1+
   real mu, // mean prob
   real phi // overdispersion
 ) {
@@ -58,7 +57,7 @@ vector aerial_count_pointwise_log_lik(
 
     log_lik[i] = neg_binomial_2_lpmf(
       obs_aerial_count[i] |
-      mu * population_total[t],
+      mu * non_pup_population_total[t],
       phi
     );
   }
@@ -69,24 +68,15 @@ vector aerial_count_pointwise_log_lik(
 /**
  * @brief Simulate aerial survey counts.
  *
- * Generates aerial survey counts using the same negative-binomial
- * observation model as `aerial_count_lpmf()`. For observation `i`,
- * the expected count is:
- *
- * `mu * population_total[aerial_year[i]]`.
- *
- * If the expected count is zero, the simulated count is set to exactly zero.
- *
- * @param aerial_year State-process year index for each simulated observation.
- * @param population_total Total population size in each state-process year.
- * @param mu Aerial observation rate.
- * @param phi Negative-binomial precision parameter.
- * @return One simulated aerial survey count for each element of
- *   `aerial_year`.
+ * @param aerial_year vector specifying which years the counts are from (relative to the start year of the process)
+ * @param non_pup_population_total vector of population estimates per year excluding pups (ages 1+)
+ * @param mu real mean observation probability
+ * @param phi real overdispersion parameter
+ * @return vector of simulated aerial survey count for each year
  */
 array[] int aerial_count_rng(
   array[] int aerial_year,
-  vector population_total,
+  vector non_pup_population_total,
   real mu,
   real phi
 ) {
@@ -96,7 +86,7 @@ array[] int aerial_count_rng(
   for (i in 1:n_obs) {
     int t = aerial_year[i];
     real expected_count =
-      mu * population_total[t];
+      mu * non_pup_population_total[t];
 
     if (expected_count == 0) {
       y_sim[i] = 0;

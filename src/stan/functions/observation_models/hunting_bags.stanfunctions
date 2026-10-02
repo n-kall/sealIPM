@@ -61,7 +61,6 @@ vector hunting_bags_pointwise_log_lik(
 /**
  * @brief hunting_bags_rng
  *
- * @param hunting_count Observed count of reported hunted seals
  * @param hunting_year Years of data
  * @param hunted_total Total hunted
  * @param hunting_bag_cv variation in hunting reports

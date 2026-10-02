@@ -1,0 +1,308 @@
+/**
+ * @file
+ * @brief Baseline and density-dependent pregnancy and birth rates
+ */
+
+/**
+ * @brief Compute baseline birth rates from herring indices
+ *
+ * Equation (11) in Vanko et al (2026), Section 2.2.2
+ * @f[
+ * b_0^t(\mathbf{h}_{t-1}) = b_{\min}^0
+ * + \frac{b_{\max}^0 - b_{\min}^0}
+ * {1 + \exp\left[-\left(\alpha + \beta
+ * \left(w h_{t-1}^{\mathrm{BP+GoF}}
+ * + (1-w) h_{t-1}^{\mathrm{GoB}}\right)\right)\right]}
+ * @f]
+ *
+ * This is the intrinsic birth rate before population density effects
+ * The herring indices describe normalized weight-at-age in the Baltic Proper
+ * and Gulf of Finland (BP+GoF) and the Gulf of Bothnia (GoB)
+ *
+ * Mapping from paper notation to code
+ * - @f$ b_{\min}^0 @f$: `birth_rate_baseline_min`
+ * - @f$ b_{\max}^0 @f$: `birth_rate_baseline_max`
+ * - @f$ \beta @f$: `herring_slope`
+ * - @f$ \alpha @f$: `herring_slope * herring_intercept_scaled`
+ * - @f$ w @f$: `herring_weight`
+ *
+ * The code uses the equivalent logistic predictor
+ * `herring_slope * (herring_intercept_scaled + weighted_h)`
+ *
+ * @param birth_rate_baseline_min Minimum baseline birth rate
+ * @param birth_rate_baseline_max Maximum baseline birth rate
+ * @param herring_intercept_scaled Intercept for herring regression
+ * @param herring_slope Slope for herring regression
+ * @param herring_weight Weight for herring indices 
+ * @param herring_index_baltic_proper_gulf_finland Vector of yearly herring weight-at-age indices Baltic Proper and Gulf of Finland
+ * @param herring_index_gulf_bothnia Vector of yearling herring weight-at-age indices Gulf of Bothnia
+ * @return vector of baseline herring-dependent birth rates
+ */
+vector compute_baseline_birth_rate(
+  real birth_rate_baseline_min,
+  real birth_rate_baseline_max,
+  real herring_intercept_scaled,
+  real herring_slope,
+  real herring_weight,
+  data vector herring_index_baltic_proper_gulf_finland,
+  data vector herring_index_gulf_bothnia
+) {
+  int n_years = num_elements(herring_index_baltic_proper_gulf_finland);
+  vector[n_years] birth_rate_baseline;
+
+  for (t in 1:n_years) {
+    real weighted_h =
+      herring_weight * herring_index_baltic_proper_gulf_finland[t]
+      + (1.0 - herring_weight) * herring_index_gulf_bothnia[t];
+
+    birth_rate_baseline[t] =
+      birth_rate_baseline_min
+      + (birth_rate_baseline_max - birth_rate_baseline_min)
+        * inv_logit(
+            herring_slope
+            * (herring_intercept_scaled + weighted_h)
+          );
+  }
+
+  return birth_rate_baseline;
+}
+
+/**
+ * @brief Compute the density-dependence intercept
+ *
+ * Equation (78) in Vanko et al (2026), Appendix D.2.1, specifies
+ * @f[
+ * \exp(-\theta_0) \sim \mathrm{Uniform}\left(\max_t b_0^t, 1\right)
+ * @f]
+ *
+ * The code parameterizes the survival of pregnancies at zero seal density
+ * using the attainable upper baseline birth rate and a scaled value
+ * @f[
+ * q_0 = b_{\max}^0 + d\left(1-b_{\max}^0\right),
+ * \qquad \theta_0 = -\log(q_0)
+ * @f]
+ *
+ * This transformation is the implementation's parameterization, not a
+ * separately numbered equation in the paper
+ * The code uses @f$ b_{\max}^0 @f$ rather than the maximum over yearly
+ * baseline birth rates appearing in Equation (78)
+ *
+ * Mapping from mathematical notation to code
+ * - @f$ b_{\max}^0 @f$: `birth_rate_baseline_max`
+ * - @f$ d @f$: `density_dependence_scaled`
+ * - @f$ \theta_0 @f$: the returned density-dependence intercept
+ *
+ * The two logarithm branches evaluate the same expression while avoiding
+ * loss of precision near zero or one
+ *
+ * @param birth_rate_baseline_max Maximum baseline birth rate
+ * @param density_dependence_scaled Density dependence parameter
+ * @return Density dependence intercept
+ */
+real compute_density_dependence_intercept(
+  real birth_rate_baseline_max,
+  real density_dependence_scaled
+) {
+  real complement =
+    (1.0 - density_dependence_scaled)
+    * (1.0 - birth_rate_baseline_max);
+
+  // Use log1p near an argument of one, preserving the small intercept.
+  if (complement < 0.5) {
+    return -log1p(-complement);
+  }
+
+  // Near an argument of zero, avoid subtracting the complement from one.
+  return -log(
+    birth_rate_baseline_max
+    + density_dependence_scaled * (1.0 - birth_rate_baseline_max)
+  );
+}
+
+/**
+ * @brief Compute the density-dependence slope from the birth-rate ratio
+ *
+ * Equation (51) in Vanko et al (2026), Appendix C.1, parameterizes the slope
+ * at reference herring conditions
+ * @f[
+ * \theta_1 = \frac{1}{\bar K}
+ * \log\left[1-\frac{1}{\theta_0}
+ * \log\left(\frac{b_K}{\bar b_0}\right)\right]
+ * @f]
+ *
+ * This follows by solving Equation (10) for the slope at population size
+ * @f$ \bar K @f$ and baseline birth rate @f$ \bar b_0 @f$
+ *
+ * Mapping from paper notation to code
+ * - @f$ b_K/\bar b_0 @f$: `birth_rate_at_capacity_to_baseline_ratio`
+ * - @f$ \theta_0 @f$: `density_dependence_intercept`
+ * - @f$ \bar K @f$: `carrying_capacity`
+ *
+ * The implementation takes the logarithm of the supplied ratio internally
+ * and uses log1p_exp to avoid constructing a potentially overflowing quotient
+ * The non-degenerate density-suppression case requires positive intercept
+ * and carrying capacity and @f$ 0 < b_K/\bar b_0 < 1 @f$
+ *
+ * @param birth_rate_at_capacity_to_baseline_ratio Birth rate at carrying capacity divided by the reference baseline birth rate
+ * @param density_dependence_intercept Density dependence intercept
+ * @param carrying_capacity Carrying capacity under reference herring conditions
+ * @return Density dependence slope
+ * @see update_birth_rate
+ */
+real compute_density_dependence_slope(
+  real birth_rate_at_capacity_to_baseline_ratio,
+  real density_dependence_intercept,
+  real carrying_capacity
+) {
+  real log_birth_rate_ratio = log(birth_rate_at_capacity_to_baseline_ratio);
+  return log1p_exp(
+    log(-log_birth_rate_ratio) - log(density_dependence_intercept)
+  ) / carrying_capacity;
+}
+
+/**
+ * @brief Update the density-dependent birth rate
+ *
+ * Equation (10) in Vanko et al (2026), Section 2.2.2, also derived as
+ * Equations (42) and (44) in Appendix C.1
+ * @f[
+ * b_t(n_{t-1},\mathbf{h}_{t-1}) = b_0^t(\mathbf{h}_{t-1})
+ * \exp\left[-\theta_0\left(\exp(\theta_1 n_{t-1})-1\right)\right]
+ * @f]
+ *
+ * Mapping from paper notation to code
+ * - @f$ b_0^t(\mathbf{h}_{t-1}) @f$: `birth_rate_baseline`
+ * - @f$ \theta_0 @f$: `density_dependence_intercept`
+ * - @f$ \theta_1 @f$: `density_dependence_slope`
+ * - @f$ n_{t-1} @f$: `population_total_previous`
+ *
+ * The baseline already includes herring effects and this function adds
+ * suppression by the previous year's total seal population
+ * The code evaluates the density penalty internally in log space
+ *
+ * @param birth_rate_baseline Baseline birth rate
+ * @param density_dependence_intercept Density dependence intercept
+ * @param density_dependence_slope Density dependence slope
+ * @param population_total_previous Previous population total
+ * @return Updated density-dependent birth rate
+ */
+real update_birth_rate(
+  real birth_rate_baseline,
+  real density_dependence_intercept,
+  real density_dependence_slope,
+  real population_total_previous
+) {
+  // Density-dependent exponent and birth penalty
+  real density_exponent = population_total_previous * density_dependence_slope;
+  real density_penalty = 0.0;
+
+  // Calculate the penalty without cancellation or intermediate overflow
+  if (density_dependence_intercept != 0.0 && density_exponent != 0.0) {
+    real log_density_increase = density_exponent <= log(2.0)
+      ? log(expm1(density_exponent))
+      : density_exponent + log1m_exp(-density_exponent);
+    density_penalty = exp(log(density_dependence_intercept) + log_density_increase);
+  }
+
+  // Apply density suppression to the baseline birth rate
+  return exp(log(birth_rate_baseline) - density_penalty);
+}
+
+/**
+ * @brief Update the pregnancy rate
+ *
+ * Equation (53) in Vanko et al (2026), Appendix C.2
+ * @f[
+ * p_t(\tau_s) = b_0^{t+1}
+ * \exp\left[-\theta_0\left(
+ * \frac{16}{9}\tau_s^2\exp(\theta_1 n_t)-1\right)\right]
+ * @f]
+ *
+ * In the paper @f$ \tau_s @f$ is elapsed time in years after implantation
+ * The code argument `pregnancy_exposure_scaled` receives the already scaled exposure
+ * @f[
+ * s = \frac{16}{9}\tau_s^2,\qquad
+ * p_t = b_0^{t+1}\exp\left[\theta_0-\theta_0 s\exp(\theta_1 n_t)\right]
+ * @f]
+ *
+ * The default `pregnancy_exposure_scaled = 1/36` equals
+ * @f$ (16/9)(1.5/12)^2 @f$, corresponding to sampling 1.5 months after implantation
+ * Do not pass an unscaled time in years directly to this function
+ *
+ * Mapping from paper notation to code
+ * - @f$ b_0^{t+1} @f$: `birth_rate_baseline`, supplied from the next year's baseline
+ * - @f$ \theta_0 @f$: `density_dependence_intercept`
+ * - @f$ \theta_1 @f$: `density_dependence_slope`
+ * - @f$ n_t @f$: `population_total`
+ * - @f$ (16/9)\tau_s^2 @f$: `pregnancy_exposure_scaled`
+ *
+ * @param birth_rate_baseline Baseline birth rate
+ * @param density_dependence_intercept Density dependence intercept
+ * @param density_dependence_slope Density dependence slope
+ * @param population_total Total population
+ * @param pregnancy_exposure_scaled Scaled pregnancy exposure coefficient, not raw time after implantation
+ * @return Updated density-dependent pregnancy rate
+ */
+real update_pregnancy_rate(
+  real birth_rate_baseline,
+  real density_dependence_intercept,
+  real density_dependence_slope,
+  real population_total,
+  real pregnancy_exposure_scaled
+) {
+  real pregnancy_failure_penalty =
+    (density_dependence_intercept == 0.0 || pregnancy_exposure_scaled == 0.0)
+    ? 0.0
+    : exp(log(density_dependence_intercept) + log(pregnancy_exposure_scaled)
+          + density_dependence_slope * population_total);
+  return exp(log(birth_rate_baseline) + density_dependence_intercept
+             - pregnancy_failure_penalty);
+}
+
+
+/**
+ * @brief Compute the Euler-Lotka replacement birth rate
+ *
+ * Equation (48) in Vanko et al (2026), Appendix C.1, follows from the
+ * Euler-Lotka equation (47) at population growth rate @f$ \lambda = 1 @f$
+ * @f[
+ * b_K = 2\frac{1-\phi_{f,5+}}{\prod_{i=0}^{4}\phi_{f,i}}
+ * @f]
+ *
+ * The factor of two accounts for the equal female and male pup sex ratio
+ * This is the replacement birth rate in the absence of hunting
+ * Since @f$ \phi_{f,i}=\exp(-\mu_{f,i}) @f$, the equivalent expression is
+ * @f[
+ * b_K = 2(1-\phi_{f,5+})\exp\left(\sum_{i=0}^{4}\mu_{f,i}\right)
+ * @f]
+ *
+ * Mapping from paper notation to code
+ * - @f$ \phi_{f,5+} @f$: `female_adult_survival_probability`
+ * - @f$ \mu_{f,0},\ldots,\mu_{f,4} @f$: `non_hunting_mortality_rate[1:(n_age_classes - 1)]`
+ * - The paper has six age classes per sex, with the last containing ages five and older
+ *
+ * The implementation generalizes the sum to the supplied number of age classes
+ * and computes the replacement rate on the log scale internally
+ * Set `log_scale` to one to return that log value directly for likelihood calculations
+ * A mathematical replacement rate above one indicates that replacement
+ * cannot be achieved with at most one pup per adult female per year
+ *
+ * @param non_hunting_mortality_rate Non-hunting mortality rates with female age classes first
+ * @param n_age_classes Number of age classes per sex including the adult class
+ * @param female_adult_survival_probability Annual non-hunting survival probability of adult females
+ * @param log_scale Return the log replacement rate if one or the replacement rate if zero
+ * @return Birth rate required for demographic replacement without hunting, on the requested scale
+ */
+real compute_birth_rate_replacement(
+  vector non_hunting_mortality_rate,
+  data int n_age_classes,
+  real female_adult_survival_probability,
+  data int log_scale
+) {
+  // Replacement birth rate on the log scale
+  real log_birth_rate = sum(non_hunting_mortality_rate[1:(n_age_classes - 1)])
+    + log(2.0) + log1m(female_adult_survival_probability);
+
+  // Return the scale needed by the caller without redundant conversions
+  return log_scale ? log_birth_rate : exp(log_birth_rate);
+}

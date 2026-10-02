@@ -1,0 +1,144 @@
+/**
+ * @file
+ * @brief Continuous allocation of expected fate counts
+ */
+
+/**
+ * @brief Allocate one demographic group to fates
+ *
+ * Equation (3) in Vanko et al (2026), Section 2.2.1, specifies the demographic
+ * transition as a multinomial over survival, hunting and other deaths
+ * @f[
+ * \mathbf{u}_{a,s,t}^{1}\sim\mathrm{Multinomial}\left(
+ * n_{a,s,t},\left(\rho^{S},\rho^{H^{\mathrm{sw}}},
+ * \rho^{H^{\mathrm{fi}}},\rho^{D}\right)_{a,s,t}\right)
+ * @f]
+ *
+ * Section 2.4 describes a continuous log-Gaussian approximation for fitting
+ * This function uses a logistic-normal approximation rather than an exact multinomial draw
+ * For the active categories, it constructs log-ratio means and a
+ * covariance factor from adjusted expected counts and returns
+ * @f[
+ * \mathbf{u}_{\mathrm{active}}=N\operatorname{softmax}
+ * \left(\begin{bmatrix}0\\\mathbf{m}+L\mathbf{z}\end{bmatrix}\right)
+ * @f]
+ *
+ * This last expression documents the implementation, not a numbered paper equation
+ * It gives continuous non-negative allocations summing to the supplied population
+ * It does not imply exact multinomial moments
+ *
+ * Mapping from paper notation to code
+ * - @f$ n_{a,s,t} @f$: `demographic_population_count`
+ * - @f$ n_{a,s,t}\rho^I_{a,s,t} @f$: the corresponding entry of `expected_fate_counts`
+ * - @f$ \mathbf{z} @f$: the required entries of `fate_allocation_noise`
+ * - @f$ \mathbf{m},L @f$: log-ratio mean and covariance factor computed below
+ *
+ * Category order matches Equation (3): survival, Swedish hunting, Finnish hunting,
+ * other death or bycatch
+ * Countries with zero quotas are omitted from the active categories and their
+ * allocations remain exactly zero, using one fewer innovation than active fates
+ *
+ * @param expected_fate_counts Expected counts for each fate
+ * @param fate_allocation_noise Standard normal innovations using the first one fewer than active fates
+ * @param demographic_population_count Population count of the demographic group being allocated
+ * @param hunting_active_sweden Is hunting in Sweden possible? (0 = no, 1 = yes)
+ * @param hunting_active_finland Is hunting in Finland possible?  (0 = no, 1 = yes)
+ * @return row_vector of allocated counts into each fate
+ */
+row_vector allocate_fates(
+  row_vector expected_fate_counts,
+  row_vector fate_allocation_noise,
+  real demographic_population_count,
+  int hunting_active_sweden,
+  int hunting_active_finland
+) {
+  // Active category dimensions and positions in paper order
+  int n_active_fates = 2 + hunting_active_sweden + hunting_active_finland;
+  array[n_active_fates] int active_fate_indices;
+  int next_active_fate = 2;
+
+  // Expected counts and adjusted concentrations
+  vector[n_active_fates] expected_active_fate_counts;
+  vector[n_active_fates] concentration_adjusted;
+  real min_expected_count;
+
+  // Log-ratio means and structured covariance factor
+  vector[n_active_fates - 1] mean_logratio;
+  vector[n_active_fates - 1] diagonal_variance;
+  real shared_variance;
+  matrix[n_active_fates - 1, n_active_fates - 1] fate_allocation_cholesky =
+    rep_matrix(0.0, n_active_fates - 1, n_active_fates - 1);
+
+  // Active allocations and full four-category output
+  vector[n_active_fates] logits;
+  vector[n_active_fates] active_fate_counts;
+  row_vector[4] realized_fate_counts = rep_row_vector(0.0, 4);
+
+  // Check dimensions and the population count before allocating
+  if (num_elements(expected_fate_counts) != 4) {
+    reject("allocate_fates requires four expected fate counts");
+  }
+  if (num_elements(fate_allocation_noise) < n_active_fates - 1) {
+    reject("allocate_fates requires at least ", n_active_fates - 1,
+           " innovations, received ", num_elements(fate_allocation_noise));
+  }
+  if (!(demographic_population_count > 0.0)) {
+    reject("allocate_fates requires a positive population count; received ",
+           demographic_population_count);
+  }
+
+  // Select survival, active hunting categories, and other death or bycatch
+  active_fate_indices[1] = 1;
+  if (hunting_active_sweden) {
+    active_fate_indices[next_active_fate] = 2;
+    next_active_fate += 1;
+  }
+  if (hunting_active_finland) {
+    active_fate_indices[next_active_fate] = 3;
+    next_active_fate += 1;
+  }
+  active_fate_indices[n_active_fates] = 4;
+  expected_active_fate_counts = expected_fate_counts[active_fate_indices]';
+  min_expected_count = min(expected_active_fate_counts);
+  if (!(min_expected_count > 0.0)) {
+    reject("allocate_fates requires strictly positive active expected counts; received ",
+           expected_active_fate_counts);
+  }
+
+  // Adjust concentrations without forming a potentially overflowing reciprocal
+  concentration_adjusted = expected_active_fate_counts
+    + expected_active_fate_counts / min_expected_count;
+
+  // Calculate log-ratio means and variances relative to survival
+  mean_logratio = digamma(concentration_adjusted[2:n_active_fates])
+    - rep_vector(digamma(concentration_adjusted[1]), n_active_fates - 1);
+  diagonal_variance = trigamma(concentration_adjusted[2:n_active_fates]);
+  shared_variance = trigamma(concentration_adjusted[1]);
+
+  // Factor diag(diagonal_variance) + shared_variance * 1 * 1' directly
+  // This avoids losing small diagonal terms when the shared variance is large
+  for (i in 1:(n_active_fates - 1)) {
+    real pivot_variance = diagonal_variance[i] + shared_variance;
+    fate_allocation_cholesky[i, i] = sqrt(pivot_variance);
+    if (i < n_active_fates - 1) {
+      for (j in (i + 1):(n_active_fates - 1)) {
+        fate_allocation_cholesky[j, i] = shared_variance / fate_allocation_cholesky[i, i];
+      }
+      // A bounded ratio avoids cancellation and overflow in the variance update
+      shared_variance *= diagonal_variance[i] / pivot_variance;
+    }
+  }
+
+  // Apply the same innovations and convert log-ratios into population counts
+  logits[1] = 0.0;
+  logits[2:n_active_fates] = mean_logratio
+    + fate_allocation_cholesky * fate_allocation_noise[1:(n_active_fates - 1)]';
+  active_fate_counts = demographic_population_count * softmax(logits);
+
+  // Return counts in paper order with inactive hunting categories left at zero
+  for (i in 1:n_active_fates) {
+    realized_fate_counts[active_fate_indices[i]] = active_fate_counts[i];
+  }
+
+  return realized_fate_counts;
+}

@@ -56,9 +56,9 @@ vector reproductive_signs_pointwise_log_lik(
 /**
  * @brief reproductive_signs_rng
  *
- * @param obs_reproductive_signs observed reproductive signs
  * @param reproductive_signs_year which years were observed
  * @param reproductive_probs probability of reproductive signs
+ * @param reproductive_signs_sample_size number of surveyed seals
  * @return simulated observations based on multinomial model
  */
 array[,] int reproductive_signs_rng(
