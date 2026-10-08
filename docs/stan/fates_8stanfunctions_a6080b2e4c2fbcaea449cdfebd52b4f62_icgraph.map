@@ -1,0 +1,5 @@
+<map id="compute_joint_expected_fate_counts" name="compute_joint_expected_fate_counts">
+<area shape="rect" id="Node000001" title="Compute conditional expected counts for the four annual demographic fates." alt="" coords="216,5,379,45"/>
+<area shape="rect" id="Node000002" href="$run__process_8stanfunctions.html#a878d87e5768ae210f5d0b4f6bda1843e" title="Run the continuous fitted state process from the first population." alt="" coords="5,5,168,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,28,168,28,168,23,202,23"/>
+</map>

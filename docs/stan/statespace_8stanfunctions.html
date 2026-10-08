@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -107,55 +111,55 @@ $(document).ready(function(){initNavTree('statespace_8stanfunctions.html',''); i
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ac837d0048c82c6278537d50c6b0013b9" id="r_ac837d0048c82c6278537d50c6b0013b9"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ac837d0048c82c6278537d50c6b0013b9">compute_baseline_birth_rate</a> (real min_baseline_birth_rate, real max_baseline_birth_rate, real herring_intercept_scaled, real herring_slope, real herring_weight, data vector herring_index_baltic_proper_gulf_finland, data vector herring_index_gulf_bothnia)</td></tr>
-<tr class="memdesc:ac837d0048c82c6278537d50c6b0013b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute baseline birth rates from herring indices.  <br /></td></tr>
-<tr class="separator:ac837d0048c82c6278537d50c6b0013b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e855299cf493efd327f92f7f5a79171" id="r_a5e855299cf493efd327f92f7f5a79171"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a5e855299cf493efd327f92f7f5a79171">compute_density_dependence_intercept</a> (real max_baseline_birth_rate, real density_dependence_scaled)</td></tr>
-<tr class="memdesc:a5e855299cf493efd327f92f7f5a79171"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density-dependence intercept.  <br /></td></tr>
-<tr class="separator:a5e855299cf493efd327f92f7f5a79171"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52c112d86dffe70204857b17aa8e0a4e" id="r_a52c112d86dffe70204857b17aa8e0a4e"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a52c112d86dffe70204857b17aa8e0a4e">compute_density_dependence_slope</a> (real birth_rate_at_carrying_capacity, real reference_baseline_birth_rate, real density_dependence_intercept, real carrying_capacity)</td></tr>
-<tr class="memdesc:a52c112d86dffe70204857b17aa8e0a4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density-dependence slope.  <br /></td></tr>
-<tr class="separator:a52c112d86dffe70204857b17aa8e0a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1f317191840da07383c7cb511f53039" id="r_ac1f317191840da07383c7cb511f53039"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ac1f317191840da07383c7cb511f53039">update_birth_rate</a> (real b0, real theta0, real theta1, real N_tot_prev)</td></tr>
-<tr class="memdesc:ac1f317191840da07383c7cb511f53039"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the density-dependent birth rate.  <br /></td></tr>
-<tr class="separator:ac1f317191840da07383c7cb511f53039"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd730fcf04fb29567bbcbb5f203065fe" id="r_acd730fcf04fb29567bbcbb5f203065fe"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#acd730fcf04fb29567bbcbb5f203065fe">update_pregnancy_rate</a> (real baseline_birth_rate, real theta0, real theta1, real N_tot, real tau_s)</td></tr>
-<tr class="memdesc:acd730fcf04fb29567bbcbb5f203065fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the pregnancy rate.  <br /></td></tr>
-<tr class="separator:acd730fcf04fb29567bbcbb5f203065fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56f46340270f13ac163fb5c033e40c4d" id="r_a56f46340270f13ac163fb5c033e40c4d"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a56f46340270f13ac163fb5c033e40c4d">euler_lotka_birth_rate</a> (vector mu_m, data int n_age_classes, real phi_a)</td></tr>
-<tr class="memdesc:a56f46340270f13ac163fb5c033e40c4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euler-Lotka birth rate.  <br /></td></tr>
-<tr class="separator:a56f46340270f13ac163fb5c033e40c4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aadfee2b5ff8937d561967cb071568311" id="r_aadfee2b5ff8937d561967cb071568311"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#aadfee2b5ff8937d561967cb071568311">mortality_rates</a> (real phi_pup, real phi_adult, real c, data int n_age_classes, real male_pup_offset, real male_adult_offset)</td></tr>
-<tr class="memdesc:aadfee2b5ff8937d561967cb071568311"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute demographic mortality rates.  <br /></td></tr>
-<tr class="separator:aadfee2b5ff8937d561967cb071568311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73c79aa64ff55a8413d8a5d7dcf4b7ad" id="r_a73c79aa64ff55a8413d8a5d7dcf4b7ad"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a73c79aa64ff55a8413d8a5d7dcf4b7ad">compute_baseline_birth_rate</a> (real birth_rate_baseline_min, real birth_rate_baseline_max, real herring_intercept_scaled, real herring_slope, real herring_weight, data vector herring_index_baltic_proper_gulf_finland, data vector herring_index_gulf_bothnia)</td></tr>
+<tr class="memdesc:a73c79aa64ff55a8413d8a5d7dcf4b7ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute baseline birth rates from herring indices.  <br /></td></tr>
+<tr class="separator:a73c79aa64ff55a8413d8a5d7dcf4b7ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab09811f3af34346040755bd575f6d36e" id="r_ab09811f3af34346040755bd575f6d36e"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ab09811f3af34346040755bd575f6d36e">compute_density_dependence_intercept</a> (real birth_rate_baseline_max, real density_dependence_scaled)</td></tr>
+<tr class="memdesc:ab09811f3af34346040755bd575f6d36e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density-dependence intercept.  <br /></td></tr>
+<tr class="separator:ab09811f3af34346040755bd575f6d36e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab49e0b2a3e48bbf6d3b099b954418e82" id="r_ab49e0b2a3e48bbf6d3b099b954418e82"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ab49e0b2a3e48bbf6d3b099b954418e82">compute_density_dependence_slope</a> (real birth_rate_at_capacity_to_baseline_ratio, real density_dependence_intercept, real carrying_capacity)</td></tr>
+<tr class="memdesc:ab49e0b2a3e48bbf6d3b099b954418e82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density-dependence slope from the birth-rate ratio.  <br /></td></tr>
+<tr class="separator:ab49e0b2a3e48bbf6d3b099b954418e82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a449cb0ba0ee3ade0816addae30016310" id="r_a449cb0ba0ee3ade0816addae30016310"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a449cb0ba0ee3ade0816addae30016310">update_birth_rate</a> (real birth_rate_baseline, real density_dependence_intercept, real density_dependence_slope, real population_total_previous)</td></tr>
+<tr class="memdesc:a449cb0ba0ee3ade0816addae30016310"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the density-dependent birth rate.  <br /></td></tr>
+<tr class="separator:a449cb0ba0ee3ade0816addae30016310"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14095da4fe64d11ec5fe7e5b22c1a522" id="r_a14095da4fe64d11ec5fe7e5b22c1a522"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a14095da4fe64d11ec5fe7e5b22c1a522">update_pregnancy_rate</a> (real birth_rate_baseline, real density_dependence_intercept, real density_dependence_slope, real population_total, real pregnancy_exposure_scaled)</td></tr>
+<tr class="memdesc:a14095da4fe64d11ec5fe7e5b22c1a522"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the pregnancy rate.  <br /></td></tr>
+<tr class="separator:a14095da4fe64d11ec5fe7e5b22c1a522"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9511f020b7873b93bf0d6a5730614b51" id="r_a9511f020b7873b93bf0d6a5730614b51"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a9511f020b7873b93bf0d6a5730614b51">euler_lotka_birth_rate</a> (vector mu_m, data int n_age_classes, real female_adult_survival_probability, data int log_scale)</td></tr>
+<tr class="memdesc:a9511f020b7873b93bf0d6a5730614b51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euler-Lotka replacement birth rate.  <br /></td></tr>
+<tr class="separator:a9511f020b7873b93bf0d6a5730614b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc69fe50d48cba889cc546a5452e3735" id="r_abc69fe50d48cba889cc546a5452e3735"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#abc69fe50d48cba889cc546a5452e3735">mortality_rates</a> (real female_pup_survival_probability, real female_adult_survival_probability, real mortality_age_shape, data int n_age_classes, real male_pup_offset, real male_adult_offset)</td></tr>
+<tr class="memdesc:abc69fe50d48cba889cc546a5452e3735"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute demographic mortality rates.  <br /></td></tr>
+<tr class="separator:abc69fe50d48cba889cc546a5452e3735"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6fff209ac67d4d82734548b25ad77caf" id="r_a6fff209ac67d4d82734548b25ad77caf"><td class="memItemLeft" align="right" valign="top">matrix&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a6fff209ac67d4d82734548b25ad77caf">create_aging_matrix</a> (data int n_demo_groups, data int n_age_groups)</td></tr>
 <tr class="memdesc:a6fff209ac67d4d82734548b25ad77caf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create the female and male ageing matrix.  <br /></td></tr>
 <tr class="separator:a6fff209ac67d4d82734548b25ad77caf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab539ea6a484dbbc1942205c00eb49cc6" id="r_ab539ea6a484dbbc1942205c00eb49cc6"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ab539ea6a484dbbc1942205c00eb49cc6">update_population_from_survivors</a> (vector previous_survivors, data matrix aging_mat, real birth_rate, real epsilon_birth, real epsilon_sex, data int n_age_classes)</td></tr>
-<tr class="memdesc:ab539ea6a484dbbc1942205c00eb49cc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">update_population_from_survivors  <br /></td></tr>
-<tr class="separator:ab539ea6a484dbbc1942205c00eb49cc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d2a1a18ae3f2d1382fb838a89c692e5" id="r_a7d2a1a18ae3f2d1382fb838a89c692e5"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; vector, real, real &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a7d2a1a18ae3f2d1382fb838a89c692e5">initialize_population_with_burnin</a> (data vector population_init, real population_init_size, data int population_burn_in, real birth_rate_year, data matrix aging_matrix, vector S_diag, data int n_age_classes)</td></tr>
-<tr class="memdesc:a7d2a1a18ae3f2d1382fb838a89c692e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise the population composition with a burn-in.  <br /></td></tr>
-<tr class="separator:a7d2a1a18ae3f2d1382fb838a89c692e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9d4e3d9ffa54b97b20e47b63a851b9d" id="r_ad9d4e3d9ffa54b97b20e47b63a851b9d"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ad9d4e3d9ffa54b97b20e47b63a851b9d">compute_hunting_pressure</a> (data int hunting_quota, vector hunting_selectivity, vector population_comp, real hunting_effort_sd, real epsilon_h, data real t_birth_to_end_hunt)</td></tr>
-<tr class="memdesc:ad9d4e3d9ffa54b97b20e47b63a851b9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute demographic hunting pressure for one country.  <br /></td></tr>
-<tr class="separator:ad9d4e3d9ffa54b97b20e47b63a851b9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb4ff2b1bb2f9d201cf5752e16811159" id="r_abb4ff2b1bb2f9d201cf5752e16811159"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#abb4ff2b1bb2f9d201cf5752e16811159">update_population_from_survivors</a> (vector previous_survivors, data matrix aging_mat, real birth_rate, real birth_count_noise, real pup_sex_allocation_noise, data int n_age_classes)</td></tr>
+<tr class="memdesc:abb4ff2b1bb2f9d201cf5752e16811159"><td class="mdescLeft">&#160;</td><td class="mdescRight">update_population_from_survivors  <br /></td></tr>
+<tr class="separator:abb4ff2b1bb2f9d201cf5752e16811159"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dd924d9787a142b1795d275152384ef" id="r_a0dd924d9787a142b1795d275152384ef"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; vector, real, real &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a0dd924d9787a142b1795d275152384ef">initialize_population_with_burnin</a> (data vector population_init, real population_init_size, data int population_burn_in, real birth_rate_year, data matrix aging_matrix, vector survival_probability, data int n_age_classes)</td></tr>
+<tr class="memdesc:a0dd924d9787a142b1795d275152384ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the population composition with a deterministic burn-in.  <br /></td></tr>
+<tr class="separator:a0dd924d9787a142b1795d275152384ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01bcaaaace66ffca4f0df2fe079d2783" id="r_a01bcaaaace66ffca4f0df2fe079d2783"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a01bcaaaace66ffca4f0df2fe079d2783">compute_hunting_pressure</a> (data int hunting_quota, vector hunting_selectivity, vector population_comp, real hunting_effort_sd, real hunting_effort_noise, data real t_birth_to_end_hunt)</td></tr>
+<tr class="memdesc:a01bcaaaace66ffca4f0df2fe079d2783"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute demographic hunting pressure for one country.  <br /></td></tr>
+<tr class="separator:a01bcaaaace66ffca4f0df2fe079d2783"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6080b2e4c2fbcaea449cdfebd52b4f62" id="r_a6080b2e4c2fbcaea449cdfebd52b4f62"><td class="memItemLeft" align="right" valign="top">matrix&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a6080b2e4c2fbcaea449cdfebd52b4f62">compute_joint_expected_fate_counts</a> (vector population_comp, vector hunting_pressure_sweden, vector hunting_pressure_finland, vector mortality_rate, data real t_birth_to_end_hunt, data real rel_tol, data real abs_tol, data int max_num_steps, data real fate_probability_tolerance)</td></tr>
-<tr class="memdesc:a6080b2e4c2fbcaea449cdfebd52b4f62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute expected demographic fate counts using the joint fate ODE.  <br /></td></tr>
+<tr class="memdesc:a6080b2e4c2fbcaea449cdfebd52b4f62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute expected demographic fate counts using the original hunting ODEs.  <br /></td></tr>
 <tr class="separator:a6080b2e4c2fbcaea449cdfebd52b4f62"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:affcdf68c2dc82d8323e75d3c39af7807" id="r_affcdf68c2dc82d8323e75d3c39af7807"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#affcdf68c2dc82d8323e75d3c39af7807">validate_expected_fate_counts</a> (row_vector expected_counts, int sw_active, int fi_active, int year, int demo)</td></tr>
-<tr class="memdesc:affcdf68c2dc82d8323e75d3c39af7807"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate joint-ODE expected fate counts.  <br /></td></tr>
-<tr class="separator:affcdf68c2dc82d8323e75d3c39af7807"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d64528bfe22c2876fa0a33921896b50" id="r_a5d64528bfe22c2876fa0a33921896b50"><td class="memItemLeft" align="right" valign="top">row_vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a5d64528bfe22c2876fa0a33921896b50">allocate_fates</a> (row_vector expected_counts, row_vector z, real population_count, int sw_active, int fi_active)</td></tr>
-<tr class="memdesc:a5d64528bfe22c2876fa0a33921896b50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate one demographic group to fates.  <br /></td></tr>
-<tr class="separator:a5d64528bfe22c2876fa0a33921896b50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae09c925bab77a755f2ebfccf4b24671c" id="r_ae09c925bab77a755f2ebfccf4b24671c"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; vector, vector, vector, matrix, matrix, matrix, matrix, matrix, matrix, vector, vector, vector, matrix &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ae09c925bab77a755f2ebfccf4b24671c">run_state_process_from_first_population</a> (data int n_state_years, data int n_age_classes, vector population_comp_first, real birth_rate_first, real population_total_first, vector baseline_birth_rate, real density_dependence_intercept, real density_dependence_slope, data matrix aging_matrix, vector mu_m, vector hunting_selectivity_sweden, vector hunting_selectivity_finland, data array[] int hunting_quota_sweden, data array[] int hunting_quota_finland, real hunting_effort_sd_sweden, real hunting_effort_sd_finland, vector epsilon_h_sw, vector epsilon_h_fi, data real t_mate_to_preg, data real t_birth_to_end_hunt, vector epsilon_birth, vector epsilon_sex, matrix transition_noise_raw, vector pi_s, vector pi_c, real prob_of_ca, data real rel_tol, data real abs_tol, data int max_num_steps, data real fate_probability_tolerance)</td></tr>
-<tr class="memdesc:ae09c925bab77a755f2ebfccf4b24671c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run the continuous fitted state process from the first population.  <br /></td></tr>
-<tr class="separator:ae09c925bab77a755f2ebfccf4b24671c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1c776ada1974a9cb9d1b63043191d67" id="r_ae1c776ada1974a9cb9d1b63043191d67"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#ae1c776ada1974a9cb9d1b63043191d67">validate_expected_fate_counts</a> (row_vector expected_counts, int hunting_active_sweden, int hunting_active_finland, int year, int demo)</td></tr>
+<tr class="memdesc:ae1c776ada1974a9cb9d1b63043191d67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate joint-ODE expected fate counts.  <br /></td></tr>
+<tr class="separator:ae1c776ada1974a9cb9d1b63043191d67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1d8e3bde4f353f0277fceb57fd332e2" id="r_aa1d8e3bde4f353f0277fceb57fd332e2"><td class="memItemLeft" align="right" valign="top">row_vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#aa1d8e3bde4f353f0277fceb57fd332e2">allocate_fates</a> (row_vector expected_fate_counts, row_vector fate_allocation_noise, real demographic_population_count, int hunting_active_sweden, int hunting_active_finland)</td></tr>
+<tr class="memdesc:aa1d8e3bde4f353f0277fceb57fd332e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate one demographic group to fates.  <br /></td></tr>
+<tr class="separator:aa1d8e3bde4f353f0277fceb57fd332e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a878d87e5768ae210f5d0b4f6bda1843e" id="r_a878d87e5768ae210f5d0b4f6bda1843e"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; vector, vector, vector, vector, matrix, matrix, matrix, matrix, matrix, matrix, vector, vector, vector, matrix &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html#a878d87e5768ae210f5d0b4f6bda1843e">run_state_process_from_first_population</a> (data int n_state_years, data int n_age_classes, vector population_comp_first, real birth_rate_first, real population_total_first, vector birth_rate_baseline, real density_dependence_intercept, real density_dependence_slope, data matrix aging_matrix, vector non_hunting_mortality_rate, vector hunting_selectivity_sweden, vector hunting_selectivity_finland, data array[] int hunting_quota_sweden, data array[] int hunting_quota_finland, real hunting_effort_sd_sweden, real hunting_effort_sd_finland, vector hunting_effort_noise_sweden, vector hunting_effort_noise_finland, data real pregnancy_exposure_scaled, data real t_birth_to_end_hunt, vector birth_count_noise, vector pup_sex_allocation_noise, matrix transition_noise_raw, vector placental_scar_detection_probability, vector ca_detection_probability, real ca_probability_without_birth, data real rel_tol, data real abs_tol, data int max_num_steps, data real fate_probability_tolerance)</td></tr>
+<tr class="memdesc:a878d87e5768ae210f5d0b4f6bda1843e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run the continuous fitted state process from the first population.  <br /></td></tr>
+<tr class="separator:a878d87e5768ae210f5d0b4f6bda1843e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a5d64528bfe22c2876fa0a33921896b50" name="a5d64528bfe22c2876fa0a33921896b50"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5d64528bfe22c2876fa0a33921896b50">&#9670;&#160;</a></span>allocate_fates()</h2>
+<a id="aa1d8e3bde4f353f0277fceb57fd332e2" name="aa1d8e3bde4f353f0277fceb57fd332e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1d8e3bde4f353f0277fceb57fd332e2">&#9670;&#160;</a></span>allocate_fates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,31 +168,31 @@ Functions</h2></td></tr>
           <td class="memname">row_vector allocate_fates </td>
           <td>(</td>
           <td class="paramtype">row_vector&#160;</td>
-          <td class="paramname"><em>expected_counts</em>, </td>
+          <td class="paramname"><em>expected_fate_counts</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">row_vector&#160;</td>
-          <td class="paramname"><em>z</em>, </td>
+          <td class="paramname"><em>fate_allocation_noise</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>population_count</em>, </td>
+          <td class="paramname"><em>demographic_population_count</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>sw_active</em>, </td>
+          <td class="paramname"><em>hunting_active_sweden</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>fi_active</em>&#160;</td>
+          <td class="paramname"><em>hunting_active_finland</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -197,26 +201,45 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Allocate one demographic group to fates. </p>
+<p>Equation (3) in Vanko et al (2026), Section 2.2.1, specifies the demographic transition as a multinomial over survival, hunting and other deaths  </p><p class="formulaDsp">
+\[
+\mathbf{u}_{a,s,t}^{1}\sim\mathrm{Multinomial}\left(
+n_{a,s,t},\left(\rho^{S},\rho^{H^{\mathrm{sw}}},
+\rho^{H^{\mathrm{fi}}},\rho^{D}\right)_{a,s,t}\right)
+\]
+</p>
+<p>Section 2.4 describes a continuous log-Gaussian approximation for fitting This function uses a logistic-normal approximation rather than an exact multinomial draw For the active categories, it constructs log-ratio means and a covariance factor from adjusted expected counts and returns  </p><p class="formulaDsp">
+\[
+\mathbf{u}_{\mathrm{active}}=N\operatorname{softmax}
+\left(\begin{bmatrix}0\\\mathbf{m}+L\mathbf{z}\end{bmatrix}\right)
+\]
+</p>
+<p>This last expression documents the implementation, not a numbered paper equation It gives continuous non-negative allocations summing to the supplied population It does not imply exact multinomial moments</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( n_{a,s,t} \): <code>demographic_population_count</code></li>
+<li>\( n_{a,s,t}\rho^I_{a,s,t} \): the corresponding entry of <code>expected_fate_counts</code></li>
+<li>\( \mathbf{z} \): the required entries of <code>fate_allocation_noise</code></li>
+<li>\( \mathbf{m},L \): log-ratio mean and covariance factor computed below</li>
+</ul>
+<p>Category order matches Equation (3): survival, Swedish hunting, Finnish hunting, other death or bycatch Countries with zero quotas are omitted from the active categories and their allocations remain exactly zero, using one fewer innovation than active fates</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">expected_counts</td><td>Expected counts for each fate </td></tr>
-    <tr><td class="paramname">z</td><td>Standard normal innovations for one fewer than total fates </td></tr>
-    <tr><td class="paramname">population_count</td><td>Total population </td></tr>
-    <tr><td class="paramname">sw_active</td><td>Is hunting in Sweden possible? (0 = no, 1 = yes) </td></tr>
-    <tr><td class="paramname">fi_active</td><td>Is hunting in Finland possible? (0 = no, 1 = yes) </td></tr>
+    <tr><td class="paramname">expected_fate_counts</td><td>Expected counts for each fate </td></tr>
+    <tr><td class="paramname">fate_allocation_noise</td><td>Standard normal innovations using the first one fewer than active fates </td></tr>
+    <tr><td class="paramname">demographic_population_count</td><td>Population count of the demographic group being allocated </td></tr>
+    <tr><td class="paramname">hunting_active_sweden</td><td>Is hunting in Sweden possible? (0 = no, 1 = yes) </td></tr>
+    <tr><td class="paramname">hunting_active_finland</td><td>Is hunting in Finland possible? (0 = no, 1 = yes) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>row_vector of allocated counts into each fate </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00528">528</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00790">790</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="ac837d0048c82c6278537d50c6b0013b9" name="ac837d0048c82c6278537d50c6b0013b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac837d0048c82c6278537d50c6b0013b9">&#9670;&#160;</a></span>compute_baseline_birth_rate()</h2>
+<a id="a73c79aa64ff55a8413d8a5d7dcf4b7ad" name="a73c79aa64ff55a8413d8a5d7dcf4b7ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73c79aa64ff55a8413d8a5d7dcf4b7ad">&#9670;&#160;</a></span>compute_baseline_birth_rate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -225,13 +248,13 @@ Functions</h2></td></tr>
           <td class="memname">vector compute_baseline_birth_rate </td>
           <td>(</td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>min_baseline_birth_rate</em>, </td>
+          <td class="paramname"><em>birth_rate_baseline_min</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>max_baseline_birth_rate</em>, </td>
+          <td class="paramname"><em>birth_rate_baseline_max</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -270,12 +293,28 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute baseline birth rates from herring indices. </p>
+<p>Equation (11) in Vanko et al (2026), Section 2.2.2  </p><p class="formulaDsp">
+\[
+b_0^t(\mathbf{h}_{t-1}) = b_{\min}^0
++ \frac{b_{\max}^0 - b_{\min}^0}
+{1 + \exp\left[-\left(\alpha + \beta
+\left(w h_{t-1}^{\mathrm{BP+GoF}}
++ (1-w) h_{t-1}^{\mathrm{GoB}}\right)\right)\right]}
+\]
+</p>
+<p>This is the intrinsic birth rate before population density effects The herring indices describe normalized weight-at-age in the Baltic Proper and Gulf of Finland (BP+GoF) and the Gulf of Bothnia (GoB)</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( b_{\min}^0 \): <code>birth_rate_baseline_min</code></li>
+<li>\( b_{\max}^0 \): <code>birth_rate_baseline_max</code></li>
+<li>\( \beta \): <code>herring_slope</code></li>
+<li>\( \alpha \): <code>herring_slope * herring_intercept_scaled</code></li>
+<li>\( w \): <code>herring_weight</code></li>
+</ul>
+<p>The code uses the equivalent logistic predictor <code>herring_slope * (herring_intercept_scaled + weighted_h)</code></p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">min_baseline_birth_rate</td><td>Minimum baseline birth rate </td></tr>
-    <tr><td class="paramname">max_baseline_birth_rate</td><td>Maximum baseline birth rate </td></tr>
+    <tr><td class="paramname">birth_rate_baseline_min</td><td>Minimum baseline birth rate </td></tr>
+    <tr><td class="paramname">birth_rate_baseline_max</td><td>Maximum baseline birth rate </td></tr>
     <tr><td class="paramname">herring_intercept_scaled</td><td>Intercept for herring regression </td></tr>
     <tr><td class="paramname">herring_slope</td><td>Slope for herring regression </td></tr>
     <tr><td class="paramname">herring_weight</td><td>Weight for herring indices </td></tr>
@@ -286,12 +325,12 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>vector of baseline herring-dependent birth rates </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00015">15</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00038">38</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="a5e855299cf493efd327f92f7f5a79171" name="a5e855299cf493efd327f92f7f5a79171"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5e855299cf493efd327f92f7f5a79171">&#9670;&#160;</a></span>compute_density_dependence_intercept()</h2>
+<a id="ab09811f3af34346040755bd575f6d36e" name="ab09811f3af34346040755bd575f6d36e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab09811f3af34346040755bd575f6d36e">&#9670;&#160;</a></span>compute_density_dependence_intercept()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -300,7 +339,7 @@ Functions</h2></td></tr>
           <td class="memname">real compute_density_dependence_intercept </td>
           <td>(</td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>max_baseline_birth_rate</em>, </td>
+          <td class="paramname"><em>birth_rate_baseline_max</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -315,23 +354,39 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute the density-dependence intercept. </p>
+<p>Equation (78) in Vanko et al (2026), Appendix D.2.1, specifies  </p><p class="formulaDsp">
+\[
+\exp(-\theta_0) \sim \mathrm{Uniform}\left(\max_t b_0^t, 1\right)
+\]
+</p>
+<p>The code parameterizes the survival of pregnancies at zero seal density using the attainable upper baseline birth rate and a scaled value  </p><p class="formulaDsp">
+\[
+q_0 = b_{\max}^0 + d\left(1-b_{\max}^0\right),
+\qquad \theta_0 = -\log(q_0)
+\]
+</p>
+<p>This transformation is the implementation's parameterization, not a separately numbered equation in the paper The code uses \( b_{\max}^0 \) rather than the maximum over yearly baseline birth rates appearing in Equation (78)</p>
+<p>Mapping from mathematical notation to code</p><ul>
+<li>\( b_{\max}^0 \): <code>birth_rate_baseline_max</code></li>
+<li>\( d \): <code>density_dependence_scaled</code></li>
+<li>\( \theta_0 \): the returned density-dependence intercept</li>
+</ul>
+<p>The two logarithm branches evaluate the same expression while avoiding loss of precision near zero or one</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">max_baseline_birth_rate</td><td>Maximum baseline birth rate </td></tr>
+    <tr><td class="paramname">birth_rate_baseline_max</td><td>Maximum baseline birth rate </td></tr>
     <tr><td class="paramname">density_dependence_scaled</td><td>Density dependence parameter </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Density dependence intercept </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00051">51</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00099">99</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="a52c112d86dffe70204857b17aa8e0a4e" name="a52c112d86dffe70204857b17aa8e0a4e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a52c112d86dffe70204857b17aa8e0a4e">&#9670;&#160;</a></span>compute_density_dependence_slope()</h2>
+<a id="ab49e0b2a3e48bbf6d3b099b954418e82" name="ab49e0b2a3e48bbf6d3b099b954418e82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab49e0b2a3e48bbf6d3b099b954418e82">&#9670;&#160;</a></span>compute_density_dependence_slope()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -340,13 +395,7 @@ Functions</h2></td></tr>
           <td class="memname">real compute_density_dependence_slope </td>
           <td>(</td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>birth_rate_at_carrying_capacity</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>reference_baseline_birth_rate</em>, </td>
+          <td class="paramname"><em>birth_rate_at_capacity_to_baseline_ratio</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -367,25 +416,37 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute the density-dependence slope. </p>
+<p>Equation (51) in Vanko et al (2026), Appendix C.1, parameterizes the slope at reference herring conditions  </p><p class="formulaDsp">
+\[
+\theta_1 = \frac{1}{\bar K}
+\log\left[1-\frac{1}{\theta_0}
+\log\left(\frac{b_K}{\bar b_0}\right)\right]
+\]
+</p>
+<p>This follows by solving Equation (10) for the slope at population size \( \bar K \) and baseline birth rate \( \bar b_0 \)</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( b_K/\bar b_0 \): <code>birth_rate_at_capacity_to_baseline_ratio</code></li>
+<li>\( \theta_0 \): <code>density_dependence_intercept</code></li>
+<li>\( \bar K \): <code>carrying_capacity</code></li>
+</ul>
+<p>The implementation takes the logarithm of the supplied ratio internally and uses log1p_exp to avoid constructing a potentially overflowing quotient The non-degenerate density-suppression case requires positive intercept and carrying capacity and \( 0 &lt; b_K/\bar b_0 &lt; 1 \)</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">birth_rate_at_carrying_capacity</td><td>Birth rate at carrying capacity </td></tr>
-    <tr><td class="paramname">reference_baseline_birth_rate</td><td>Birth rate at zero population density </td></tr>
-    <tr><td class="paramname">density_dependence_intercept</td><td>Density dependence intercept parameter </td></tr>
-    <tr><td class="paramname">carrying_capacity</td><td>Carrying capacity </td></tr>
+    <tr><td class="paramname">birth_rate_at_capacity_to_baseline_ratio</td><td>Birth rate at carrying capacity divided by the reference baseline birth rate </td></tr>
+    <tr><td class="paramname">density_dependence_intercept</td><td>Density dependence intercept </td></tr>
+    <tr><td class="paramname">carrying_capacity</td><td>Carrying capacity under reference herring conditions </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Density dependence slope </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="statespace_8stanfunctions.html#a449cb0ba0ee3ade0816addae30016310" title="Update the density-dependent birth rate.">update_birth_rate</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00072">72</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00149">149</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="ad9d4e3d9ffa54b97b20e47b63a851b9d" name="ad9d4e3d9ffa54b97b20e47b63a851b9d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad9d4e3d9ffa54b97b20e47b63a851b9d">&#9670;&#160;</a></span>compute_hunting_pressure()</h2>
+<a id="a01bcaaaace66ffca4f0df2fe079d2783" name="a01bcaaaace66ffca4f0df2fe079d2783"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01bcaaaace66ffca4f0df2fe079d2783">&#9670;&#160;</a></span>compute_hunting_pressure()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -418,7 +479,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>epsilon_h</em>, </td>
+          <td class="paramname"><em>hunting_effort_noise</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -433,23 +494,43 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute demographic hunting pressure for one country. </p>
-<p>Description.</p>
+<p>Combines Equations (64), (71), and (72) in Vanko et al (2026), Appendix D with the log selectivity in Equation (73)  </p><p class="formulaDsp">
+\[
+E_{i,t}^{C}=\Psi_i^{C}\exp(-\epsilon_t^{C})\widehat E_t^{C},\qquad
+\widehat E_t^{C}=\frac{2Q_t^{C}}{k^2\sum_j n_{j,t}\Psi_j^{C}},\qquad
+\Psi_i^{C}=\exp(g_i^{C})
+\]
+</p>
+<p>The equivalent expression evaluated by the code is  </p><p class="formulaDsp">
+\[
+E_{i,t}^{C}=\frac{2Q_t^{C}\exp(g_i^{C}-\sigma_C z_t^{C})}
+{k^2\sum_j n_{j,t}\exp(g_j^{C})}
+\]
+</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( Q_t^{C} \): <code>hunting_quota</code></li>
+<li>\( g_i^{C} \): <code>hunting_selectivity[i]</code>, on the log scale</li>
+<li>\( n_{i,t} \): <code>population_comp[i]</code></li>
+<li>\( k \): <code>t_birth_to_end_hunt</code></li>
+<li>\( \sigma_C \): <code>hunting_effort_sd</code></li>
+<li>\( z_t^{C} \): <code>hunting_effort_noise</code>, a standardized non-negative innovation</li>
+<li>\( \epsilon_t^{C}=\sigma_C z_t^{C} \): the paper's effort reduction</li>
+</ul>
+<p>The factor \( 2/k^2 \) follows from integrating the linearly declining hazard \( E_{i,t}^{C}(k-\tau) \) over the hunting interval The constant-population approximation calibrates the quota-based pressure The subsequent ODE calculation accounts for depletion during hunting A zero quota returns zero pressure and positive quotas use log-space arithmetic</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hunting_quota</td><td>Hunting quota for the country </td></tr>
     <tr><td class="paramname">hunting_selectivity</td><td>vector of hunting selectivity for demographics </td></tr>
     <tr><td class="paramname">population_comp</td><td>vector of population </td></tr>
     <tr><td class="paramname">hunting_effort_sd</td><td>standard deviation of hunting effort </td></tr>
-    <tr><td class="paramname">epsilon_h</td><td>epsilon hunting </td></tr>
-    <tr><td class="paramname">t_birth_to_end_hunt</td><td>time from brith to end of hunt </td></tr>
+    <tr><td class="paramname">hunting_effort_noise</td><td>Standardized hunting effort reduction </td></tr>
+    <tr><td class="paramname">t_birth_to_end_hunt</td><td>Hunting interval length used to calibrate the declining hazard </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>vector of hunting pressure per demographic group </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00339">339</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00569">569</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
@@ -520,9 +601,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute expected demographic fate counts using the joint fate ODE. </p>
-<p>Columns are survived, died or bycaught, hunted in Sweden, and hunted in Finland. All four fates come from one probability-conserving ODE solve for each demographic group.</p>
+<p>Columns are survived, hunted in Sweden, hunted in Finland, and died or bycaught Hunting is solved separately for each country; survival is analytic and non-hunting death is the remainder, with tolerance for solver error.</p>
 <p>compute_joint_expected_fate_counts</p>
 <p>Description.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -539,9 +618,18 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Matrix of expected fate counts. Columns are survived, died or bycaught, hunted in Sweden, hunted in Finland. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Matrix of expected fate counts with columns survival, Swedish hunting, Finnish hunting, other death or bycatch </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00406">406</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00636">636</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+
+<p class="reference">References <a class="el" href="ode_8stanfunctions_source.html#l00221">compute_joint_fate_probabilities()</a>.</p>
+<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> Here is the call graph for this function:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="statespace_8stanfunctions_a6080b2e4c2fbcaea449cdfebd52b4f62_cgraph.svg" width="540" height="102"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
 
 </div>
 </div>
@@ -570,8 +658,6 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Create the female and male ageing matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">n_demo_groups</td><td>Number of demographic groups </td></tr>
@@ -581,12 +667,12 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>aging matrix </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00209">209</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00402">402</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="a56f46340270f13ac163fb5c033e40c4d" name="a56f46340270f13ac163fb5c033e40c4d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56f46340270f13ac163fb5c033e40c4d">&#9670;&#160;</a></span>euler_lotka_birth_rate()</h2>
+<a id="a9511f020b7873b93bf0d6a5730614b51" name="a9511f020b7873b93bf0d6a5730614b51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9511f020b7873b93bf0d6a5730614b51">&#9670;&#160;</a></span>euler_lotka_birth_rate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -607,7 +693,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>phi_a</em>&#160;</td>
+          <td class="paramname"><em>female_adult_survival_probability</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">data int&#160;</td>
+          <td class="paramname"><em>log_scale</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -616,24 +708,39 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute the Euler-Lotka birth rate. </p>
+<p>Equation (48) in Vanko et al (2026), Appendix C.1, follows from the Euler-Lotka equation (47) at population growth rate \( \lambda = 1 \)  </p><p class="formulaDsp">
+\[
+b_K = 2\frac{1-\phi_{f,5+}}{\prod_{i=0}^{4}\phi_{f,i}}
+\]
+</p>
+<p>The factor of two accounts for the equal female and male pup sex ratio This is the replacement birth rate in the absence of hunting Since \( \phi_{f,i}=\exp(-\mu_{f,i}) \), the equivalent expression is  </p><p class="formulaDsp">
+\[
+b_K = 2(1-\phi_{f,5+})\exp\left(\sum_{i=0}^{4}\mu_{f,i}\right)
+\]
+</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( \phi_{f,5+} \): <code>female_adult_survival_probability</code></li>
+<li>\( \mu_{f,0},\ldots,\mu_{f,4} \): <code>mu_m[1:(n_age_classes - 1)]</code></li>
+<li>The paper has six age classes per sex, with the last containing ages five and older</li>
+</ul>
+<p>The implementation generalizes the sum to the supplied number of age classes and computes the replacement rate on the log scale internally Set <code>log_scale</code> to one to return that log value directly for likelihood calculations A mathematical replacement rate above one indicates that replacement cannot be achieved with at most one pup per adult female per year</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">mu_m</td><td>Vector of mortality rates for each age class </td></tr>
-    <tr><td class="paramname">n_age_classes</td><td>Integer of number of age classes </td></tr>
-    <tr><td class="paramname">phi_a</td><td>Survival rate for adults </td></tr>
+    <tr><td class="paramname">mu_m</td><td>Non-hunting mortality rates with female age classes first </td></tr>
+    <tr><td class="paramname">n_age_classes</td><td>Number of age classes per sex including the adult class </td></tr>
+    <tr><td class="paramname">female_adult_survival_probability</td><td>Annual non-hunting survival probability of adult females </td></tr>
+    <tr><td class="paramname">log_scale</td><td>Return the log replacement rate if one or the replacement rate if zero </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Birth rate based on Euler-Lotka </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Birth rate required for demographic replacement without hunting, on the requested scale </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00138">138</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00293">293</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="a7d2a1a18ae3f2d1382fb838a89c692e5" name="a7d2a1a18ae3f2d1382fb838a89c692e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d2a1a18ae3f2d1382fb838a89c692e5">&#9670;&#160;</a></span>initialize_population_with_burnin()</h2>
+<a id="a0dd924d9787a142b1795d275152384ef" name="a0dd924d9787a142b1795d275152384ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dd924d9787a142b1795d275152384ef">&#9670;&#160;</a></span>initialize_population_with_burnin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -672,7 +779,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>S_diag</em>, </td>
+          <td class="paramname"><em>survival_probability</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -687,28 +794,26 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Initialise the population composition with a burn-in. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">population_init</td><td>vector of initial population composition </td></tr>
-    <tr><td class="paramname">population_init_size</td><td>initial population size </td></tr>
-    <tr><td class="paramname">population_burn_in</td><td>number of burn in steps </td></tr>
-    <tr><td class="paramname">birth_rate_year</td><td>birth rate for the first year </td></tr>
+    <tr><td class="paramname">population_init</td><td>Starting demographic population composition before burn-in </td></tr>
+    <tr><td class="paramname">population_init_size</td><td>Target total population size after burn-in </td></tr>
+    <tr><td class="paramname">population_burn_in</td><td>Number of deterministic burn-in steps </td></tr>
+    <tr><td class="paramname">birth_rate_year</td><td>Birth rate held constant throughout burn-in </td></tr>
     <tr><td class="paramname">aging_matrix</td><td>Aging matrix </td></tr>
-    <tr><td class="paramname">S_diag</td><td>Survival diag </td></tr>
+    <tr><td class="paramname">survival_probability</td><td>Survival probability for each demographic group </td></tr>
     <tr><td class="paramname">n_age_classes</td><td>Number of age classes </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>tuple of: population composition, birth rate, population total </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00284">284</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00477">477</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="aadfee2b5ff8937d561967cb071568311" name="aadfee2b5ff8937d561967cb071568311"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aadfee2b5ff8937d561967cb071568311">&#9670;&#160;</a></span>mortality_rates()</h2>
+<a id="abc69fe50d48cba889cc546a5452e3735" name="abc69fe50d48cba889cc546a5452e3735"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc69fe50d48cba889cc546a5452e3735">&#9670;&#160;</a></span>mortality_rates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -717,19 +822,19 @@ Functions</h2></td></tr>
           <td class="memname">vector mortality_rates </td>
           <td>(</td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>phi_pup</em>, </td>
+          <td class="paramname"><em>female_pup_survival_probability</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>phi_adult</em>, </td>
+          <td class="paramname"><em>female_adult_survival_probability</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>c</em>, </td>
+          <td class="paramname"><em>mortality_age_shape</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -756,13 +861,38 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute demographic mortality rates. </p>
+<p>Equation (4) in Vanko et al (2026), Section 2.2.1, interpolates non-hunting mortality between pups and adults for each sex  </p><p class="formulaDsp">
+\[
+\log(\mu_{a,s}) = \log(\mu_{0,s})
++ \left(\frac{a}{5}\right)^c
+\left[\log(\mu_{5+,s})-\log(\mu_{0,s})\right],\qquad 1\le a\le4
+\]
+</p>
+<p>Female endpoint mortality rates are obtained from annual survival probabilities  </p><p class="formulaDsp">
+\[
+\mu_{0,f}=-\log(\phi_{0,f}),\qquad
+\mu_{5+,f}=-\log(\phi_{5+,f})
+\]
+</p>
+<p>Equations (60) and (61) in Appendix D.2 express male mortality as deviations from female mortality on the log scale  </p><p class="formulaDsp">
+\[
+\log(\mu_{0,m})=\log(\mu_{0,f})+\nu_0,\qquad
+\log(\mu_{5+,m})=\log(\mu_{5+,f})+\nu_{5+}
+\]
+</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( \phi_{0,f} \): <code>female_pup_survival_probability</code></li>
+<li>\( \phi_{5+,f} \): <code>female_adult_survival_probability</code></li>
+<li>\( c \): <code>mortality_age_shape</code></li>
+<li>\( \nu_0 \): <code>male_pup_offset</code></li>
+<li>\( \nu_{5+} \): <code>male_adult_offset</code></li>
+</ul>
+<p>Female age classes precede male age classes in the returned vector With six age classes, code index <code>j</code> corresponds to age \( a=j-1 \) The code generalizes the denominator five to <code>n_age_classes - 1</code> These rates include natural mortality and bycatch but exclude hunting</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">phi_pup</td><td>Female pup survival rate </td></tr>
-    <tr><td class="paramname">phi_adult</td><td>Female adult survival rate </td></tr>
-    <tr><td class="paramname">c</td><td>Shape of lograithmic curve </td></tr>
+    <tr><td class="paramname">female_pup_survival_probability</td><td>Female pup survival rate </td></tr>
+    <tr><td class="paramname">female_adult_survival_probability</td><td>Female adult survival rate </td></tr>
+    <tr><td class="paramname">mortality_age_shape</td><td>Shape of the logarithmic age-mortality curve </td></tr>
     <tr><td class="paramname">n_age_classes</td><td>Number of age classes </td></tr>
     <tr><td class="paramname">male_pup_offset</td><td>Male pup survival offset </td></tr>
     <tr><td class="paramname">male_adult_offset</td><td>Male adult survival offset </td></tr>
@@ -771,18 +901,18 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>vector of mortality rates for each demographic group </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00159">159</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00352">352</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="ae09c925bab77a755f2ebfccf4b24671c" name="ae09c925bab77a755f2ebfccf4b24671c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae09c925bab77a755f2ebfccf4b24671c">&#9670;&#160;</a></span>run_state_process_from_first_population()</h2>
+<a id="a878d87e5768ae210f5d0b4f6bda1843e" name="a878d87e5768ae210f5d0b4f6bda1843e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a878d87e5768ae210f5d0b4f6bda1843e">&#9670;&#160;</a></span>run_state_process_from_first_population()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::tuple&lt; vector, vector, vector, matrix, matrix, matrix, matrix, matrix, matrix, vector, vector, vector, matrix &gt; run_state_process_from_first_population </td>
+          <td class="memname">std::tuple&lt; vector, vector, vector, vector, matrix, matrix, matrix, matrix, matrix, matrix, vector, vector, vector, matrix &gt; run_state_process_from_first_population </td>
           <td>(</td>
           <td class="paramtype">data int&#160;</td>
           <td class="paramname"><em>n_state_years</em>, </td>
@@ -815,7 +945,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>baseline_birth_rate</em>, </td>
+          <td class="paramname"><em>birth_rate_baseline</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -839,7 +969,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>mu_m</em>, </td>
+          <td class="paramname"><em>non_hunting_mortality_rate</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -881,19 +1011,19 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>epsilon_h_sw</em>, </td>
+          <td class="paramname"><em>hunting_effort_noise_sweden</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>epsilon_h_fi</em>, </td>
+          <td class="paramname"><em>hunting_effort_noise_finland</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">data real&#160;</td>
-          <td class="paramname"><em>t_mate_to_preg</em>, </td>
+          <td class="paramname"><em>pregnancy_exposure_scaled</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -905,13 +1035,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>epsilon_birth</em>, </td>
+          <td class="paramname"><em>birth_count_noise</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>epsilon_sex</em>, </td>
+          <td class="paramname"><em>pup_sex_allocation_noise</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -923,19 +1053,19 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>pi_s</em>, </td>
+          <td class="paramname"><em>placental_scar_detection_probability</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>pi_c</em>, </td>
+          <td class="paramname"><em>ca_detection_probability</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>prob_of_ca</em>, </td>
+          <td class="paramname"><em>ca_probability_without_birth</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -968,36 +1098,34 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Run the continuous fitted state process from the first population. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">n_state_years</td><td>Number of years to run state process </td></tr>
     <tr><td class="paramname">n_age_classes</td><td>Number of age classes </td></tr>
     <tr><td class="paramname">population_comp_first</td><td>First population composition </td></tr>
     <tr><td class="paramname">birth_rate_first</td><td>First birth rate </td></tr>
-    <tr><td class="paramname">population_total_first</td><td>Fist population total </td></tr>
-    <tr><td class="paramname">baseline_birth_rate</td><td>Baseline birth rate for each year </td></tr>
+    <tr><td class="paramname">population_total_first</td><td>First population total </td></tr>
+    <tr><td class="paramname">birth_rate_baseline</td><td>Baseline birth rate for each year </td></tr>
     <tr><td class="paramname">density_dependence_intercept</td><td>Density dependence intercept </td></tr>
     <tr><td class="paramname">density_dependence_slope</td><td>Density dependence slope </td></tr>
     <tr><td class="paramname">aging_matrix</td><td>Aging matrix </td></tr>
-    <tr><td class="paramname">mu_m</td><td>Mortality rates </td></tr>
+    <tr><td class="paramname">non_hunting_mortality_rate</td><td>Non-hunting mortality rate for each demographic group </td></tr>
     <tr><td class="paramname">hunting_selectivity_sweden</td><td>Hunting selectivity for Sweden </td></tr>
-    <tr><td class="paramname">hunting_selectivity_finland</td><td>Huntint selectivity for Finland </td></tr>
+    <tr><td class="paramname">hunting_selectivity_finland</td><td>Hunting selectivity for Finland </td></tr>
     <tr><td class="paramname">hunting_quota_sweden</td><td>Hunting quota for Sweden </td></tr>
     <tr><td class="paramname">hunting_quota_finland</td><td>Hunting quota for Finland </td></tr>
     <tr><td class="paramname">hunting_effort_sd_sweden</td><td>Hunting effort standard deviation for Sweden </td></tr>
     <tr><td class="paramname">hunting_effort_sd_finland</td><td>Hunting effort standard deviation for Finland </td></tr>
-    <tr><td class="paramname">epsilon_h_sw</td><td>Hunting epsilon Sweden </td></tr>
-    <tr><td class="paramname">epsilon_h_fi</td><td>Hunting epsilon Finland </td></tr>
-    <tr><td class="paramname">t_mate_to_preg</td><td>Time from mating to pregnancy </td></tr>
+    <tr><td class="paramname">hunting_effort_noise_sweden</td><td>Standardized Swedish hunting effort reduction </td></tr>
+    <tr><td class="paramname">hunting_effort_noise_finland</td><td>Standardized Finnish hunting effort reduction </td></tr>
+    <tr><td class="paramname">pregnancy_exposure_scaled</td><td>Scaled pregnancy exposure coefficient, not raw elapsed time </td></tr>
     <tr><td class="paramname">t_birth_to_end_hunt</td><td>Time from birth to end of hunting period </td></tr>
-    <tr><td class="paramname">epsilon_birth</td><td>Birth epsilon </td></tr>
-    <tr><td class="paramname">epsilon_sex</td><td>Sex epsilon </td></tr>
+    <tr><td class="paramname">birth_count_noise</td><td>Standardized deviation in the number of pups born </td></tr>
+    <tr><td class="paramname">pup_sex_allocation_noise</td><td>Standardized deviation in the female and male pup allocation </td></tr>
     <tr><td class="paramname">transition_noise_raw</td><td>Transition noise (raw) </td></tr>
-    <tr><td class="paramname">pi_s</td><td>placental scar probability </td></tr>
-    <tr><td class="paramname">pi_c</td><td>CA detection probability </td></tr>
-    <tr><td class="paramname">prob_of_ca</td><td>probability of CA </td></tr>
+    <tr><td class="paramname">placental_scar_detection_probability</td><td>Placental scar detection probability for each year </td></tr>
+    <tr><td class="paramname">ca_detection_probability</td><td>CA detection probability for each year </td></tr>
+    <tr><td class="paramname">ca_probability_without_birth</td><td>Probability of CA presence without birth </td></tr>
     <tr><td class="paramname">rel_tol</td><td>relative tolerance for ODE solver </td></tr>
     <tr><td class="paramname">abs_tol</td><td>absolute tolerance for ODE solver </td></tr>
     <tr><td class="paramname">max_num_steps</td><td>max number of steps for ODE solver </td></tr>
@@ -1005,14 +1133,14 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>tuple with outputs: birth_rate, pregnancy_rate, population_total, population_comp, survivors, deaths_or_bycatch, hunted_sweden, hunted_finland, bycatch_expected, hunting_bag_total_sweden, hunting_bag_total_finland, hunted_total, reproductive_probs </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>tuple with outputs: birth_rate, pregnancy_rate, population_total, non_pup_population_total, population_comp, survivors, deaths_or_bycatch, hunted_sweden, hunted_finland, bycatch_expected, hunting_bag_total_sweden, hunting_bag_total_finland, hunted_total, reproductive_probs </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00665">665</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00941">941</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="ac1f317191840da07383c7cb511f53039" name="ac1f317191840da07383c7cb511f53039"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1f317191840da07383c7cb511f53039">&#9670;&#160;</a></span>update_birth_rate()</h2>
+<a id="a449cb0ba0ee3ade0816addae30016310" name="a449cb0ba0ee3ade0816addae30016310"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a449cb0ba0ee3ade0816addae30016310">&#9670;&#160;</a></span>update_birth_rate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1021,25 +1149,25 @@ Functions</h2></td></tr>
           <td class="memname">real update_birth_rate </td>
           <td>(</td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>b0</em>, </td>
+          <td class="paramname"><em>birth_rate_baseline</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>theta0</em>, </td>
+          <td class="paramname"><em>density_dependence_intercept</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>theta1</em>, </td>
+          <td class="paramname"><em>density_dependence_slope</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>N_tot_prev</em>&#160;</td>
+          <td class="paramname"><em>population_total_previous</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1048,25 +1176,45 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Update the density-dependent birth rate. </p>
+<p>Equation (10) in Vanko et al (2026), Section 2.2.2, also derived as Equations (42) and (44) in Appendix C.1  </p><p class="formulaDsp">
+\[
+b_t(n_{t-1},\mathbf{h}_{t-1}) = b_0^t(\mathbf{h}_{t-1})
+\exp\left[-\theta_0\left(\exp(\theta_1 n_{t-1})-1\right)\right]
+\]
+</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( b_0^t(\mathbf{h}_{t-1}) \): <code>birth_rate_baseline</code></li>
+<li>\( \theta_0 \): <code>density_dependence_intercept</code></li>
+<li>\( \theta_1 \): <code>density_dependence_slope</code></li>
+<li>\( n_{t-1} \): <code>population_total_previous</code></li>
+</ul>
+<p>The baseline already includes herring effects and this function adds suppression by the previous year's total seal population The code evaluates the density penalty internally in log space</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">b0</td><td>Baseline birth rate </td></tr>
-    <tr><td class="paramname">theta0</td><td>Density dependence intercept </td></tr>
-    <tr><td class="paramname">theta1</td><td>Density dependence slope </td></tr>
-    <tr><td class="paramname">N_tot_prev</td><td>Previous population total </td></tr>
+    <tr><td class="paramname">birth_rate_baseline</td><td>Baseline birth rate </td></tr>
+    <tr><td class="paramname">density_dependence_intercept</td><td>Density dependence intercept </td></tr>
+    <tr><td class="paramname">density_dependence_slope</td><td>Density dependence slope </td></tr>
+    <tr><td class="paramname">population_total_previous</td><td>Previous population total </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Updated density-dependent birth rate </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00099">99</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00186">186</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00226">run_state_process_from_survivors_rng()</a>.</p>
+<div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> Here is the caller graph for this function:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="statespace_8stanfunctions_a449cb0ba0ee3ade0816addae30016310_icgraph.svg" width="344" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
 
 </div>
 </div>
-<a id="ab539ea6a484dbbc1942205c00eb49cc6" name="ab539ea6a484dbbc1942205c00eb49cc6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab539ea6a484dbbc1942205c00eb49cc6">&#9670;&#160;</a></span>update_population_from_survivors()</h2>
+<a id="abb4ff2b1bb2f9d201cf5752e16811159" name="abb4ff2b1bb2f9d201cf5752e16811159"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb4ff2b1bb2f9d201cf5752e16811159">&#9670;&#160;</a></span>update_population_from_survivors()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1093,13 +1241,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>epsilon_birth</em>, </td>
+          <td class="paramname"><em>birth_count_noise</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>epsilon_sex</em>, </td>
+          <td class="paramname"><em>pup_sex_allocation_noise</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1114,28 +1262,26 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>update_population_from_survivors </p>
 <p>Advance the continuous population and add stochastic births.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">previous_survivors</td><td>vector of previous survivors in each demo group </td></tr>
     <tr><td class="paramname">aging_mat</td><td>aging matrix </td></tr>
     <tr><td class="paramname">birth_rate</td><td>birth rate </td></tr>
-    <tr><td class="paramname">epsilon_birth</td><td>birth rate epsilon </td></tr>
-    <tr><td class="paramname">epsilon_sex</td><td>birth sex epsilon </td></tr>
+    <tr><td class="paramname">birth_count_noise</td><td>Standardized deviation in the number of pups born </td></tr>
+    <tr><td class="paramname">pup_sex_allocation_noise</td><td>Standardized deviation in the female and male pup allocation </td></tr>
     <tr><td class="paramname">n_age_classes</td><td>number of age classes </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>vector of new population </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00242">242</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00435">435</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="acd730fcf04fb29567bbcbb5f203065fe" name="acd730fcf04fb29567bbcbb5f203065fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acd730fcf04fb29567bbcbb5f203065fe">&#9670;&#160;</a></span>update_pregnancy_rate()</h2>
+<a id="a14095da4fe64d11ec5fe7e5b22c1a522" name="a14095da4fe64d11ec5fe7e5b22c1a522"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a14095da4fe64d11ec5fe7e5b22c1a522">&#9670;&#160;</a></span>update_pregnancy_rate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1144,31 +1290,31 @@ Functions</h2></td></tr>
           <td class="memname">real update_pregnancy_rate </td>
           <td>(</td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>baseline_birth_rate</em>, </td>
+          <td class="paramname"><em>birth_rate_baseline</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>theta0</em>, </td>
+          <td class="paramname"><em>density_dependence_intercept</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>theta1</em>, </td>
+          <td class="paramname"><em>density_dependence_slope</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>N_tot</em>, </td>
+          <td class="paramname"><em>population_total</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>tau_s</em>&#160;</td>
+          <td class="paramname"><em>pregnancy_exposure_scaled</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1177,26 +1323,54 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Update the pregnancy rate. </p>
+<p>Equation (53) in Vanko et al (2026), Appendix C.2  </p><p class="formulaDsp">
+\[
+p_t(\tau_s) = b_0^{t+1}
+\exp\left[-\theta_0\left(
+\frac{16}{9}\tau_s^2\exp(\theta_1 n_t)-1\right)\right]
+\]
+</p>
+<p>In the paper \( \tau_s \) is elapsed time in years after implantation The code argument <code>pregnancy_exposure_scaled</code> receives the already scaled exposure  </p><p class="formulaDsp">
+\[
+s = \frac{16}{9}\tau_s^2,\qquad
+p_t = b_0^{t+1}\exp\left[\theta_0-\theta_0 s\exp(\theta_1 n_t)\right]
+\]
+</p>
+<p>The default <code>pregnancy_exposure_scaled = 1/36</code> equals \( (16/9)(1.5/12)^2 \), corresponding to sampling 1.5 months after implantation Do not pass an unscaled time in years directly to this function</p>
+<p>Mapping from paper notation to code</p><ul>
+<li>\( b_0^{t+1} \): <code>birth_rate_baseline</code>, supplied from the next year's baseline</li>
+<li>\( \theta_0 \): <code>density_dependence_intercept</code></li>
+<li>\( \theta_1 \): <code>density_dependence_slope</code></li>
+<li>\( n_t \): <code>population_total</code></li>
+<li>\( (16/9)\tau_s^2 \): <code>pregnancy_exposure_scaled</code></li>
+</ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">baseline_birth_rate</td><td>Baseline birth rate </td></tr>
-    <tr><td class="paramname">theta0</td><td>Density dependence intercept </td></tr>
-    <tr><td class="paramname">theta1</td><td>Density dependence slope </td></tr>
-    <tr><td class="paramname">N_tot</td><td>Total population </td></tr>
-    <tr><td class="paramname">tau_s</td><td>Time after implantation </td></tr>
+    <tr><td class="paramname">birth_rate_baseline</td><td>Baseline birth rate </td></tr>
+    <tr><td class="paramname">density_dependence_intercept</td><td>Density dependence intercept </td></tr>
+    <tr><td class="paramname">density_dependence_slope</td><td>Density dependence slope </td></tr>
+    <tr><td class="paramname">population_total</td><td>Total population </td></tr>
+    <tr><td class="paramname">pregnancy_exposure_scaled</td><td>Scaled pregnancy exposure coefficient, not raw time after implantation </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Updated density-dependent pregnancy rate </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00118">118</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00243">243</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00226">run_state_process_from_survivors_rng()</a>.</p>
+<div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> Here is the caller graph for this function:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="statespace_8stanfunctions_a14095da4fe64d11ec5fe7e5b22c1a522_icgraph.svg" width="379" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
 
 </div>
 </div>
-<a id="affcdf68c2dc82d8323e75d3c39af7807" name="affcdf68c2dc82d8323e75d3c39af7807"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#affcdf68c2dc82d8323e75d3c39af7807">&#9670;&#160;</a></span>validate_expected_fate_counts()</h2>
+<a id="ae1c776ada1974a9cb9d1b63043191d67" name="ae1c776ada1974a9cb9d1b63043191d67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1c776ada1974a9cb9d1b63043191d67">&#9670;&#160;</a></span>validate_expected_fate_counts()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1211,13 +1385,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>sw_active</em>, </td>
+          <td class="paramname"><em>hunting_active_sweden</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>fi_active</em>, </td>
+          <td class="paramname"><em>hunting_active_finland</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1239,9 +1413,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Validate joint-ODE expected fate counts. </p>
-
-<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00443">443</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="statespace_8stanfunctions_source.html#l00673">673</a> of file <a class="el" href="statespace_8stanfunctions_source.html">statespace.stanfunctions</a>.</p>
 
 </div>
 </div>

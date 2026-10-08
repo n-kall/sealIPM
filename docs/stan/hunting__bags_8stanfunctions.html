@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -107,25 +111,25 @@ $(document).ready(function(){initNavTree('hunting__bags_8stanfunctions.html','')
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a70f677970f400a1de6820932e29971d7" id="r_a70f677970f400a1de6820932e29971d7"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting__bags_8stanfunctions.html#a70f677970f400a1de6820932e29971d7">harvest_bags_lpdf</a> (array[] real hunting_count, array[] int hunting_year, vector hunted_total, real harvest_bag_cv)</td></tr>
-<tr class="memdesc:a70f677970f400a1de6820932e29971d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">harvest_bags_lpdf  <br /></td></tr>
-<tr class="separator:a70f677970f400a1de6820932e29971d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9344e7d7ba23b3e488ab93ff0c632127" id="r_a9344e7d7ba23b3e488ab93ff0c632127"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting__bags_8stanfunctions.html#a9344e7d7ba23b3e488ab93ff0c632127">harvest_bags_pointwise_log_lik</a> (array[] real hunting_count, array[] int hunting_year, vector hunted_total, real harvest_bag_cv)</td></tr>
-<tr class="memdesc:a9344e7d7ba23b3e488ab93ff0c632127"><td class="mdescLeft">&#160;</td><td class="mdescRight">harvest_bags_pointwise_log_lik  <br /></td></tr>
-<tr class="separator:a9344e7d7ba23b3e488ab93ff0c632127"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:accd8661513dfbcac88a41027c407064d" id="r_accd8661513dfbcac88a41027c407064d"><td class="memItemLeft" align="right" valign="top">array[] real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting__bags_8stanfunctions.html#accd8661513dfbcac88a41027c407064d">harvest_bags_rng</a> (array[] int hunting_year, vector hunted_total, real harvest_bag_cv)</td></tr>
-<tr class="memdesc:accd8661513dfbcac88a41027c407064d"><td class="mdescLeft">&#160;</td><td class="mdescRight">harvest_bags_rng  <br /></td></tr>
-<tr class="separator:accd8661513dfbcac88a41027c407064d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a413d45c2e0b3937cc8d5920604b2e7a3" id="r_a413d45c2e0b3937cc8d5920604b2e7a3"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting__bags_8stanfunctions.html#a413d45c2e0b3937cc8d5920604b2e7a3">hunting_bags_lpdf</a> (array[] real hunting_count, array[] int hunting_year, vector hunted_total, real hunting_bag_cv)</td></tr>
+<tr class="memdesc:a413d45c2e0b3937cc8d5920604b2e7a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">hunting_bags_lpdf  <br /></td></tr>
+<tr class="separator:a413d45c2e0b3937cc8d5920604b2e7a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0eef35f72752feb5402497f7e677e6b" id="r_ac0eef35f72752feb5402497f7e677e6b"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting__bags_8stanfunctions.html#ac0eef35f72752feb5402497f7e677e6b">hunting_bags_pointwise_log_lik</a> (array[] real hunting_count, array[] int hunting_year, vector hunted_total, real hunting_bag_cv)</td></tr>
+<tr class="memdesc:ac0eef35f72752feb5402497f7e677e6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">hunting_bags_pointwise_log_lik  <br /></td></tr>
+<tr class="separator:ac0eef35f72752feb5402497f7e677e6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac35f9c896fb60a37e24747061b576a3d" id="r_ac35f9c896fb60a37e24747061b576a3d"><td class="memItemLeft" align="right" valign="top">array[] real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting__bags_8stanfunctions.html#ac35f9c896fb60a37e24747061b576a3d">hunting_bags_rng</a> (array[] int hunting_year, vector hunted_total, real hunting_bag_cv)</td></tr>
+<tr class="memdesc:ac35f9c896fb60a37e24747061b576a3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">hunting_bags_rng  <br /></td></tr>
+<tr class="separator:ac35f9c896fb60a37e24747061b576a3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a70f677970f400a1de6820932e29971d7" name="a70f677970f400a1de6820932e29971d7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70f677970f400a1de6820932e29971d7">&#9670;&#160;</a></span>harvest_bags_lpdf()</h2>
+<a id="a413d45c2e0b3937cc8d5920604b2e7a3" name="a413d45c2e0b3937cc8d5920604b2e7a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a413d45c2e0b3937cc8d5920604b2e7a3">&#9670;&#160;</a></span>hunting_bags_lpdf()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">real harvest_bags_lpdf </td>
+          <td class="memname">real hunting_bags_lpdf </td>
           <td>(</td>
           <td class="paramtype">array[]real&#160;</td>
           <td class="paramname"><em>hunting_count</em>, </td>
@@ -146,7 +150,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>harvest_bag_cv</em>&#160;</td>
+          <td class="paramname"><em>hunting_bag_cv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -155,14 +159,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>harvest_bags_lpdf </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hunting_count</td><td>Observed count of reported hunted seals </td></tr>
     <tr><td class="paramname">hunting_year</td><td>Years of data </td></tr>
     <tr><td class="paramname">hunted_total</td><td>Total hunted </td></tr>
-    <tr><td class="paramname">harvest_bag_cv</td><td>variation in hunting reports </td></tr>
+    <tr><td class="paramname">hunting_bag_cv</td><td>variation in hunting reports </td></tr>
   </table>
   </dd>
 </dl>
@@ -172,14 +174,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a9344e7d7ba23b3e488ab93ff0c632127" name="a9344e7d7ba23b3e488ab93ff0c632127"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9344e7d7ba23b3e488ab93ff0c632127">&#9670;&#160;</a></span>harvest_bags_pointwise_log_lik()</h2>
+<a id="ac0eef35f72752feb5402497f7e677e6b" name="ac0eef35f72752feb5402497f7e677e6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0eef35f72752feb5402497f7e677e6b">&#9670;&#160;</a></span>hunting_bags_pointwise_log_lik()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">vector harvest_bags_pointwise_log_lik </td>
+          <td class="memname">vector hunting_bags_pointwise_log_lik </td>
           <td>(</td>
           <td class="paramtype">array[]real&#160;</td>
           <td class="paramname"><em>hunting_count</em>, </td>
@@ -200,7 +202,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>harvest_bag_cv</em>&#160;</td>
+          <td class="paramname"><em>hunting_bag_cv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -209,14 +211,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>harvest_bags_pointwise_log_lik </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hunting_count</td><td>Observed count of reported hunted seals </td></tr>
     <tr><td class="paramname">hunting_year</td><td>Years of data </td></tr>
     <tr><td class="paramname">hunted_total</td><td>Total hunted </td></tr>
-    <tr><td class="paramname">harvest_bag_cv</td><td>variation in hunting reports </td></tr>
+    <tr><td class="paramname">hunting_bag_cv</td><td>variation in hunting reports </td></tr>
   </table>
   </dd>
 </dl>
@@ -226,14 +226,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="accd8661513dfbcac88a41027c407064d" name="accd8661513dfbcac88a41027c407064d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#accd8661513dfbcac88a41027c407064d">&#9670;&#160;</a></span>harvest_bags_rng()</h2>
+<a id="ac35f9c896fb60a37e24747061b576a3d" name="ac35f9c896fb60a37e24747061b576a3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac35f9c896fb60a37e24747061b576a3d">&#9670;&#160;</a></span>hunting_bags_rng()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">array[] real harvest_bags_rng </td>
+          <td class="memname">array[] real hunting_bags_rng </td>
           <td>(</td>
           <td class="paramtype">array[]int&#160;</td>
           <td class="paramname"><em>hunting_year</em>, </td>
@@ -248,7 +248,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>harvest_bag_cv</em>&#160;</td>
+          <td class="paramname"><em>hunting_bag_cv</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -257,20 +257,17 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>harvest_bags_rng </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">hunting_count</td><td>Observed count of reported hunted seals </td></tr>
     <tr><td class="paramname">hunting_year</td><td>Years of data </td></tr>
     <tr><td class="paramname">hunted_total</td><td>Total hunted </td></tr>
-    <tr><td class="paramname">harvest_bag_cv</td><td>variation in hunting reports </td></tr>
+    <tr><td class="paramname">hunting_bag_cv</td><td>variation in hunting reports </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>simulated observations from normal model </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="hunting__bags_8stanfunctions_source.html#l00070">70</a> of file <a class="el" href="hunting__bags_8stanfunctions_source.html">hunting_bags.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="hunting__bags_8stanfunctions_source.html#l00069">69</a> of file <a class="el" href="hunting__bags_8stanfunctions_source.html">hunting_bags.stanfunctions</a>.</p>
 
 </div>
 </div>

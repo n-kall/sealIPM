@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -107,11 +111,11 @@ $(document).ready(function(){initNavTree('hunting__bags_8stanfunctions_source.ht
 <div class="contents">
 <a href="hunting__bags_8stanfunctions.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
 <div class="foldopen" id="foldopen00010" data-start="{" data-end="}">
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno"><a class="line" href="hunting__bags_8stanfunctions.html#a70f677970f400a1de6820932e29971d7">   10</a></span>real <a class="code hl_function" href="hunting__bags_8stanfunctions.html#a70f677970f400a1de6820932e29971d7">harvest_bags_lpdf</a>(</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno"><a class="line" href="hunting__bags_8stanfunctions.html#a413d45c2e0b3937cc8d5920604b2e7a3">   10</a></span>real <a class="code hl_function" href="hunting__bags_8stanfunctions.html#a413d45c2e0b3937cc8d5920604b2e7a3">hunting_bags_lpdf</a>(</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>  array[] real hunting_count,   <span class="comment">// observed count</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>  array[] <span class="keywordtype">int</span> hunting_year,   <span class="comment">// year</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>  vector hunted_total,    <span class="comment">// total</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>  real harvest_bag_cv</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>  real hunting_bag_cv</div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>) {</div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>  <span class="keywordtype">int</span> n_obs = size(hunting_count);</div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>  real lp = 0;</div>
@@ -121,7 +125,7 @@ $(document).ready(function(){initNavTree('hunting__bags_8stanfunctions_source.ht
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    lp += normal_lpdf(</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>      hunting_count[i] |</div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>      hunted_total[t],</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>      harvest_bag_cv * hunted_total[t]</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>      hunting_bag_cv * hunted_total[t]</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    );</div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>  }</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
@@ -130,11 +134,11 @@ $(document).ready(function(){initNavTree('hunting__bags_8stanfunctions_source.ht
 </div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
 <div class="foldopen" id="foldopen00040" data-start="{" data-end="}">
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="hunting__bags_8stanfunctions.html#a9344e7d7ba23b3e488ab93ff0c632127">   40</a></span>vector <a class="code hl_function" href="hunting__bags_8stanfunctions.html#a9344e7d7ba23b3e488ab93ff0c632127">harvest_bags_pointwise_log_lik</a>(</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="hunting__bags_8stanfunctions.html#ac0eef35f72752feb5402497f7e677e6b">   40</a></span>vector <a class="code hl_function" href="hunting__bags_8stanfunctions.html#ac0eef35f72752feb5402497f7e677e6b">hunting_bags_pointwise_log_lik</a>(</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  array[] real hunting_count,   <span class="comment">// observed count</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  array[] <span class="keywordtype">int</span> hunting_year,   <span class="comment">// year</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  vector hunted_total,    <span class="comment">// total</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  real harvest_bag_cv</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  real hunting_bag_cv</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>) {</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keywordtype">int</span> n_obs = size(hunting_count);</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  vector[n_obs] log_lik;</div>
@@ -144,7 +148,7 @@ $(document).ready(function(){initNavTree('hunting__bags_8stanfunctions_source.ht
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    log_lik[i] = normal_lpdf(</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      hunting_count[i] |</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>      hunted_total[t],</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>      harvest_bag_cv * hunted_total[t]</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>      hunting_bag_cv * hunted_total[t]</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    );</div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  }</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
@@ -152,33 +156,33 @@ $(document).ready(function(){initNavTree('hunting__bags_8stanfunctions_source.ht
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>}</div>
 </div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
-<div class="foldopen" id="foldopen00070" data-start="{" data-end="}">
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="hunting__bags_8stanfunctions.html#accd8661513dfbcac88a41027c407064d">   70</a></span>array[] real <a class="code hl_function" href="hunting__bags_8stanfunctions.html#accd8661513dfbcac88a41027c407064d">harvest_bags_rng</a>(</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  array[] <span class="keywordtype">int</span> hunting_year,</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  vector hunted_total,</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  real harvest_bag_cv</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>) {</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  <span class="keywordtype">int</span> n_obs = size(hunting_year);</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  array[n_obs] real y_sim;</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  <span class="keywordflow">for</span> (i in 1:n_obs) {</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordtype">int</span> t = hunting_year[i];</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keywordflow">if</span> (hunted_total[t] &gt; 0) {</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>      y_sim[i] = normal_rng(</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        hunted_total[t],</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>        harvest_bag_cv * hunted_total[t]</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>      );</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>      y_sim[i] = 0.0;</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    }</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  }</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  <span class="keywordflow">return</span> y_sim;</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>}</div>
+<div class="foldopen" id="foldopen00069" data-start="{" data-end="}">
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="hunting__bags_8stanfunctions.html#ac35f9c896fb60a37e24747061b576a3d">   69</a></span>array[] real <a class="code hl_function" href="hunting__bags_8stanfunctions.html#ac35f9c896fb60a37e24747061b576a3d">hunting_bags_rng</a>(</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  array[] <span class="keywordtype">int</span> hunting_year,</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  vector hunted_total,</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  real hunting_bag_cv</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>) {</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <span class="keywordtype">int</span> n_obs = size(hunting_year);</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  array[n_obs] real y_sim;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <span class="keywordflow">for</span> (i in 1:n_obs) {</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">int</span> t = hunting_year[i];</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordflow">if</span> (hunted_total[t] &gt; 0) {</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>      y_sim[i] = normal_rng(</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>        hunted_total[t],</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        hunting_bag_cv * hunted_total[t]</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>      );</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>      y_sim[i] = 0.0;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    }</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  }</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  <span class="keywordflow">return</span> y_sim;</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>}</div>
 </div>
-<div class="ttc" id="ahunting__bags_8stanfunctions_html_a70f677970f400a1de6820932e29971d7"><div class="ttname"><a href="hunting__bags_8stanfunctions.html#a70f677970f400a1de6820932e29971d7">harvest_bags_lpdf</a></div><div class="ttdeci">real harvest_bags_lpdf(array[] real hunting_count, array[] int hunting_year, vector hunted_total, real harvest_bag_cv)</div><div class="ttdoc">harvest_bags_lpdf</div><div class="ttdef"><b>Definition</b> <a href="hunting__bags_8stanfunctions_source.html#l00010">hunting_bags.stanfunctions:10</a></div></div>
-<div class="ttc" id="ahunting__bags_8stanfunctions_html_a9344e7d7ba23b3e488ab93ff0c632127"><div class="ttname"><a href="hunting__bags_8stanfunctions.html#a9344e7d7ba23b3e488ab93ff0c632127">harvest_bags_pointwise_log_lik</a></div><div class="ttdeci">vector harvest_bags_pointwise_log_lik(array[] real hunting_count, array[] int hunting_year, vector hunted_total, real harvest_bag_cv)</div><div class="ttdoc">harvest_bags_pointwise_log_lik</div><div class="ttdef"><b>Definition</b> <a href="hunting__bags_8stanfunctions_source.html#l00040">hunting_bags.stanfunctions:40</a></div></div>
-<div class="ttc" id="ahunting__bags_8stanfunctions_html_accd8661513dfbcac88a41027c407064d"><div class="ttname"><a href="hunting__bags_8stanfunctions.html#accd8661513dfbcac88a41027c407064d">harvest_bags_rng</a></div><div class="ttdeci">array[] real harvest_bags_rng(array[] int hunting_year, vector hunted_total, real harvest_bag_cv)</div><div class="ttdoc">harvest_bags_rng</div><div class="ttdef"><b>Definition</b> <a href="hunting__bags_8stanfunctions_source.html#l00070">hunting_bags.stanfunctions:70</a></div></div>
+<div class="ttc" id="ahunting__bags_8stanfunctions_html_a413d45c2e0b3937cc8d5920604b2e7a3"><div class="ttname"><a href="hunting__bags_8stanfunctions.html#a413d45c2e0b3937cc8d5920604b2e7a3">hunting_bags_lpdf</a></div><div class="ttdeci">real hunting_bags_lpdf(array[] real hunting_count, array[] int hunting_year, vector hunted_total, real hunting_bag_cv)</div><div class="ttdoc">hunting_bags_lpdf</div><div class="ttdef"><b>Definition</b> <a href="hunting__bags_8stanfunctions_source.html#l00010">hunting_bags.stanfunctions:10</a></div></div>
+<div class="ttc" id="ahunting__bags_8stanfunctions_html_ac0eef35f72752feb5402497f7e677e6b"><div class="ttname"><a href="hunting__bags_8stanfunctions.html#ac0eef35f72752feb5402497f7e677e6b">hunting_bags_pointwise_log_lik</a></div><div class="ttdeci">vector hunting_bags_pointwise_log_lik(array[] real hunting_count, array[] int hunting_year, vector hunted_total, real hunting_bag_cv)</div><div class="ttdoc">hunting_bags_pointwise_log_lik</div><div class="ttdef"><b>Definition</b> <a href="hunting__bags_8stanfunctions_source.html#l00040">hunting_bags.stanfunctions:40</a></div></div>
+<div class="ttc" id="ahunting__bags_8stanfunctions_html_ac35f9c896fb60a37e24747061b576a3d"><div class="ttname"><a href="hunting__bags_8stanfunctions.html#ac35f9c896fb60a37e24747061b576a3d">hunting_bags_rng</a></div><div class="ttdeci">array[] real hunting_bags_rng(array[] int hunting_year, vector hunted_total, real hunting_bag_cv)</div><div class="ttdoc">hunting_bags_rng</div><div class="ttdef"><b>Definition</b> <a href="hunting__bags_8stanfunctions_source.html#l00069">hunting_bags.stanfunctions:69</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

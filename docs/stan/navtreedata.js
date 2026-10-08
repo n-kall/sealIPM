@@ -25,9 +25,10 @@
 var NAVTREE =
 [
   [ "sealIPM", "index.html", [
-    [ "Files", "files.html", [
-      [ "File List", "files.html", "files_dup" ],
-      [ "File Members", "globals.html", [
+    [ "sealIPM Stan reference", "index.html", "index" ],
+    [ "Stan reference", "files.html", [
+      [ "Function files", "files.html", "files_dup" ],
+      [ "Function index", "globals.html", [
         [ "All", "globals.html", null ],
         [ "Functions", "globals_func.html", null ]
       ] ]

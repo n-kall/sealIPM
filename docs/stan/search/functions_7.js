@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['mortality_5frates_0',['mortality_rates',['../statespace_8stanfunctions.html#aadfee2b5ff8937d561967cb071568311',1,'statespace.stanfunctions']]],
-  ['multinomial_5fallocation_1',['multinomial_allocation',['../logitnormal_8stanfunctions.html#a4796b82803bfe28ae739cf9f23b53664',1,'logitnormal.stanfunctions']]]
+  ['reproductive_5fsigns_5flpmf_0',['reproductive_signs_lpmf',['../reproductive__signs_8stanfunctions.html#a750e16b0e77e81a132a532b58fc28cb1',1,'reproductive_signs.stanfunctions']]],
+  ['reproductive_5fsigns_5fpointwise_5flog_5flik_1',['reproductive_signs_pointwise_log_lik',['../reproductive__signs_8stanfunctions.html#ae90941f2d31ce9a889b5d7221448fbad',1,'reproductive_signs.stanfunctions']]],
+  ['reproductive_5fsigns_5frng_2',['reproductive_signs_rng',['../reproductive__signs_8stanfunctions.html#a1e3df2e489d3ab58f9c5f8e6374651e0',1,'reproductive_signs.stanfunctions']]],
+  ['run_5fstate_5fprocess_5ffrom_5ffirst_5fpopulation_3',['run_state_process_from_first_population',['../run__process_8stanfunctions.html#a6094283eb00af7d83aebdfa0bd6081cf',1,'run_process.stanfunctions']]],
+  ['run_5fstate_5fprocess_5ffrom_5fsurvivors_5frng_4',['run_state_process_from_survivors_rng',['../run__process_8stanfunctions.html#ac99c68e9552db0e77d2c47a948cdc4e0',1,'run_process.stanfunctions']]]
 ];

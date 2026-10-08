@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -107,19 +111,19 @@ $(document).ready(function(){initNavTree('aerial__counts_8stanfunctions.html',''
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a49b3ba51543454566259612093f2b529" id="r_a49b3ba51543454566259612093f2b529"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aerial__counts_8stanfunctions.html#a49b3ba51543454566259612093f2b529">aerial_count_lpmf</a> (array[] int obs_aerial_count, array[] int aerial_year, vector population_total, real mu, real phi)</td></tr>
-<tr class="memdesc:a49b3ba51543454566259612093f2b529"><td class="mdescLeft">&#160;</td><td class="mdescRight">aerial_count_lpmf  <br /></td></tr>
-<tr class="separator:a49b3ba51543454566259612093f2b529"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e4867bcff72ed296088650b72aa0acc" id="r_a4e4867bcff72ed296088650b72aa0acc"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aerial__counts_8stanfunctions.html#a4e4867bcff72ed296088650b72aa0acc">aerial_count_pointwise_log_lik</a> (array[] int obs_aerial_count, array[] int aerial_year, vector population_total, real mu, real phi)</td></tr>
-<tr class="memdesc:a4e4867bcff72ed296088650b72aa0acc"><td class="mdescLeft">&#160;</td><td class="mdescRight">aerial_count_pointwise_log_lik  <br /></td></tr>
-<tr class="separator:a4e4867bcff72ed296088650b72aa0acc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51e13dd77dce640f4a9264a8e90f4af7" id="r_a51e13dd77dce640f4a9264a8e90f4af7"><td class="memItemLeft" align="right" valign="top">array[] int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aerial__counts_8stanfunctions.html#a51e13dd77dce640f4a9264a8e90f4af7">aerial_count_rng</a> (array[] int aerial_year, vector population_total, real mu, real phi)</td></tr>
-<tr class="memdesc:a51e13dd77dce640f4a9264a8e90f4af7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simulate aerial survey counts.  <br /></td></tr>
-<tr class="separator:a51e13dd77dce640f4a9264a8e90f4af7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf714791f4de70ab0a38d5f093933dba" id="r_aaf714791f4de70ab0a38d5f093933dba"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aerial__counts_8stanfunctions.html#aaf714791f4de70ab0a38d5f093933dba">aerial_count_lpmf</a> (array[] int obs_aerial_count, array[] int aerial_year, vector non_pup_population_total, real mu, real phi)</td></tr>
+<tr class="memdesc:aaf714791f4de70ab0a38d5f093933dba"><td class="mdescLeft">&#160;</td><td class="mdescRight">aerial_count_lpmf  <br /></td></tr>
+<tr class="separator:aaf714791f4de70ab0a38d5f093933dba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afff5edb3b106a844594bd4bb0a41fe1a" id="r_afff5edb3b106a844594bd4bb0a41fe1a"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aerial__counts_8stanfunctions.html#afff5edb3b106a844594bd4bb0a41fe1a">aerial_count_pointwise_log_lik</a> (array[] int obs_aerial_count, array[] int aerial_year, vector non_pup_population_total, real mu, real phi)</td></tr>
+<tr class="memdesc:afff5edb3b106a844594bd4bb0a41fe1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">aerial_count_pointwise_log_lik  <br /></td></tr>
+<tr class="separator:afff5edb3b106a844594bd4bb0a41fe1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae050597d3fe5baaa57bc6bd62aa794da" id="r_ae050597d3fe5baaa57bc6bd62aa794da"><td class="memItemLeft" align="right" valign="top">array[] int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aerial__counts_8stanfunctions.html#ae050597d3fe5baaa57bc6bd62aa794da">aerial_count_rng</a> (array[] int aerial_year, vector non_pup_population_total, real mu, real phi)</td></tr>
+<tr class="memdesc:ae050597d3fe5baaa57bc6bd62aa794da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simulate aerial survey counts.  <br /></td></tr>
+<tr class="separator:ae050597d3fe5baaa57bc6bd62aa794da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a49b3ba51543454566259612093f2b529" name="a49b3ba51543454566259612093f2b529"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a49b3ba51543454566259612093f2b529">&#9670;&#160;</a></span>aerial_count_lpmf()</h2>
+<a id="aaf714791f4de70ab0a38d5f093933dba" name="aaf714791f4de70ab0a38d5f093933dba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf714791f4de70ab0a38d5f093933dba">&#9670;&#160;</a></span>aerial_count_lpmf()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -140,7 +144,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>population_total</em>, </td>
+          <td class="paramname"><em>non_pup_population_total</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -161,15 +165,13 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>aerial_count_lpmf </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">obs_aerial_count</td><td>Observed count </td></tr>
-    <tr><td class="paramname">aerial_year</td><td>Year for each observation </td></tr>
-    <tr><td class="paramname">population_total</td><td>Total population </td></tr>
-    <tr><td class="paramname">mu</td><td>Unscaled count observation rate </td></tr>
-    <tr><td class="paramname">overdispersion</td><td>Overdispersion in counts </td></tr>
+    <tr><td class="paramname">obs_aerial_count</td><td>vector of observed aerial counts </td></tr>
+    <tr><td class="paramname">aerial_year</td><td>vector specifying which years the counts are from (relative to the start year of the process) </td></tr>
+    <tr><td class="paramname">non_pup_population_total</td><td>vector of population estimates per year excluding pups (ages 1+) </td></tr>
+    <tr><td class="paramname">mu</td><td>real mean observation probability </td></tr>
+    <tr><td class="paramname">phi</td><td>real overdispersion parameter </td></tr>
   </table>
   </dd>
 </dl>
@@ -179,8 +181,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a4e4867bcff72ed296088650b72aa0acc" name="a4e4867bcff72ed296088650b72aa0acc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4e4867bcff72ed296088650b72aa0acc">&#9670;&#160;</a></span>aerial_count_pointwise_log_lik()</h2>
+<a id="afff5edb3b106a844594bd4bb0a41fe1a" name="afff5edb3b106a844594bd4bb0a41fe1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afff5edb3b106a844594bd4bb0a41fe1a">&#9670;&#160;</a></span>aerial_count_pointwise_log_lik()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -201,7 +203,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>population_total</em>, </td>
+          <td class="paramname"><em>non_pup_population_total</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -222,27 +224,24 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>aerial_count_pointwise_log_lik </p>
-<p>Description.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">obs_aerial_count</td><td>Vector of observed aerial count </td></tr>
-    <tr><td class="paramname">aerial_year</td><td>vector specifying which years are the counts from </td></tr>
-    <tr><td class="paramname">population_total</td><td>Vector of total population estimates per year </td></tr>
-    <tr><td class="paramname">mu</td><td>Mean observation probability </td></tr>
-    <tr><td class="paramname">overdispersion</td><td>Overdispersion </td></tr>
+    <tr><td class="paramname">obs_aerial_count</td><td>vector of observed aerial counts </td></tr>
+    <tr><td class="paramname">aerial_year</td><td>vector specifying which years the counts are from (relative to the start year of the process) </td></tr>
+    <tr><td class="paramname">non_pup_population_total</td><td>vector of population estimates per year excluding pups (ages 1+) </td></tr>
+    <tr><td class="paramname">mu</td><td>real mean observation probability </td></tr>
+    <tr><td class="paramname">phi</td><td>real overdispersion parameter </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>vector of log-likelihood values for each year </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="aerial__counts_8stanfunctions_source.html#l00046">46</a> of file <a class="el" href="aerial__counts_8stanfunctions_source.html">aerial_counts.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="aerial__counts_8stanfunctions_source.html#l00045">45</a> of file <a class="el" href="aerial__counts_8stanfunctions_source.html">aerial_counts.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="a51e13dd77dce640f4a9264a8e90f4af7" name="a51e13dd77dce640f4a9264a8e90f4af7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a51e13dd77dce640f4a9264a8e90f4af7">&#9670;&#160;</a></span>aerial_count_rng()</h2>
+<a id="ae050597d3fe5baaa57bc6bd62aa794da" name="ae050597d3fe5baaa57bc6bd62aa794da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae050597d3fe5baaa57bc6bd62aa794da">&#9670;&#160;</a></span>aerial_count_rng()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -257,7 +256,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>population_total</em>, </td>
+          <td class="paramname"><em>non_pup_population_total</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -278,23 +277,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Simulate aerial survey counts. </p>
-<p>Generates aerial survey counts using the same negative-binomial observation model as <code><a class="el" href="aerial__counts_8stanfunctions.html#a49b3ba51543454566259612093f2b529" title="aerial_count_lpmf">aerial_count_lpmf()</a></code>. For observation <code>i</code>, the expected count is:</p>
-<p><code>mu * population_total[aerial_year[i]]</code>.</p>
-<p>If the expected count is zero, the simulated count is set to exactly zero.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">aerial_year</td><td>State-process year index for each simulated observation. </td></tr>
-    <tr><td class="paramname">population_total</td><td>Total population size in each state-process year. </td></tr>
-    <tr><td class="paramname">mu</td><td>Aerial observation rate. </td></tr>
-    <tr><td class="paramname">phi</td><td>Negative-binomial precision parameter. </td></tr>
+    <tr><td class="paramname">aerial_year</td><td>vector specifying which years the counts are from (relative to the start year of the process) </td></tr>
+    <tr><td class="paramname">non_pup_population_total</td><td>vector of population estimates per year excluding pups (ages 1+) </td></tr>
+    <tr><td class="paramname">mu</td><td>real mean observation probability </td></tr>
+    <tr><td class="paramname">phi</td><td>real overdispersion parameter </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>One simulated aerial survey count for each element of <code>aerial_year</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>vector of simulated aerial survey count for each year </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="aerial__counts_8stanfunctions_source.html#l00087">87</a> of file <a class="el" href="aerial__counts_8stanfunctions_source.html">aerial_counts.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="aerial__counts_8stanfunctions_source.html#l00077">77</a> of file <a class="el" href="aerial__counts_8stanfunctions_source.html">aerial_counts.stanfunctions</a>.</p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>sealIPM: Main Page</title>
+<title>sealIPM: sealIPM Stan reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -96,10 +100,57 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div>
 </div>
 
-<div class="header">
-  <div class="headertitle"><div class="title">sealIPM Documentation</div></div>
+<div><div class="header">
+  <div class="headertitle"><div class="title">sealIPM Stan reference </div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a class="anchor" id="md_docs_2mainpage"></a> This reference describes the Stan functions used to fit and forecast the Baltic grey seal integrated population model. Use the <b>Function index</b> to find a function by name, or the search box to find a parameter or topic.</p>
+<h1><a class="anchor" id="autotoc_md1"></a>
+Start here</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Component   </th><th class="markdownTableHeadLeft">Reference   </th><th class="markdownTableHeadLeft">Purpose    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">Process runners and initialization   </td><td class="markdownTableBodyLeft"><a class="el" href="run__process_8stanfunctions.html">run_process.stanfunctions</a>   </td><td class="markdownTableBodyLeft">Continuous fitting, discrete forecasting, and initial population burn-in    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">Pregnancy and births   </td><td class="markdownTableBodyLeft"><a class="el" href="pregnancy__births_8stanfunctions.html">pregnancy_births.stanfunctions</a>   </td><td class="markdownTableBodyLeft">Baseline and density-dependent reproductive rates    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">Deaths   </td><td class="markdownTableBodyLeft"><a class="el" href="deaths_8stanfunctions.html">deaths.stanfunctions</a>   </td><td class="markdownTableBodyLeft">Demographic non-hunting mortality rates    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">Hunting   </td><td class="markdownTableBodyLeft"><a class="el" href="hunting_8stanfunctions.html">hunting.stanfunctions</a>   </td><td class="markdownTableBodyLeft">Hunting pressure, ODE derivative, and annual fate probabilities    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">Aging   </td><td class="markdownTableBodyLeft"><a class="el" href="aging_8stanfunctions.html">aging.stanfunctions</a>   </td><td class="markdownTableBodyLeft">Age-class transitions and newborn population updates    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">Fates   </td><td class="markdownTableBodyLeft"><a class="el" href="fates_8stanfunctions.html">fates.stanfunctions</a>   </td><td class="markdownTableBodyLeft">Logistic-normal allocation of expected fate counts   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md2"></a>
+Observation models</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Observations   </th><th class="markdownTableHeadLeft">Reference    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">Aerial counts (ages 1+, excluding pups)   </td><td class="markdownTableBodyLeft"><a class="el" href="aerial__counts_8stanfunctions.html">aerial_counts.stanfunctions</a>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">Hunting bags   </td><td class="markdownTableBodyLeft"><a class="el" href="hunting__bags_8stanfunctions.html">hunting_bags.stanfunctions</a>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">Hunting age and sex composition   </td><td class="markdownTableBodyLeft"><a class="el" href="hunting__composition_8stanfunctions.html">hunting_composition.stanfunctions</a>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">Bycatch age and sex composition   </td><td class="markdownTableBodyLeft"><a class="el" href="bycatch__composition_8stanfunctions.html">bycatch_composition.stanfunctions</a>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">Pregnancy   </td><td class="markdownTableBodyLeft"><a class="el" href="pregnancy_8stanfunctions.html">pregnancy.stanfunctions</a>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">Reproductive signs   </td><td class="markdownTableBodyLeft"><a class="el" href="reproductive__signs_8stanfunctions.html">reproductive_signs.stanfunctions</a>   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md3"></a>
+Annual process timeline</h1>
+<p>For years after the initial state, update the birth rate using the previous population total, age the previous survivors, and add newborn pups</p>
+<p>Calculate hunting pressures and annual fate probabilities from this population</p>
+<p>The hunting probabilities include survival between birth and hunting onset</p>
+<p>Annual survival already includes a full year of non-hunting mortality The survivors form the boundary for the next year's ageing and births</p>
+<p>Pregnancy in the current year uses the next year's baseline birth rate and the current population density</p>
+<p>Aerial counts use both sexes aged one and older and exclude pups of the year</p>
+<p>Fitting uses continuous demographic approximations while forecasting uses integer binomial births and multinomial fate draws </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

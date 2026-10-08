@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['logitnormal_2estanfunctions_0',['logitnormal.stanfunctions',['../logitnormal_8stanfunctions.html',1,'']]]
+  ['fates_2estanfunctions_0',['fates.stanfunctions',['../fates_8stanfunctions.html',1,'']]]
 ];

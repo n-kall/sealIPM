@@ -1,0 +1,108 @@
+/* Extra styling only: retain Doxygen's navigation, search, and colour modes. */
+html {
+  --sealipm-accent: #117985;
+}
+
+body, table, div, p, dl {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+#titlearea {
+  padding: 12px 20px;
+  border-bottom: 3px solid var(--sealipm-accent);
+}
+
+#projectlogo img {
+  max-width: 88px;
+  max-height: 72px;
+  width: auto;
+  height: auto;
+}
+
+#projectname {
+  font-family: inherit;
+  font-size: 28px;
+  font-weight: 650;
+}
+
+#projectbrief {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+div.header {
+  background-image: none;
+  padding: 12px 20px;
+}
+
+div.title {
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+div.contents {
+  margin: 24px 28px;
+  max-width: 1120px;
+}
+
+div.contents h1, div.contents h2, div.contents h3 {
+  line-height: 1.35;
+  margin-top: 1.5em;
+}
+
+table.markdownTable {
+  width: 100%;
+  margin: 16px 0 24px;
+  border-collapse: collapse;
+}
+
+table.markdownTable th, table.markdownTable td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.memtitle {
+  border-radius: 6px 6px 0 0;
+  margin-top: 28px;
+}
+
+.memdoc {
+  padding: 16px 20px;
+  box-shadow: none;
+}
+
+.memproto, div.fragment, code, .line {
+  font-family: ui-monospace, "Cascadia Code", "Liberation Mono", monospace;
+}
+
+div.fragment {
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+div.line {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.memproto {
+  overflow-x: auto;
+}
+
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--sealipm-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  #side-nav, #splitbar { display: none; }
+  #doc-content { margin-left: 0 !important; }
+  div.contents { margin: 16px 12px; }
+  #titlearea { padding: 8px 12px; }
+  #projectlogo img { max-width: 56px; max-height: 48px; }
+  #projectname { font-size: 22px; }
+  #projectbrief { font-size: 12px; }
+}

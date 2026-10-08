@@ -1,0 +1,19 @@
+<map id="run_state_process_from_survivors_rng" name="run_state_process_from_survivors_rng">
+<area shape="rect" id="Node000001" title="Simulate the discrete state process using the original hunting ODEs." alt="" coords="5,152,168,192"/>
+<area shape="rect" id="Node000002" href="$hunting_8stanfunctions.html#a6004245cf2b8e9e432e938ecc816b434" title="Compute hunting pressure for a discrete population." alt="" coords="216,5,395,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,150,151,103,182,78,215,55,226,49,229,53,217,60,185,82,155,107,108,153"/>
+<area shape="rect" id="Node000003" href="$ode_8stanfunctions.html#adc2a994066ce3f841538da945bb8145b" title="Calculate annual survival, hunting, and other&#45;death probabilities." alt="" coords="239,69,371,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,149,215,120,237,112,239,117,217,125,141,154"/>
+<area shape="rect" id="Node000006" href="$run__process_8stanfunctions.html#a86bb12bc852a931a4a00bde65e2f2037" title="Convert continuous expected counts to integer demographic counts." alt="" coords="221,134,390,159"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="168,160,207,155,208,161,169,165"/>
+<area shape="rect" id="Node000007" href="$pregnancy__births_8stanfunctions.html#a449cb0ba0ee3ade0816addae30016310" title="Update the density&#45;dependent birth rate." alt="" coords="244,183,367,209"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="169,178,231,185,230,190,168,184"/>
+<area shape="rect" id="Node000008" href="$aging_8stanfunctions.html#a184e9412c730ac58243f250e590a2663" title="Age integer survivors and simulate newborns." alt="" coords="225,233,385,273"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="141,190,217,219,236,226,235,231,215,224,139,195"/>
+<area shape="rect" id="Node000009" href="$pregnancy__births_8stanfunctions.html#a14095da4fe64d11ec5fe7e5b22c1a522" title="Update the pregnancy rate." alt="" coords="227,298,384,323"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="107,190,154,237,185,262,217,283,234,291,232,296,215,288,181,266,151,241,104,194"/>
+<area shape="rect" id="Node000004" href="$ode_8stanfunctions.html#af0d0116fe11227160981749c2a422c06" title="Evaluate the hunting&#45;count derivative for one country." alt="" coords="483,49,541,74"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="371,78,469,64,470,70,372,83"/>
+<area shape="rect" id="Node000005" href="$ode_8stanfunctions.html#a310310c61892f9d00f18518e07991535" title="Check and correct small numerical deviations from valid fate probabilities." alt="" coords="443,99,581,139"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="372,96,429,104,429,110,371,101"/>
+</map>

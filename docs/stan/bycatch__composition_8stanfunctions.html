@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -103,23 +107,32 @@ $(document).ready(function(){initNavTree('bycatch__composition_8stanfunctions.ht
 </div><!--header-->
 <div class="contents">
 
+<p>Bycatch sample composition conditional on expected non-hunting deaths.  
+<a href="#details">More...</a></p>
+
 <p><a href="bycatch__composition_8stanfunctions_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a5549ab7304a3ff26e1baae476b74ab7a" id="r_a5549ab7304a3ff26e1baae476b74ab7a"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bycatch__composition_8stanfunctions.html#a5549ab7304a3ff26e1baae476b74ab7a">bycatch_comp_lpmf</a> (array[,] int bycatch_composition, array[] int bycatch_comp_year, matrix bycatch_expected, vector selectivity)</td></tr>
-<tr class="memdesc:a5549ab7304a3ff26e1baae476b74ab7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">bycatch_comp_lpmf  <br /></td></tr>
-<tr class="separator:a5549ab7304a3ff26e1baae476b74ab7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1287adfc0db05aed2418905acda0fde" id="r_af1287adfc0db05aed2418905acda0fde"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bycatch__composition_8stanfunctions.html#af1287adfc0db05aed2418905acda0fde">bycatch_comp_pointwise_log_lik</a> (array[,] int bycatch_composition, array[] int bycatch_comp_year, matrix bycatch_expected, vector selectivity)</td></tr>
-<tr class="memdesc:af1287adfc0db05aed2418905acda0fde"><td class="mdescLeft">&#160;</td><td class="mdescRight">bycatch_comp_pointwise_log_lik  <br /></td></tr>
-<tr class="separator:af1287adfc0db05aed2418905acda0fde"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1332dece6f21c74fc3eeb3675ac4987" id="r_ab1332dece6f21c74fc3eeb3675ac4987"><td class="memItemLeft" align="right" valign="top">array[,] int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bycatch__composition_8stanfunctions.html#ab1332dece6f21c74fc3eeb3675ac4987">bycatch_comp_rng</a> (array[] int bycatch_comp_year, matrix bycatch_expected, vector selectivity, array[] int bycatch_sample_size)</td></tr>
-<tr class="memdesc:ab1332dece6f21c74fc3eeb3675ac4987"><td class="mdescLeft">&#160;</td><td class="mdescRight">bycatch_comp_rng  <br /></td></tr>
-<tr class="separator:ab1332dece6f21c74fc3eeb3675ac4987"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a128609263f1d3f293e90cc0f33fbf1cc" id="r_a128609263f1d3f293e90cc0f33fbf1cc"><td class="memItemLeft" align="right" valign="top">real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bycatch__composition_8stanfunctions.html#a128609263f1d3f293e90cc0f33fbf1cc">bycatch_comp_lpmf</a> (array[,] int bycatch_composition, array[] int bycatch_comp_year, matrix non_hunting_deaths_expected, vector selectivity)</td></tr>
+<tr class="memdesc:a128609263f1d3f293e90cc0f33fbf1cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">bycatch_comp_lpmf  <br /></td></tr>
+<tr class="separator:a128609263f1d3f293e90cc0f33fbf1cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8660f47816307fd2504e752cfc1c33c9" id="r_a8660f47816307fd2504e752cfc1c33c9"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bycatch__composition_8stanfunctions.html#a8660f47816307fd2504e752cfc1c33c9">bycatch_comp_pointwise_log_lik</a> (array[,] int bycatch_composition, array[] int bycatch_comp_year, matrix non_hunting_deaths_expected, vector selectivity)</td></tr>
+<tr class="memdesc:a8660f47816307fd2504e752cfc1c33c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">bycatch_comp_pointwise_log_lik  <br /></td></tr>
+<tr class="separator:a8660f47816307fd2504e752cfc1c33c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ecde55c0ec8f242573f81028df08f6e" id="r_a3ecde55c0ec8f242573f81028df08f6e"><td class="memItemLeft" align="right" valign="top">array[,] int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bycatch__composition_8stanfunctions.html#a3ecde55c0ec8f242573f81028df08f6e">bycatch_comp_rng</a> (array[] int bycatch_comp_year, matrix non_hunting_deaths_expected, vector selectivity, array[] int bycatch_sample_size)</td></tr>
+<tr class="memdesc:a3ecde55c0ec8f242573f81028df08f6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">bycatch_comp_rng  <br /></td></tr>
+<tr class="separator:a3ecde55c0ec8f242573f81028df08f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="a5549ab7304a3ff26e1baae476b74ab7a" name="a5549ab7304a3ff26e1baae476b74ab7a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5549ab7304a3ff26e1baae476b74ab7a">&#9670;&#160;</a></span>bycatch_comp_lpmf()</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The process combines natural mortality and bycatch in one non-hunting fate</p>
+<p>Its expected counts provide the demographic composition before applying bycatch selectivity and normalizing to sample probabilities</p>
+<p>These counts are not an estimate of the number of seals killed by bycatch </p>
+
+<p class="definition">Definition in file <a class="el" href="bycatch__composition_8stanfunctions_source.html">bycatch_composition.stanfunctions</a>.</p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a128609263f1d3f293e90cc0f33fbf1cc" name="a128609263f1d3f293e90cc0f33fbf1cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a128609263f1d3f293e90cc0f33fbf1cc">&#9670;&#160;</a></span>bycatch_comp_lpmf()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -140,7 +153,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">matrix&#160;</td>
-          <td class="paramname"><em>bycatch_expected</em>, </td>
+          <td class="paramname"><em>non_hunting_deaths_expected</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -155,25 +168,23 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>bycatch_comp_lpmf </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">bycatch_composition</td><td>Observed bycatch composition </td></tr>
     <tr><td class="paramname">bycatch_comp_year</td><td>Years of observation </td></tr>
-    <tr><td class="paramname">bycatch_expected</td><td>Expected counts in each group </td></tr>
+    <tr><td class="paramname">non_hunting_deaths_expected</td><td>Expected natural deaths plus bycatch in each demographic group </td></tr>
     <tr><td class="paramname">selectivity</td><td>Bycatch selectivity </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>log probability based on multinomial model </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bycatch__composition_8stanfunctions_source.html#l00010">10</a> of file <a class="el" href="bycatch__composition_8stanfunctions_source.html">bycatch_composition.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bycatch__composition_8stanfunctions_source.html#l00022">22</a> of file <a class="el" href="bycatch__composition_8stanfunctions_source.html">bycatch_composition.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="af1287adfc0db05aed2418905acda0fde" name="af1287adfc0db05aed2418905acda0fde"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af1287adfc0db05aed2418905acda0fde">&#9670;&#160;</a></span>bycatch_comp_pointwise_log_lik()</h2>
+<a id="a8660f47816307fd2504e752cfc1c33c9" name="a8660f47816307fd2504e752cfc1c33c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8660f47816307fd2504e752cfc1c33c9">&#9670;&#160;</a></span>bycatch_comp_pointwise_log_lik()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -194,7 +205,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">matrix&#160;</td>
-          <td class="paramname"><em>bycatch_expected</em>, </td>
+          <td class="paramname"><em>non_hunting_deaths_expected</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -209,25 +220,23 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>bycatch_comp_pointwise_log_lik </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">bycatch_composition</td><td>Observed bycatch composition </td></tr>
     <tr><td class="paramname">bycatch_comp_year</td><td>Years of observation </td></tr>
-    <tr><td class="paramname">bycatch_expected</td><td>Expected counts in each group </td></tr>
+    <tr><td class="paramname">non_hunting_deaths_expected</td><td>Expected natural deaths plus bycatch in each demographic group </td></tr>
     <tr><td class="paramname">selectivity</td><td>Bycatch selectivity </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pointwise log likelihood </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bycatch__composition_8stanfunctions_source.html#l00041">41</a> of file <a class="el" href="bycatch__composition_8stanfunctions_source.html">bycatch_composition.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bycatch__composition_8stanfunctions_source.html#l00053">53</a> of file <a class="el" href="bycatch__composition_8stanfunctions_source.html">bycatch_composition.stanfunctions</a>.</p>
 
 </div>
 </div>
-<a id="ab1332dece6f21c74fc3eeb3675ac4987" name="ab1332dece6f21c74fc3eeb3675ac4987"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab1332dece6f21c74fc3eeb3675ac4987">&#9670;&#160;</a></span>bycatch_comp_rng()</h2>
+<a id="a3ecde55c0ec8f242573f81028df08f6e" name="a3ecde55c0ec8f242573f81028df08f6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ecde55c0ec8f242573f81028df08f6e">&#9670;&#160;</a></span>bycatch_comp_rng()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -242,7 +251,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">matrix&#160;</td>
-          <td class="paramname"><em>bycatch_expected</em>, </td>
+          <td class="paramname"><em>non_hunting_deaths_expected</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -263,20 +272,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>bycatch_comp_rng </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">bycatch_composition</td><td>Observed bycatch composition </td></tr>
     <tr><td class="paramname">bycatch_comp_year</td><td>Years of observation </td></tr>
-    <tr><td class="paramname">bycatch_expected</td><td>Expected counts in each group </td></tr>
+    <tr><td class="paramname">non_hunting_deaths_expected</td><td>Expected natural deaths plus bycatch in each demographic group </td></tr>
     <tr><td class="paramname">selectivity</td><td>Bycatch selectivity </td></tr>
+    <tr><td class="paramname">bycatch_sample_size</td><td>total number of bycaught </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>simulated observations </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bycatch__composition_8stanfunctions_source.html#l00072">72</a> of file <a class="el" href="bycatch__composition_8stanfunctions_source.html">bycatch_composition.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bycatch__composition_8stanfunctions_source.html#l00084">84</a> of file <a class="el" href="bycatch__composition_8stanfunctions_source.html">bycatch_composition.stanfunctions</a>.</p>
 
 </div>
 </div>

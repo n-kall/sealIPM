@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['ode_2estanfunctions_0',['ode.stanfunctions',['../ode_8stanfunctions.html',1,'']]]
+  ['hunting_2estanfunctions_0',['hunting.stanfunctions',['../hunting_8stanfunctions.html',1,'']]],
+  ['hunting_5fbags_2estanfunctions_1',['hunting_bags.stanfunctions',['../hunting__bags_8stanfunctions.html',1,'']]],
+  ['hunting_5fcomposition_2estanfunctions_2',['hunting_composition.stanfunctions',['../hunting__composition_8stanfunctions.html',1,'']]]
 ];

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['bycatch_5fcomp_5flpmf_0',['bycatch_comp_lpmf',['../bycatch__composition_8stanfunctions.html#a5549ab7304a3ff26e1baae476b74ab7a',1,'bycatch_composition.stanfunctions']]],
-  ['bycatch_5fcomp_5fpointwise_5flog_5flik_1',['bycatch_comp_pointwise_log_lik',['../bycatch__composition_8stanfunctions.html#af1287adfc0db05aed2418905acda0fde',1,'bycatch_composition.stanfunctions']]],
-  ['bycatch_5fcomp_5frng_2',['bycatch_comp_rng',['../bycatch__composition_8stanfunctions.html#ab1332dece6f21c74fc3eeb3675ac4987',1,'bycatch_composition.stanfunctions']]]
+  ['bycatch_5fcomp_5flpmf_0',['bycatch_comp_lpmf',['../bycatch__composition_8stanfunctions.html#a128609263f1d3f293e90cc0f33fbf1cc',1,'bycatch_composition.stanfunctions']]],
+  ['bycatch_5fcomp_5fpointwise_5flog_5flik_1',['bycatch_comp_pointwise_log_lik',['../bycatch__composition_8stanfunctions.html#a8660f47816307fd2504e752cfc1c33c9',1,'bycatch_composition.stanfunctions']]],
+  ['bycatch_5fcomp_5frng_2',['bycatch_comp_rng',['../bycatch__composition_8stanfunctions.html#a3ecde55c0ec8f242573f81028df08f6e',1,'bycatch_composition.stanfunctions']]]
 ];

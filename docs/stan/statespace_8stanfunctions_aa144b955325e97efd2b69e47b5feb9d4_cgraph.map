@@ -1,0 +1,5 @@
+<map id="euler_lotka_birth_rate" name="euler_lotka_birth_rate">
+<area shape="rect" id="Node000001" title="Compute the Euler&#45;Lotka replacement birth rate." alt="" coords="5,5,152,31"/>
+<area shape="rect" id="Node000002" href="$statespace_8stanfunctions.html#ac2f184094fd2a9b35c978063261593de" title="Compute the log Euler&#45;Lotka replacement birth rate." alt="" coords="200,5,371,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,15,187,15,187,21,152,21"/>
+</map>

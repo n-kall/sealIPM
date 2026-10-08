@@ -1,0 +1,9 @@
+<map id="compute_joint_expected_fate_counts" name="compute_joint_expected_fate_counts">
+<area shape="rect" id="Node000001" title="Compute expected demographic fate counts using the original hunting ODEs." alt="" coords="5,27,168,67"/>
+<area shape="rect" id="Node000002" href="$ode_8stanfunctions.html#adc2a994066ce3f841538da945bb8145b" title="Original annual hunting ODE and fate calculations." alt="" coords="216,27,348,67"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="168,45,202,45,202,50,168,50"/>
+<area shape="rect" id="Node000003" href="$ode_8stanfunctions.html#af0d0116fe11227160981749c2a422c06" title="Differential equation for expected hunting in one country." alt="" coords="437,5,494,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="348,34,422,22,423,27,348,39"/>
+<area shape="rect" id="Node000004" href="$ode_8stanfunctions.html#a310310c61892f9d00f18518e07991535" title="Validate and normalize demographic fate probabilities." alt="" coords="396,55,535,95"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="348,55,383,60,382,65,348,60"/>
+</map>

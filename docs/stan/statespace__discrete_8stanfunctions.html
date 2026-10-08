@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -113,16 +117,16 @@ Functions</h2></td></tr>
 <tr class="memitem:a184e9412c730ac58243f250e590a2663" id="r_a184e9412c730ac58243f250e590a2663"><td class="memItemLeft" align="right" valign="top">array[] int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace__discrete_8stanfunctions.html#a184e9412c730ac58243f250e590a2663">update_population_from_survivors_rng</a> (array[] int previous_survivors, real birth_rate, data int n_age_classes)</td></tr>
 <tr class="memdesc:a184e9412c730ac58243f250e590a2663"><td class="mdescLeft">&#160;</td><td class="mdescRight">Age integer survivors and simulate newborns.  <br /></td></tr>
 <tr class="separator:a184e9412c730ac58243f250e590a2663"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae21396f6adf15bd2c5d7f234b6e9cded" id="r_ae21396f6adf15bd2c5d7f234b6e9cded"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace__discrete_8stanfunctions.html#ae21396f6adf15bd2c5d7f234b6e9cded">compute_hunting_pressure_discrete</a> (data int hunting_quota, vector hunting_selectivity, vector population_comp, real hunting_effort_sd, real epsilon_h, data real t_birth_to_end_hunt)</td></tr>
-<tr class="memdesc:ae21396f6adf15bd2c5d7f234b6e9cded"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute hunting pressure for a discrete population.  <br /></td></tr>
-<tr class="separator:ae21396f6adf15bd2c5d7f234b6e9cded"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f4141f832bcc110dcf45b8acb1fab57" id="r_a5f4141f832bcc110dcf45b8acb1fab57"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; vector, vector, vector, matrix, matrix, matrix, matrix, matrix, matrix, vector, vector, vector, matrix &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace__discrete_8stanfunctions.html#a5f4141f832bcc110dcf45b8acb1fab57">run_state_process_from_survivors_rng</a> (data int n_state_years, data int n_age_classes, vector survivors_previous_first, real birth_rate_first, vector baseline_birth_rate, real density_dependence_intercept, real density_dependence_slope, vector mu_m, vector hunting_selectivity_sweden, vector hunting_selectivity_finland, data array[] int hunting_quota_sweden, data array[] int hunting_quota_finland, real hunting_effort_sd_sweden, real hunting_effort_sd_finland, vector epsilon_h_sw, vector epsilon_h_fi, data real t_mate_to_preg, data real t_birth_to_end_hunt, vector pi_s, vector pi_c, real prob_of_ca, data real rel_tol, data real abs_tol, data int max_num_steps, data real fate_probability_tolerance)</td></tr>
-<tr class="memdesc:a5f4141f832bcc110dcf45b8acb1fab57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simulate the discrete state process using one joint fate ODE.  <br /></td></tr>
-<tr class="separator:a5f4141f832bcc110dcf45b8acb1fab57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6004245cf2b8e9e432e938ecc816b434" id="r_a6004245cf2b8e9e432e938ecc816b434"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace__discrete_8stanfunctions.html#a6004245cf2b8e9e432e938ecc816b434">compute_hunting_pressure_discrete</a> (data int hunting_quota, vector hunting_selectivity, vector population_comp, real hunting_effort_sd, real hunting_effort_noise, data real t_birth_to_end_hunt)</td></tr>
+<tr class="memdesc:a6004245cf2b8e9e432e938ecc816b434"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute hunting pressure for a discrete population.  <br /></td></tr>
+<tr class="separator:a6004245cf2b8e9e432e938ecc816b434"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d6cf0431be8f4744c1c931a6e02615a" id="r_a4d6cf0431be8f4744c1c931a6e02615a"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; vector, vector, vector, matrix, matrix, matrix, matrix, matrix, matrix, vector, vector, vector, matrix &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace__discrete_8stanfunctions.html#a4d6cf0431be8f4744c1c931a6e02615a">run_state_process_from_survivors_rng</a> (data int n_state_years, data int n_age_classes, vector survivors_previous_first, real birth_rate_first, vector birth_rate_baseline, real density_dependence_intercept, real density_dependence_slope, vector mu_m, vector hunting_selectivity_sweden, vector hunting_selectivity_finland, data array[] int hunting_quota_sweden, data array[] int hunting_quota_finland, real hunting_effort_sd_sweden, real hunting_effort_sd_finland, vector hunting_effort_noise_sweden, vector hunting_effort_noise_finland, data real pregnancy_exposure_scaled, data real t_birth_to_end_hunt, vector pi_s, vector pi_c, real ca_probability_without_birth, data real rel_tol, data real abs_tol, data int max_num_steps, data real fate_probability_tolerance)</td></tr>
+<tr class="memdesc:a4d6cf0431be8f4744c1c931a6e02615a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simulate the discrete state process using the original hunting ODEs.  <br /></td></tr>
+<tr class="separator:a4d6cf0431be8f4744c1c931a6e02615a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ae21396f6adf15bd2c5d7f234b6e9cded" name="ae21396f6adf15bd2c5d7f234b6e9cded"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae21396f6adf15bd2c5d7f234b6e9cded">&#9670;&#160;</a></span>compute_hunting_pressure_discrete()</h2>
+<a id="a6004245cf2b8e9e432e938ecc816b434" name="a6004245cf2b8e9e432e938ecc816b434"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6004245cf2b8e9e432e938ecc816b434">&#9670;&#160;</a></span>compute_hunting_pressure_discrete()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -155,7 +159,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>epsilon_h</em>, </td>
+          <td class="paramname"><em>hunting_effort_noise</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -170,8 +174,6 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Compute hunting pressure for a discrete population. </p>
 <p>Allows exact zero demographic counts and returns exact zero pressure when the quota is zero.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -179,7 +181,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">hunting_selectivity</td><td>Demographic log-selectivity. </td></tr>
     <tr><td class="paramname">population_comp</td><td>Demographic population counts. </td></tr>
     <tr><td class="paramname">hunting_effort_sd</td><td>Hunting-effort standard deviation. </td></tr>
-    <tr><td class="paramname">epsilon_h</td><td>Standardized effort reduction. </td></tr>
+    <tr><td class="paramname">hunting_effort_noise</td><td>Standardized effort reduction. </td></tr>
     <tr><td class="paramname">t_birth_to_end_hunt</td><td>Time from birth to the end of hunting. </td></tr>
   </table>
   </dd>
@@ -187,6 +189,15 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>Hunting pressure by demographic group. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00126">126</a> of file <a class="el" href="statespace__discrete_8stanfunctions_source.html">statespace_discrete.stanfunctions</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00226">run_state_process_from_survivors_rng()</a>.</p>
+<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> Here is the caller graph for this function:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="statespace__discrete_8stanfunctions_a6004245cf2b8e9e432e938ecc816b434_icgraph.svg" width="400" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
 
 </div>
 </div>
@@ -205,8 +216,6 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Convert continuous expected counts to integer demographic counts. </p>
 <p>Draws an integer total from a Poisson distribution and allocates that total among demographic groups with a multinomial distribution.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -218,10 +227,19 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00010">10</a> of file <a class="el" href="statespace__discrete_8stanfunctions_source.html">statespace_discrete.stanfunctions</a>.</p>
 
+<p class="reference">Referenced by <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00226">run_state_process_from_survivors_rng()</a>.</p>
+<div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> Here is the caller graph for this function:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="statespace__discrete_8stanfunctions_a86bb12bc852a931a4a00bde65e2f2037_icgraph.svg" width="391" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+
 </div>
 </div>
-<a id="a5f4141f832bcc110dcf45b8acb1fab57" name="a5f4141f832bcc110dcf45b8acb1fab57"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f4141f832bcc110dcf45b8acb1fab57">&#9670;&#160;</a></span>run_state_process_from_survivors_rng()</h2>
+<a id="a4d6cf0431be8f4744c1c931a6e02615a" name="a4d6cf0431be8f4744c1c931a6e02615a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d6cf0431be8f4744c1c931a6e02615a">&#9670;&#160;</a></span>run_state_process_from_survivors_rng()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -254,7 +272,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>baseline_birth_rate</em>, </td>
+          <td class="paramname"><em>birth_rate_baseline</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -314,19 +332,19 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>epsilon_h_sw</em>, </td>
+          <td class="paramname"><em>hunting_effort_noise_sweden</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">vector&#160;</td>
-          <td class="paramname"><em>epsilon_h_fi</em>, </td>
+          <td class="paramname"><em>hunting_effort_noise_finland</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">data real&#160;</td>
-          <td class="paramname"><em>t_mate_to_preg</em>, </td>
+          <td class="paramname"><em>pregnancy_exposure_scaled</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -350,7 +368,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">real&#160;</td>
-          <td class="paramname"><em>prob_of_ca</em>, </td>
+          <td class="paramname"><em>ca_probability_without_birth</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -383,8 +401,6 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Simulate the discrete state process using one joint fate ODE. </p>
 <p>The fitted survivor boundary is integerized once. Each forecast year uses integer ageing, binomial births and sex allocation, one joint competing- risks ODE per non-empty demographic group, and multinomial fate sampling.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -392,7 +408,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">n_age_classes</td><td>Number of age classes for each sex. </td></tr>
     <tr><td class="paramname">survivors_previous_first</td><td>Fitted survivor composition preceding year 1. </td></tr>
     <tr><td class="paramname">birth_rate_first</td><td>Birth rate for year 1. </td></tr>
-    <tr><td class="paramname">baseline_birth_rate</td><td>Baseline birth rates of length n_state_years + 1. </td></tr>
+    <tr><td class="paramname">birth_rate_baseline</td><td>Baseline birth rates of length n_state_years + 1. </td></tr>
     <tr><td class="paramname">density_dependence_intercept</td><td>Density-dependence intercept. </td></tr>
     <tr><td class="paramname">density_dependence_slope</td><td>Density-dependence slope. </td></tr>
     <tr><td class="paramname">mu_m</td><td>Instantaneous annual natural-mortality rates. </td></tr>
@@ -402,13 +418,13 @@ Functions</h2></td></tr>
     <tr><td class="paramname">hunting_quota_finland</td><td>Annual Finnish quotas. </td></tr>
     <tr><td class="paramname">hunting_effort_sd_sweden</td><td>Swedish effort standard deviation. </td></tr>
     <tr><td class="paramname">hunting_effort_sd_finland</td><td>Finnish effort standard deviation. </td></tr>
-    <tr><td class="paramname">epsilon_h_sw</td><td>Swedish effort reductions. </td></tr>
-    <tr><td class="paramname">epsilon_h_fi</td><td>Finnish effort reductions. </td></tr>
-    <tr><td class="paramname">t_mate_to_preg</td><td>Time from mating to pregnancy sampling. </td></tr>
+    <tr><td class="paramname">hunting_effort_noise_sweden</td><td>Swedish effort reductions. </td></tr>
+    <tr><td class="paramname">hunting_effort_noise_finland</td><td>Finnish effort reductions. </td></tr>
+    <tr><td class="paramname">pregnancy_exposure_scaled</td><td>Scaled pregnancy exposure coefficient, not raw elapsed time </td></tr>
     <tr><td class="paramname">t_birth_to_end_hunt</td><td>Time from birth to the end of hunting. </td></tr>
     <tr><td class="paramname">pi_s</td><td>Placental-sign reporting probabilities. </td></tr>
     <tr><td class="paramname">pi_c</td><td>Corpus-albicans reporting probabilities. </td></tr>
-    <tr><td class="paramname">prob_of_ca</td><td>Corpus-albicans probability without birth. </td></tr>
+    <tr><td class="paramname">ca_probability_without_birth</td><td>Corpus-albicans probability without birth. </td></tr>
     <tr><td class="paramname">rel_tol</td><td>Relative ODE tolerance. </td></tr>
     <tr><td class="paramname">abs_tol</td><td>Absolute ODE tolerance. </td></tr>
     <tr><td class="paramname">max_num_steps</td><td>Maximum ODE integration steps. </td></tr>
@@ -419,6 +435,15 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>Annual demographic and reproductive state quantities. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00226">226</a> of file <a class="el" href="statespace__discrete_8stanfunctions_source.html">statespace_discrete.stanfunctions</a>.</p>
+
+<p class="reference">References <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00126">compute_hunting_pressure_discrete()</a>, <a class="el" href="ode_8stanfunctions_source.html#l00221">compute_joint_fate_probabilities()</a>, <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00010">integerize_population_rng()</a>, <a class="el" href="statespace_8stanfunctions_source.html#l00186">update_birth_rate()</a>, <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00052">update_population_from_survivors_rng()</a>, and <a class="el" href="statespace_8stanfunctions_source.html#l00243">update_pregnancy_rate()</a>.</p>
+<div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> Here is the call graph for this function:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="statespace__discrete_8stanfunctions_a4d6cf0431be8f4744c1c931a6e02615a_cgraph.svg" width="587" height="330"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
 
 </div>
 </div>
@@ -453,8 +478,6 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Age integer survivors and simulate newborns. </p>
 <p>Female groups occupy indices <code>1:n_age_classes</code>; male groups occupy <code>(n_age_classes + 1):(2 * n_age_classes)</code>. The final group for each sex is a plus group. Births and newborn sex allocation use binomial draws.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -467,6 +490,15 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>Integer population composition for the new year. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00052">52</a> of file <a class="el" href="statespace__discrete_8stanfunctions_source.html">statespace_discrete.stanfunctions</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="statespace__discrete_8stanfunctions_source.html#l00226">run_state_process_from_survivors_rng()</a>.</p>
+<div id="dynsection-3" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-3-trigger" src="closed.png" alt="+"/> Here is the caller graph for this function:</div>
+<div id="dynsection-3-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-3-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="statespace__discrete_8stanfunctions_a184e9412c730ac58243f250e590a2663_icgraph.svg" width="382" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
 
 </div>
 </div>

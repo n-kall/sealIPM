@@ -1,0 +1,5 @@
+<map id="compute_hunting_pressure" name="compute_hunting_pressure">
+<area shape="rect" id="Node000001" title="Compute demographic hunting pressure for one country." alt="" coords="216,13,395,38"/>
+<area shape="rect" id="Node000002" href="$run__process_8stanfunctions.html#a6094283eb00af7d83aebdfa0bd6081cf" title="Run the continuous fitted state process from the first population." alt="" coords="5,5,168,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,28,168,28,168,23,202,23"/>
+</map>

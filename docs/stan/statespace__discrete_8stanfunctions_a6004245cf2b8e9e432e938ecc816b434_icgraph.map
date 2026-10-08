@@ -1,0 +1,5 @@
+<map id="compute_hunting_pressure_discrete" name="compute_hunting_pressure_discrete">
+<area shape="rect" id="Node000001" title="Compute hunting pressure for a discrete population." alt="" coords="216,5,395,45"/>
+<area shape="rect" id="Node000002" href="$statespace__discrete_8stanfunctions.html#a4d6cf0431be8f4744c1c931a6e02615a" title="Simulate the discrete state process using the original hunting ODEs." alt="" coords="5,5,168,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,28,168,28,168,23,202,23"/>
+</map>

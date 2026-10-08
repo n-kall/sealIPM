@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -155,8 +159,6 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>pregnancy_lpmf </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pregnancy_count</td><td>Observed counts of pregnancy signs </td></tr>
@@ -209,8 +211,6 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>pregnancy_pointwise_log_lik </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pregnancy_count</td><td>Observed counts of pregnancy signs </td></tr>
@@ -257,11 +257,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>pregnancy_rng </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pregnancy_count</td><td>Observed counts of pregnancy signs </td></tr>
     <tr><td class="paramname">pregnancy_count_year</td><td>Which years are the counts from </td></tr>
     <tr><td class="paramname">pregnancy_sample_size</td><td>Sample sizes for the survey </td></tr>
     <tr><td class="paramname">pregnancy_rate</td><td>Pregnancy rate </td></tr>
@@ -270,7 +267,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>vector generated pregnancy observations for each year </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pregnancy_8stanfunctions_source.html#l00073">73</a> of file <a class="el" href="pregnancy_8stanfunctions_source.html">pregnancy.stanfunctions</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pregnancy_8stanfunctions_source.html#l00072">72</a> of file <a class="el" href="pregnancy_8stanfunctions_source.html">pregnancy.stanfunctions</a>.</p>
 
 </div>
 </div>

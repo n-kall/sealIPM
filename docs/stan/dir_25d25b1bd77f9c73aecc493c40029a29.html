@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -100,14 +104,12 @@ $(document).ready(function(){initNavTree('dir_25d25b1bd77f9c73aecc493c40029a29.h
   <div class="headertitle"><div class="title">observation_models Directory Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="dynheader">
-Directory dependency graph for observation_models:</div>
-<div class="dyncontent">
-<div class="center"><img src="dir_25d25b1bd77f9c73aecc493c40029a29_dep.png" border="0" usemap="#adir__25d25b1bd77f9c73aecc493c40029a29__dep" alt="observation_models"/></div>
-<map name="adir__25d25b1bd77f9c73aecc493c40029a29__dep" id="adir__25d25b1bd77f9c73aecc493c40029a29__dep">
-<area shape="rect" href="dir_25d25b1bd77f9c73aecc493c40029a29.html" title="observation_models" alt="" coords="27,52,165,77"/>
-<area shape="rect" href="dir_35baea09d55bebfe17654fdf4bf061ce.html" title="functions" alt="" coords="16,16,176,88"/>
-</map>
+<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> Directory dependency graph for observation_models:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><iframe scrolling="no" frameborder="0" src="dir_25d25b1bd77f9c73aecc493c40029a29_dep.svg" width="192" height="104"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="files" name="files"></a>
@@ -115,6 +117,7 @@ Files</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="aerial__counts_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aerial__counts_8stanfunctions.html">aerial_counts.stanfunctions</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="bycatch__composition_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bycatch__composition_8stanfunctions.html">bycatch_composition.stanfunctions</a></td></tr>
+<tr class="memdesc:bycatch__composition_8stanfunctions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bycatch sample composition conditional on expected non-hunting deaths. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="hunting__bags_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting__bags_8stanfunctions.html">hunting_bags.stanfunctions</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>

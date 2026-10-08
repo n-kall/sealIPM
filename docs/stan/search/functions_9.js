@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['pregnancy_5flpmf_0',['pregnancy_lpmf',['../pregnancy_8stanfunctions.html#a38aa8e6d3db2b335a9e475745abc680f',1,'pregnancy.stanfunctions']]],
-  ['pregnancy_5fpointwise_5flog_5flik_1',['pregnancy_pointwise_log_lik',['../pregnancy_8stanfunctions.html#ab67d2f3762cd27d4203326f4686bee24',1,'pregnancy.stanfunctions']]],
-  ['pregnancy_5frng_2',['pregnancy_rng',['../pregnancy_8stanfunctions.html#aa93cc75e4db873849e43e9df3995e989',1,'pregnancy.stanfunctions']]]
+  ['update_5fbirth_5frate_0',['update_birth_rate',['../pregnancy__births_8stanfunctions.html#a449cb0ba0ee3ade0816addae30016310',1,'pregnancy_births.stanfunctions']]],
+  ['update_5fpopulation_5ffrom_5fsurvivors_1',['update_population_from_survivors',['../aging_8stanfunctions.html#abb4ff2b1bb2f9d201cf5752e16811159',1,'aging.stanfunctions']]],
+  ['update_5fpopulation_5ffrom_5fsurvivors_5frng_2',['update_population_from_survivors_rng',['../aging_8stanfunctions.html#a184e9412c730ac58243f250e590a2663',1,'aging.stanfunctions']]],
+  ['update_5fpregnancy_5frate_3',['update_pregnancy_rate',['../pregnancy__births_8stanfunctions.html#a14095da4fe64d11ec5fe7e5b22c1a522',1,'pregnancy_births.stanfunctions']]]
 ];

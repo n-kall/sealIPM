@@ -1,0 +1,15 @@
+<map id="run_state_process_from_first_population" name="run_state_process_from_first_population">
+<area shape="rect" id="Node000001" title="Run the continuous fitted state process from the first population." alt="" coords="5,97,168,137"/>
+<area shape="rect" id="Node000002" href="$hunting_8stanfunctions.html#ad2c55dcbdfa8e514fa68f23e6b0b4adb" title="Calculate annual survival, hunting, and other&#45;death probabilities." alt="" coords="217,5,394,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="116,94,161,66,215,40,235,32,237,37,217,44,164,71,119,99"/>
+<area shape="rect" id="Node000004" href="$hunting_8stanfunctions.html#a7762c8086ffff79d09eaed8a085bed55" title="Compute demographic hunting pressure for one country." alt="" coords="216,55,395,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="168,96,234,81,235,86,169,101"/>
+<area shape="rect" id="Node000005" href="$pregnancy__births_8stanfunctions.html#a449cb0ba0ee3ade0816addae30016310" title="Update the density&#45;dependent birth rate." alt="" coords="244,104,367,129"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="168,114,230,114,230,119,168,119"/>
+<area shape="rect" id="Node000006" href="$aging_8stanfunctions.html#abb4ff2b1bb2f9d201cf5752e16811159" title="update_population_from_survivors" alt="" coords="225,154,385,194"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="164,134,216,148,215,153,163,139"/>
+<area shape="rect" id="Node000007" href="$pregnancy__births_8stanfunctions.html#a14095da4fe64d11ec5fe7e5b22c1a522" title="Update the pregnancy rate." alt="" coords="227,219,384,244"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="113,135,160,170,217,204,238,212,236,217,215,208,157,174,110,139"/>
+<area shape="rect" id="Node000003" href="$hunting_8stanfunctions.html#a76414bcd45a27cfe2d3e264d74a5e892" title="Evaluate the hunting&#45;count derivative for one country." alt="" coords="443,5,609,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="394,15,429,15,429,21,394,21"/>
+</map>

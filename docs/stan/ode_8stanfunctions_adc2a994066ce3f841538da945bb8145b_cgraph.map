@@ -1,0 +1,7 @@
+<map id="compute_joint_fate_probabilities" name="compute_joint_fate_probabilities">
+<area shape="rect" id="Node000001" title="Calculate annual survival, hunting, and other&#45;death probabilities." alt="" coords="5,27,137,67"/>
+<area shape="rect" id="Node000002" href="$ode_8stanfunctions.html#af0d0116fe11227160981749c2a422c06" title="Evaluate the hunting&#45;count derivative for one country." alt="" coords="226,5,283,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,34,212,22,213,27,138,39"/>
+<area shape="rect" id="Node000003" href="$ode_8stanfunctions.html#a310310c61892f9d00f18518e07991535" title="Check and correct small numerical deviations from valid fate probabilities." alt="" coords="185,55,324,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="138,55,172,60,171,65,137,60"/>
+</map>

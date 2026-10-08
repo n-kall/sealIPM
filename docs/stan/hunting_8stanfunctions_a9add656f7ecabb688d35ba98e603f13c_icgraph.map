@@ -1,0 +1,5 @@
+<map id="compute_fate_probabilities" name="compute_fate_probabilities">
+<area shape="rect" id="Node000001" title="Calculate annual survival, hunting, and other&#45;death probabilities." alt="" coords="216,13,393,38"/>
+<area shape="rect" id="Node000002" href="$run__process_8stanfunctions.html#a878d87e5768ae210f5d0b4f6bda1843e" title="Run the continuous fitted state process from the first population." alt="" coords="5,5,168,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,28,168,28,168,23,202,23"/>
+</map>

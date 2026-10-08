@@ -16,14 +16,17 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX","output/HTML-CSS"],
-});
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
 </script>
-<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<script type="text/javascript" id="MathJax-script" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="sealipm.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -35,6 +38,7 @@ MathJax.Hub.Config({
   <td id="projectalign">
    <div id="projectname">sealIPM
    </div>
+   <div id="projectbrief">Baltic grey seal integrated population model — Stan reference</div>
   </td>
  </tr>
  </tbody>
@@ -108,13 +112,23 @@ Directories</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="files" name="files"></a>
 Files</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="logitnormal_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="logitnormal_8stanfunctions.html">logitnormal.stanfunctions</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="aging_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aging_8stanfunctions.html">aging.stanfunctions</a></td></tr>
+<tr class="memdesc:aging_8stanfunctions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Continuous and discrete ageing and newborn population updates. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="ode_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ode_8stanfunctions.html">ode.stanfunctions</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="deaths_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deaths_8stanfunctions.html">deaths.stanfunctions</a></td></tr>
+<tr class="memdesc:deaths_8stanfunctions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Demographic non-hunting mortality rates. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="statespace_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace_8stanfunctions.html">statespace.stanfunctions</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="fates_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="fates_8stanfunctions.html">fates.stanfunctions</a></td></tr>
+<tr class="memdesc:fates_8stanfunctions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Continuous allocation of expected fate counts. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="statespace__discrete_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="statespace__discrete_8stanfunctions.html">statespace_discrete.stanfunctions</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="hunting_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hunting_8stanfunctions.html">hunting.stanfunctions</a></td></tr>
+<tr class="memdesc:hunting_8stanfunctions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hunting pressure, hunting ODE, and annual demographic fate probabilities. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="pregnancy__births_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pregnancy__births_8stanfunctions.html">pregnancy_births.stanfunctions</a></td></tr>
+<tr class="memdesc:pregnancy__births_8stanfunctions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Baseline and density-dependent pregnancy and birth rates. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top"><a href="run__process_8stanfunctions_source.html"><span class="icondoc"></span></a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="run__process_8stanfunctions.html">run_process.stanfunctions</a></td></tr>
+<tr class="memdesc:run__process_8stanfunctions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Population initialization and continuous and discrete process runners. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->

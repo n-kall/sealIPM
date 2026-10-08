@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['euler_5flotka_5fbirth_5frate_0',['euler_lotka_birth_rate',['../statespace_8stanfunctions.html#a56f46340270f13ac163fb5c033e40c4d',1,'statespace.stanfunctions']]],
-  ['expected_5fhunting_5fpressure_1',['expected_hunting_pressure',['../ode_8stanfunctions.html#ab01eb7e095753d79330c8dc12d6b5875',1,'ode.stanfunctions']]]
+  ['initialize_5fpopulation_5fwith_5fburnin_0',['initialize_population_with_burnin',['../run__process_8stanfunctions.html#a664835ac420f9766c0bff7fd51b20c41',1,'run_process.stanfunctions']]]
 ];
