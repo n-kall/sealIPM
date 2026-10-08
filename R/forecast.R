@@ -10,7 +10,9 @@
 #' @param future_years Consecutive integer years in increasing order, starting
 #'   immediately after the final fitted year.
 #' @param ... Passed to `generate_quantities()`.
-#' @return A CmdStan generated-quantities fit.
+#' @return A CmdStan generated-quantities fit. The object also records the
+#'   fitted data, scenario, and forecast years needed by
+#'   [forecast_to_data()].
 #' @export
 forecast_ipm <- function(
     fit,
@@ -67,6 +69,17 @@ forecast_ipm <- function(
             future_data
         ),
         ...
+    )
+
+    attr(forecast_draws, "seal_ipm_forecast") <- list(
+        species = species,
+        fitted_years = fitted_years,
+        future_years = future_years,
+        fitted_stan_data = fit$stan_data,
+        priors = fit$priors,
+        original_data = fit$data,
+        scenario_data = scenario_data,
+        future_stan_data = future_data
     )
 
     return(forecast_draws)

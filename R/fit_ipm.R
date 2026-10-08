@@ -2,9 +2,11 @@
 #'
 #' Fits an IPM for seal observations
 #'
-#' @param data list of dataframes
-#' @param species which species
-#' @param years Consecutive integer years in increasing order for the state process.
+#' @param data List of data frames, or an object returned by
+#'   [forecast_to_data()].
+#' @param species Which species. Inferred for generated forecast data.
+#' @param years Consecutive integer years in increasing order for the state
+#'   process. Inferred for generated forecast data.
 #' @param prior_spec priors
 #' @param method Stan method
 #' @param init Initialisation function or draws passed to Stan
@@ -14,8 +16,8 @@
 #' @export
 fit_ipm <- function(
     data,
-    species,
-    years,
+    species = NULL,
+    years = NULL,
     prior_spec = NULL,
     method = c("sample", "pathfinder", "laplace", "optimize"),
     init = NULL,
@@ -23,6 +25,19 @@ fit_ipm <- function(
     ...
 ) {
     method <- match.arg(method)
+
+    if (inherits(data, "seal_ipm_data")) {
+        if (is.null(species)) species <- data$species
+        if (is.null(years)) years <- data$years
+        if (!identical(species, data$species) ||
+            !identical(as.integer(years), data$years)) {
+            stop(
+                "`species` and `years` must match the generated forecast data.",
+                call. = FALSE
+            )
+        }
+    }
+
     years <- validate_state_years(years)
 
     if (!species %in% c("grey", "ringed")) {
@@ -32,17 +47,33 @@ fit_ipm <- function(
         )
     }
 
-    if (is.null(prior_spec)) {
+    if (inherits(data, "seal_ipm_data") && !is.null(prior_spec)) {
+        stop(
+            "`prior_spec` cannot be replaced when fitting generated forecast data.",
+            call. = FALSE
+        )
+    }
+
+    if (inherits(data, "seal_ipm_data")) {
+        prior_spec <- data$priors
+    } else if (is.null(prior_spec)) {
         prior_spec <- default_priors(species)
     }
 
-    stan_data <- build_stan_data(
-        species = species,
-        data = data,
-        years = years,
-        prior_spec = prior_spec,
-        prior_only = prior_only
-    )
+    stan_data <- if (inherits(data, "seal_ipm_data")) {
+        utils::modifyList(
+            data$stan_data,
+            list(prior_only = as.integer(prior_only))
+        )
+    } else {
+        build_stan_data(
+            species = species,
+            data = data,
+            years = years,
+            prior_spec = prior_spec,
+            prior_only = prior_only
+        )
+    }
 
     model <- get_species_model(species)
 

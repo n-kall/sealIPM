@@ -15,6 +15,9 @@ Additional_repositories:
 Imports:
     dplyr,
     instantiate (>= 0.2.3.9003),
+    loo,
+    matrixStats,
+    posterior,
     rlang,
     stats
 Depends: 
