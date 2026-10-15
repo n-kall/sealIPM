@@ -3,7 +3,9 @@
 #' Selects one posterior-predictive draw from [forecast_ipm()] and appends its
 #' simulated observations and scenario covariates to the data used for the
 #' original fit. The result can be passed directly to [fit_ipm()]; species and
-#' years are inferred automatically.
+#' years are inferred automatically. Passing a consecutive prefix to the
+#' `years` argument of [fit_ipm()] uses only observations and covariates through
+#' the end of that prefix.
 #'
 #' @param forecast A generated-quantities object returned by [forecast_ipm()].
 #' @param draw Positive integer identifying the posterior-predictive draw to
@@ -126,5 +128,53 @@ append_grey_forecast_data <- function(past, future, generated) {
         out$pregnancy_sample_size, future$future_pregnancy_sample_size
     ))
     append_observation("n_reproductive_years", "reproductive_signs_year", "obs_reproductive_signs_finland", generated$reproductive_signs)
+    out
+}
+
+forecast_stan_data_prefix <- function(data, years) {
+    available_years <- as.integer(data$years)
+    years <- as.integer(years)
+    if (length(years) > length(available_years) ||
+        !identical(years, utils::head(available_years, length(years)))) {
+        stop(
+            "`years` must be a consecutive prefix of the generated forecast data years.",
+            call. = FALSE
+        )
+    }
+
+    out <- data$stan_data
+    removed <- length(available_years) - length(years)
+    n_state_years <- as.integer(out$n_state_years - removed)
+
+    observation_fields <- list(
+        c("n_aerial_years", "aerial_year", "obs_aerial_count"),
+        c("n_hunting_bag_years_finland", "hunting_bag_year_finland", "obs_hunting_bag_finland"),
+        c("n_hunting_bag_years_sweden", "hunting_bag_year_sweden", "obs_hunting_bag_sweden"),
+        c("n_hunting_comp_years_finland", "hunting_comp_year_finland", "obs_hunting_comp_finland"),
+        c("n_hunting_comp_years_sweden", "hunting_comp_year_sweden", "obs_hunting_comp_sweden"),
+        c("n_bycatch_years", "bycatch_comp_year", "obs_bycatch_comp"),
+        c("n_pregnancy_years", "pregnancy_count_year", "obs_pregnancy_count", "pregnancy_sample_size"),
+        c("n_reproductive_years", "reproductive_signs_year", "obs_reproductive_signs_finland")
+    )
+    for (fields in observation_fields) {
+        keep <- out[[fields[2L]]] <= n_state_years
+        out[[fields[1L]]] <- as.integer(sum(keep))
+        for (field in fields[-1L]) {
+            value <- out[[field]]
+            out[[field]] <- if (is.matrix(value)) {
+                value[keep, , drop = FALSE]
+            } else {
+                value[keep]
+            }
+        }
+    }
+
+    out$n_state_years <- n_state_years
+    out$hunting_quota_sweden <- out$hunting_quota_sweden[seq_len(n_state_years)]
+    out$hunting_quota_finland <- out$hunting_quota_finland[seq_len(n_state_years)]
+    out$herring_index_baltic_proper_gulf_finland <-
+        out$herring_index_baltic_proper_gulf_finland[seq_len(n_state_years + 1L)]
+    out$herring_index_gulf_bothnia <-
+        out$herring_index_gulf_bothnia[seq_len(n_state_years + 1L)]
     out
 }

@@ -53,8 +53,10 @@ forecast_ipm <- function(
         fitted_stan_data = fit$stan_data
     )
 
-    forecast_variables <- names(
-        forecast_model$variables()$parameters
+    forecast_variables <- stan_model_parameter_names(
+        forecast_model,
+        species,
+        "forecast"
     )
 
     past_draws <- fit$fit$draws(
@@ -83,6 +85,27 @@ forecast_ipm <- function(
     )
 
     return(forecast_draws)
+}
+
+stan_model_parameter_names <- function(model, species, model_suffix) {
+    tryCatch(
+        names(model$variables()$parameters),
+        error = function(error) {
+            stan_file <- system.file(
+                "bin",
+                "stan",
+                paste0(species, "_seal_IPM_", model_suffix, ".stan"),
+                package = "sealIPM",
+                mustWork = TRUE
+            )
+            source_model <- cmdstanr::cmdstan_model(
+                stan_file,
+                compile = FALSE,
+                include_paths = dirname(stan_file)
+            )
+            names(source_model$variables()$parameters)
+        }
+    )
 }
 
 

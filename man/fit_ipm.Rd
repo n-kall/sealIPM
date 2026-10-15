@@ -6,29 +6,47 @@
 \usage{
 fit_ipm(
   data,
-  species,
-  years,
+  species = NULL,
+  years = NULL,
   prior_spec = NULL,
   method = c("sample", "pathfinder", "laplace", "optimize"),
   init = NULL,
   prior_only = FALSE,
+  growth_rate_period = NULL,
   ...
 )
 }
 \arguments{
-\item{data}{list of dataframes}
+\item{data}{List of data frames, or an object returned by
+\code{\link[=forecast_to_data]{forecast_to_data()}}.}
 
-\item{species}{which species}
+\item{species}{Which species. Inferred for generated forecast data.}
 
-\item{years}{Consecutive integer years in increasing order for the state process.}
+\item{years}{Consecutive integer years in increasing order for the state
+process. Inferred for generated forecast data. For data returned by
+\code{forecast_to_data()}, this may be a consecutive prefix of the available
+historical and forecast years.}
 
 \item{prior_spec}{priors}
 
 \item{method}{Stan method}
 
-\item{init}{Initialisation function or draws passed to Stan}
+\item{init}{Initialisation function or draws passed to Stan. A previously
+fitted \code{seal_ipm} object can also be supplied. In that case, each chain is
+initialized from a randomly selected posterior draw. Parameters shared by
+the fits are retained, while year-indexed parameters are extended with
+conservative random initial values when \code{years} is longer than in the
+previous fit.}
 
 \item{prior_only}{Should only prior be used?}
+
+\item{growth_rate_period}{Positive integer vector of population-growth look-back steps. For
+each value, generated quantities include the annual log-linear trend over
+that interval and its corresponding proportional growth rate. The trend is
+the weighted mean of annual log changes that is exactly equivalent to the
+ordinary least-squares slope of log population on year. When \code{NULL},
+defaults to one step, or retains
+the values stored in generated forecast data.}
 
 \item{...}{passed to Stan method}
 }

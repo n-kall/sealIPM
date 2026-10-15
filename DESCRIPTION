@@ -13,6 +13,7 @@ Roxygen: list(markdown = TRUE)
 Additional_repositories:
     https://stan-dev.r-universe.dev
 Imports:
+    cmdstanr,
     dplyr,
     instantiate (>= 0.2.3.9003),
     loo,

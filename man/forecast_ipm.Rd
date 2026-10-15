@@ -19,7 +19,9 @@ immediately after the final fitted year.}
 \item{...}{Passed to \code{generate_quantities()}.}
 }
 \value{
-A CmdStan generated-quantities fit.
+A CmdStan generated-quantities fit. The object also records the
+fitted data, scenario, and forecast years needed by
+\code{\link[=forecast_to_data]{forecast_to_data()}}.
 }
 \description{
 Forecasts future years from a fitted IPM. When the original data are

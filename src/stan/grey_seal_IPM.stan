@@ -23,6 +23,9 @@ data {
   int<lower=1> n_state_years; // number of modeled years for the state process
   int<lower=1> n_age_classes; // number of age classes per sex
 
+  int<lower=1> n_growth_rate_period; // number of population growth rate periods
+  array[n_growth_rate_period] int<lower=1, upper=n_state_years - 1> growth_rate_period; // length of period to calculate growth rate
+
   vector[2 * n_age_classes] population_init; // initial population structure
 
   int<lower=1> population_burn_in; // number of iterations for initializing the population
@@ -635,6 +638,30 @@ model {
 }
 
 generated quantities {
+
+  // Annual log-linear population trend over each requested look-back interval.
+  // The weighted annual log changes are exactly equal to the OLS slope of
+  // log population on year for complete, equally spaced annual states.
+  vector[n_growth_rate_period] population_log_growth_rate;
+  vector[n_growth_rate_period] population_growth_rate;
+  for (i in 1:n_growth_rate_period) {
+    int k = growth_rate_period[i];
+    real weighted_log_growth = 0;
+
+    for (j in 1:k) {
+      int t = n_state_years - k + j;
+      real weight =
+        6.0 * j * (k - j + 1)
+        / (k * (k + 1.0) * (k + 2.0));
+      real annual_log_growth =
+        log(population_total[t]) - log(population_total[t - 1]);
+
+      weighted_log_growth += weight * annual_log_growth;
+    }
+
+    population_log_growth_rate[i] = weighted_log_growth;
+    population_growth_rate[i] = exp(weighted_log_growth) - 1;
+  }
 
   // ----------------------------
   // IN-SAMPLE PREDICTIONS

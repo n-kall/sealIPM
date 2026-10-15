@@ -6,7 +6,8 @@ build_stan_data <- function(
     data,
     years,
     prior_spec = NULL,
-    prior_only = FALSE
+    prior_only = FALSE,
+    growth_rate_period = 1L
 ) {
     switch(
         species,
@@ -14,7 +15,8 @@ build_stan_data <- function(
             data = data,
             years = years,
             prior_spec = prior_spec,
-            prior_only = prior_only
+            prior_only = prior_only,
+            growth_rate_period = growth_rate_period
         )
     )
 }
@@ -420,15 +422,27 @@ build_grey_pregnancy_status <- function(pregnancy, years) {
     out
 }
 
-build_grey_stan_data <- function(data, years, prior_spec, prior_only) {
+build_grey_stan_data <- function(
+    data,
+    years,
+    prior_spec,
+    prior_only,
+    growth_rate_period = 1L
+) {
     years <- validate_state_years(years)
     process_years <- c(min(years) - 1, years)
+    growth_rate_period <- validate_growth_rate_lookback(
+        growth_rate_period,
+        length(process_years)
+    )
 
     c(
         prior_spec,
         list(
             n_state_years = length(process_years),
-            n_age_classes = 6
+            n_age_classes = 6,
+            n_growth_rate_period = length(growth_rate_period),
+            growth_rate_period = growth_rate_period
         ),
 
         build_grey_herring(
