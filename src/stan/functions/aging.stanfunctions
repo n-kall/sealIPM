@@ -10,7 +10,9 @@
  * @param n_demo_groups Number of demographic groups
  * @param n_age_groups Number of age groups
  * @return aging matrix
- */
+*/
+
+
 matrix create_aging_matrix(
   data int n_demo_groups,
   data int n_age_groups

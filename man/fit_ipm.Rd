@@ -6,13 +6,13 @@
 \usage{
 fit_ipm(
   data,
-  species = NULL,
+  species = "grey",
   years = NULL,
   prior_spec = NULL,
   method = c("sample", "pathfinder", "laplace", "optimize"),
   init = NULL,
   prior_only = FALSE,
-  growth_rate_period = NULL,
+  growth_rate_period = 1:length(years),
   ...
 )
 }
@@ -22,31 +22,21 @@ fit_ipm(
 
 \item{species}{Which species. Inferred for generated forecast data.}
 
-\item{years}{Consecutive integer years in increasing order for the state
-process. Inferred for generated forecast data. For data returned by
-\code{forecast_to_data()}, this may be a consecutive prefix of the available
-historical and forecast years.}
+\item{years}{Vector of consecutive years in increasing order for the state
+process. Inferred for generated forecast data.}
 
 \item{prior_spec}{priors}
 
-\item{method}{Stan method}
+\item{method}{Stan method for fitting}
 
 \item{init}{Initialisation function or draws passed to Stan. A previously
 fitted \code{seal_ipm} object can also be supplied. In that case, each chain is
-initialized from a randomly selected posterior draw. Parameters shared by
-the fits are retained, while year-indexed parameters are extended with
-conservative random initial values when \code{years} is longer than in the
-previous fit.}
+initialized from a randomly selected posterior draw, with missing parameter
+elements supplied by the initialization function.}
 
 \item{prior_only}{Should only prior be used?}
 
-\item{growth_rate_period}{Positive integer vector of population-growth look-back steps. For
-each value, generated quantities include the annual log-linear trend over
-that interval and its corresponding proportional growth rate. The trend is
-the weighted mean of annual log changes that is exactly equivalent to the
-ordinary least-squares slope of log population on year. When \code{NULL},
-defaults to one step, or retains
-the values stored in generated forecast data.}
+\item{growth_rate_period}{Positive integer vector of population-growth look-back steps. Defaults to all possible lengths based on the number of years fitted.}
 
 \item{...}{passed to Stan method}
 }

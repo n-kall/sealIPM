@@ -1,4 +1,4 @@
-validate_state_years <- function(years, argument = "years") {
+validate_state_years <- function(years) {
     valid <- is.numeric(years) &&
         length(years) > 0L &&
         all(is.finite(years)) &&
@@ -7,12 +7,8 @@ validate_state_years <- function(years, argument = "years") {
         all(diff(years) == 1)
 
     if (!valid) {
-        stop(
-            sprintf(
-                "`%s` must contain consecutive, unique integer years in increasing order.",
-                argument
-            ),
-            call. = FALSE
+        cli_abort(
+            "`years` must contain consecutive, unique integer years in increasing order."
         )
     }
 

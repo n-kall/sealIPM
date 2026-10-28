@@ -11,6 +11,7 @@ functions {
  #include functions/hunting.stanfunctions
  #include functions/fates.stanfunctions
  #include functions/run_process.stanfunctions
+  #include functions/growth_rate.stanfunctions
 }
 
 data {
@@ -31,16 +32,16 @@ data {
   int<lower=1> population_burn_in; // number of iterations for initializing the population
 
   // Hunting/reproductive timing
-  real<lower=0> pregnancy_exposure_scaled; // Scaled pregnancy exposure coefficient, not raw elapsed time
+  real<lower=0> pregnancy_exposure_scaled; // scaled pregnancy exposure coefficient
   real<lower=0> t_birth_to_start_hunt; // time from birth to start of hunting period
   real<lower=0> hunting_duration; // shared hunting duration in years
 
   // ODE solver settings
-  real<lower=0> rel_tol;
-  real<lower=0> abs_tol;
-  int<lower=1> max_num_steps;
+  real<lower=0> rel_tol; // relative tolerance for ode
+  real<lower=0> abs_tol; // absolute tolerance for ode
+  int<lower=1> max_num_steps; // max number of steps for ode
   real<lower=0> fate_probability_tolerance;
-  int<lower=0, upper=1> prior_only;
+  int<lower=0, upper=1> prior_only; // if 1 only prior is sampled, if 0 then posterior
 
   //---------------
   // COVARIATE DATA
@@ -187,7 +188,7 @@ transformed data {
 
 parameters {
   // aerial survey
-  real<lower=0, upper=1> aerial_count_mu; // mu (maybe need to account for different probability of haul-out for pups and adults)
+  real<lower=0, upper=1> aerial_count_mu; // mu
   real<lower=0> aerial_count_overdispersion; // r
 
   // selectivity
@@ -639,34 +640,20 @@ model {
 
 generated quantities {
 
-  // Annual log-linear population trend over each requested look-back interval.
-  // The weighted annual log changes are exactly equal to the OLS slope of
-  // log population on year for complete, equally spaced annual states.
-  vector[n_growth_rate_period] population_log_growth_rate;
+  // ----------------------
+  // Growth-rate estimation
+  //-----------------------
   vector[n_growth_rate_period] population_growth_rate;
-  for (i in 1:n_growth_rate_period) {
-    int k = growth_rate_period[i];
-    real weighted_log_growth = 0;
 
-    for (j in 1:k) {
-      int t = n_state_years - k + j;
-      real weight =
-        6.0 * j * (k - j + 1)
-        / (k * (k + 1.0) * (k + 2.0));
-      real annual_log_growth =
-        log(population_total[t]) - log(population_total[t - 1]);
-
-      weighted_log_growth += weight * annual_log_growth;
-    }
-
-    population_log_growth_rate[i] = weighted_log_growth;
-    population_growth_rate[i] = exp(weighted_log_growth) - 1;
-  }
+  population_growth_rate = calculate_growth_rate(
+    growth_rate_period,
+    population_total
+  );
 
   // ----------------------------
   // IN-SAMPLE PREDICTIONS
   // ----------------------------
-  // Generate one prediction for every observed aerial-survey year.
+
   array[n_aerial_years] int aerial_count_pred =
     aerial_count_rng(
       aerial_year,
@@ -675,7 +662,6 @@ generated quantities {
       aerial_count_overdispersion
     );
 
-  // Generate one prediction for every observed national hunting bag.
   array[n_hunting_bag_years_sweden] real hunting_bags_sweden_pred =
     hunting_bags_rng(
       hunting_bag_year_sweden,

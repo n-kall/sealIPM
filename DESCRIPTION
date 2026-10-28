@@ -14,6 +14,7 @@ Additional_repositories:
     https://stan-dev.r-universe.dev
 Imports:
     cmdstanr,
+    cli,
     dplyr,
     instantiate (>= 0.2.3.9003),
     loo,
@@ -36,5 +37,5 @@ Suggests:
     testthat (>= 3.0.0)
 URL: https://n-kall.github.io/sealIPM
 VignetteBuilder: knitr, quarto
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
 Config/testthat/edition: 3

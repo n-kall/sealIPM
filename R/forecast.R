@@ -87,41 +87,22 @@ forecast_ipm <- function(
     return(forecast_draws)
 }
 
-stan_model_parameter_names <- function(model, species, model_suffix) {
-    tryCatch(
-        names(model$variables()$parameters),
-        error = function(error) {
-            stan_file <- system.file(
-                "bin",
-                "stan",
-                paste0(species, "_seal_IPM_", model_suffix, ".stan"),
-                package = "sealIPM",
-                mustWork = TRUE
-            )
-            source_model <- cmdstanr::cmdstan_model(
-                stan_file,
-                compile = FALSE,
-                include_paths = dirname(stan_file)
-            )
-            names(source_model$variables()$parameters)
-        }
+stan_model_parameter_names <- function(model, species) {
+    stan_file <- system.file(
+        "bin",
+        "stan",
+        paste0(species, "_seal_IPM_", model, ".stan"),
+        package = "sealIPM",
+        mustWork = TRUE
     )
+    cmdstanr::variables_stan_file(stan_file) # requires cmdstanr v1.0
 }
 
 
 get_species_forecast_model <- function(species, ...) {
-    stan_file <- system.file(
-        "bin",
-        "stan",
-        paste0(species, "_seal_IPM_forecast.stan"),
-        package = "sealIPM",
-        mustWork = TRUE
-    )
-
     instantiate::stan_package_model(
         name = paste0(species, "_seal_IPM_forecast"),
-        package = "sealIPM",
-        stan_file = stan_file
+        package = "sealIPM"
     )
 }
 
@@ -162,8 +143,8 @@ build_grey_future_stan_data <- function(
             years = future_years
         )
 
-        # build_grey_herring() returns one additional lagged value.
-        # The forecast model needs n_future_years + 1 values.
+        # build_grey_herring() returns one additional lagged value as the
+        # forecast model needs n_future_years + 1 values.
         herring_bp_gof <- utils::tail(
             herring$herring_index_baltic_proper_gulf_finland,
             n_future_years + 1L

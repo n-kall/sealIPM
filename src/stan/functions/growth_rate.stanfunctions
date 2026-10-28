@@ -1,0 +1,36 @@
+/**
+ * @brief growth rate based on previous population changes
+ *
+ * This corresponds to technique 1 in Mawson (2002). That is
+ * @f[
+ * \hat{r} = \sum_{j=2}^{L} \frac{6(L-j+1)(j-1)} {L(L+1)(L-1)} \log\!\left( \frac{N_{T-L+j}} {N_{T-L+j-1}} \right).
+ * @f]
+ *
+ * 
+ * @param growth_rate_period vector specifying lookback periods to calculate growth rate (L)
+ * @param population_total vector of total population throughout the time series (N)
+ * @return
+ */
+vector calculate_growth_rate(data array[] int growth_rate_period,
+                             vector population_total) {
+  int n_growth_rate_period = num_elements(growth_rate_period);
+  
+  vector[n_growth_rate_period] population_log_growth_rate;
+  vector[n_growth_rate_period] population_growth_rate;
+  for (i in 1 : num_elements(growth_rate_period)) {
+    int k = growth_rate_period[i];
+    real weighted_log_growth = 0;
+    
+    for (j in 1 : k) {
+      int t = num_elements(population_total) - k + j;
+      real weight = 6.0 * j * (k - j + 1) / (k * (k + 1.0) * (k + 2.0));
+      real annual_log_growth = log(population_total[t])
+                               - log(population_total[t - 1]);
+      
+      weighted_log_growth += weight * annual_log_growth;
+    }
+    
+    population_log_growth_rate[i] = weighted_log_growth;
+  }
+  return (population_log_growth_rate);
+}
