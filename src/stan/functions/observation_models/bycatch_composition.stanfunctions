@@ -26,15 +26,12 @@ real bycatch_comp_lpmf(
   vector selectivity
 ) {
   int n_obs = size(bycatch_composition);
-  vector[rows(non_hunting_deaths_expected)] w = exp(selectivity);
   real lp = 0;
 
   for (i in 1:n_obs) {
     int t = bycatch_comp_year[i];
-    lp += multinomial_lpmf(
-      bycatch_composition[i] |
-      (w .* non_hunting_deaths_expected[, t]) /
-        dot_product(w, non_hunting_deaths_expected[, t])
+    lp += weighted_composition_lpmf(
+      bycatch_composition[i] | non_hunting_deaths_expected[, t], selectivity
     );
   }
   return lp;
@@ -57,15 +54,12 @@ vector bycatch_comp_pointwise_log_lik(
   vector selectivity
 ) {
   int n_obs = size(bycatch_composition);
-  vector[rows(non_hunting_deaths_expected)] w = exp(selectivity);
   vector[n_obs] log_lik;
 
   for (i in 1:n_obs) {
     int t = bycatch_comp_year[i];
-    log_lik[i] = multinomial_lpmf(
-      bycatch_composition[i] |
-      (w .* non_hunting_deaths_expected[, t]) /
-        dot_product(w, non_hunting_deaths_expected[, t])
+    log_lik[i] = weighted_composition_lpmf(
+      bycatch_composition[i] | non_hunting_deaths_expected[, t], selectivity
     );
   }
   return log_lik;
@@ -89,21 +83,13 @@ array[,] int bycatch_comp_rng(
 ) {
   int n_obs = size(bycatch_comp_year);
   int K = rows(non_hunting_deaths_expected);
-  vector[K] w = exp(selectivity);
   array[n_obs, K] int y_sim;
 
   for (i in 1:n_obs) {
     int t = bycatch_comp_year[i];
-    real denom = dot_product(w, non_hunting_deaths_expected[, t]);
-
-    if (bycatch_sample_size[i] == 0 || denom <= 0) {
-      y_sim[i] = rep_array(0, K);
-    } else {
-      y_sim[i] = multinomial_rng(
-        (w .* non_hunting_deaths_expected[, t]) / denom,
-        bycatch_sample_size[i]
-      );
-    }
+    y_sim[i] = weighted_composition_rng(
+      non_hunting_deaths_expected[, t], selectivity, bycatch_sample_size[i]
+    );
   }
 
   return y_sim;

@@ -1,4 +1,5 @@
 functions {
+  #include functions/observation_models/composition.stanfunctions
   #include functions/observation_models/aerial_counts.stanfunctions
   #include functions/observation_models/hunting_bags.stanfunctions
   #include functions/observation_models/hunting_composition.stanfunctions
@@ -7,6 +8,7 @@ functions {
   #include functions/observation_models/reproductive_signs.stanfunctions
   #include functions/pregnancy_births.stanfunctions
   #include functions/deaths.stanfunctions
+  #include functions/allocation.stanfunctions
   #include functions/aging.stanfunctions
   #include functions/hunting.stanfunctions
   #include functions/fates.stanfunctions

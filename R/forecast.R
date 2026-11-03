@@ -1,14 +1,16 @@
 #' Forecast IPM
 #'
-#' Forecasts future years from a fitted IPM. When the original data are
-#' supplied, observations in `future_years` are automatically included for
-#' leave-future-out validation.
+#' Forecasts consecutive years starting immediately after the final fitted
+#' year. The forecast horizon is the length of the scenario vectors. When
+#' actual data are supplied instead, forecasts extend through the final hunting
+#' quota year and include observations for leave-future-out validation.
 #'
 #' @param fit A fitted IPM object.
-#' @param actual_data Raw data
+#' @param actual_data Raw data, including hunting quotas through the final
+#'   forecast year. Supply either `actual_data` or `scenario_data`.
 #' @param scenario_data List of quotas and optionally herring indices. Use the function `build_scenario_data` to create it.
-#' @param future_years Consecutive integer years in increasing order, starting
-#'   immediately after the final fitted year.
+#'   All vectors must have the same positive length, with one value per forecast
+#'   year in chronological order.
 #' @param ... Passed to `generate_quantities()`.
 #' @return A CmdStan generated-quantities fit. The object also records the
 #'   fitted data, scenario, and forecast years needed by
@@ -18,32 +20,38 @@ forecast_ipm <- function(
     fit,
     actual_data = NULL,
     scenario_data = NULL,
-    future_years,
     ...
 ) {
+    fitted_years <- fit$years
+
     if (
         (is.null(actual_data) && is.null(scenario_data)) ||
             !is.null(actual_data) && !is.null(scenario_data)
     ) {
-        stop(
-            "provide either actual data or scenario_data, but not both",
-            call. = FALSE
+        cli_abort(
+            "provide either actual data or scenario_data, but not both"
         )
     }
 
-    future_years <- validate_state_years(future_years, "future_years")
-    fitted_years <- validate_state_years(fit$years, "fit$years")
+    n_future_years <- if (!is.null(scenario_data)) {
+        length(scenario_data$future_hunting_quota_sweden)
+    } else {
+        quota_years <- actual_data$hunting_quotas$Year
+        if (length(quota_years) == 0L || anyNA(quota_years)) {
+            cli_abort("`actual_data` must include hunting quota years.")
+        }
+        max(quota_years) - max(fitted_years)
+    }
 
-    if (future_years[1L] != max(fitted_years) + 1) {
-        stop(
-            "`future_years` must start immediately after the final fitted year.",
-            call. = FALSE
+    if (!is.finite(n_future_years) || n_future_years < 1L) {
+        cli_abort(
+            "Supply at least one forecast year in `scenario_data` or `actual_data`."
         )
     }
+
+    future_years <- max(fitted_years) + seq_len(n_future_years)
 
     species <- fit$species
-
-    forecast_model <- get_species_forecast_model(species)
 
     future_data <- build_future_stan_data(
         species = species,
@@ -53,10 +61,11 @@ forecast_ipm <- function(
         fitted_stan_data = fit$stan_data
     )
 
+    forecast_model <- get_species_forecast_model(species)
+
     forecast_variables <- stan_model_parameter_names(
-        forecast_model,
-        species,
-        "forecast"
+        "forecast",
+        species
     )
 
     past_draws <- fit$fit$draws(
@@ -95,7 +104,7 @@ stan_model_parameter_names <- function(model, species) {
         package = "sealIPM",
         mustWork = TRUE
     )
-    cmdstanr::variables_stan_file(stan_file) # requires cmdstanr v1.0
+    return(names(cmdstanr::variables_stan_file(stan_file)$parameters)) # requires cmdstanr v1.0
 }
 
 
@@ -122,9 +131,8 @@ build_future_stan_data <- function(
             future_years = future_years,
             fitted_stan_data = fitted_stan_data
         ),
-        ringed = stop(
-            "Ringed seal forecasting is not yet implemented.",
-            call. = FALSE
+        ringed = cli::cli_abort(
+            "Ringed seal forecasting is not yet implemented."
         )
     )
 }
@@ -181,6 +189,23 @@ build_grey_future_stan_data <- function(
             )
         )
     } else if (!is.null(scenario_data)) {
+        scenario_fields <- c(
+            "future_hunting_quota_sweden",
+            "future_hunting_quota_finland",
+            "future_herring_index_baltic_proper_gulf_finland",
+            "future_herring_index_gulf_bothnia"
+        )
+
+        for (field in scenario_fields) {
+            n_values <- length(scenario_data[[field]])
+            if (n_values != n_future_years) {
+                cli::cli_abort(c(
+                    "`scenario_data${field}` must contain {n_future_years} values, matching the forecast horizon.",
+                    "x" = "Found {n_values} values."
+                ))
+            }
+        }
+
         last_herring_bp_gof <- utils::tail(
             fitted_stan_data$herring_index_baltic_proper_gulf_finland,
             1L
@@ -493,6 +518,11 @@ build_grey_future_sample_sizes <- function(
 }
 
 ##' Build scenario data for forecasting
+##'
+##' All vectors must have the same positive length, with one value per forecast
+##' year in chronological order. Their length determines the horizon in
+##' [forecast_ipm()], starting immediately after the final fitted year.
+##' Omitted herring indices default to zero for each year.
 ##'
 ##' @param hunting_quotas_sweden numeric vector of hunting quotas for Sweden
 ##' @param hunting_quotas_finland numeric vector of hunting quotas for Finland

@@ -19,9 +19,9 @@ real hunting_comp_lpmf(
 
   for (i in 1:n_obs) {
     int t = hunting_year[i];
-      lp += multinomial_lpmf(
+      lp += weighted_composition_lpmf(
         hunting_composition[i] |
-        hunted[, t] / hunted_total[t]
+        hunted[, t], rep_vector(0.0, rows(hunted))
       );
   }
 
@@ -48,9 +48,9 @@ vector hunting_comp_pointwise_log_lik(
 
   for (i in 1:n_obs) {
     int t = hunting_year[i];
-      log_lik[i] = multinomial_lpmf(
+      log_lik[i] = weighted_composition_lpmf(
         hunting_composition[i] |
-        hunted[, t] / hunted_total[t]
+        hunted[, t], rep_vector(0.0, rows(hunted))
       );
   }
 
@@ -81,8 +81,8 @@ array[,] int hunting_comp_rng(
     if (hunting_sample_size[i] == 0 || hunted_total[t] <= 0) {
       y_sim[i] = rep_array(0, K);
     } else {
-      y_sim[i] = multinomial_rng(
-        hunted[, t] / hunted_total[t],
+      y_sim[i] = weighted_composition_rng(
+        hunted[, t], rep_vector(0.0, rows(hunted)),
         hunting_sample_size[i]
       );
     }

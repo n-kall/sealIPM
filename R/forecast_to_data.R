@@ -2,7 +2,8 @@
 #'
 #' Selects one posterior-predictive draw from [forecast_ipm()] and appends its
 #' simulated observations and scenario covariates to the data used for the
-#' original fit. The result can be passed directly to [fit_ipm()].
+#' original fit. The result can be passed directly to [fit_ipm()], whose `years`
+#' argument can select any consecutive subset of the combined years.
 #'
 #' @param forecast A generated-quantities object returned by [forecast_ipm()].
 #' @param draw Positive integer identifying the posterior-predictive draw to
@@ -12,7 +13,7 @@
 forecast_to_data <- function(forecast, draw = 1L) {
     info <- attr(forecast, "seal_ipm_forecast", exact = TRUE)
     if (is.null(info)) {
-        cli_abort(
+        cli::cli_abort(
             "`forecast` must be an object returned by forecast_ipm()."
         )
     }
@@ -23,10 +24,10 @@ forecast_to_data <- function(forecast, draw = 1L) {
             draw < 1 ||
             draw != as.integer(draw)
     ) {
-        cli_abort("`draw` must be one positive integer.")
+        cli::cli_abort("`draw` must be one positive integer.")
     }
     if (!identical(info$species, "grey")) {
-        cli_abort(
+        cli::cli_abort(
             "Converting forecasts is currently implemented only for grey seals.",
         )
     }
@@ -44,10 +45,7 @@ forecast_to_data <- function(forecast, draw = 1L) {
     draws <- forecast$draws(variables = variables, format = "draws_matrix")
     draw <- as.integer(draw)
     if (draw > nrow(draws)) {
-        stop(
-            sprintf("`draw` must be between 1 and %d.", nrow(draws)),
-            call. = FALSE
-        )
+        cli::cli_abort("`draw` must be between 1 and {nrow(draws)}.")
     }
 
     n_future <- length(info$future_years)
@@ -221,21 +219,19 @@ append_grey_forecast_data <- function(past, future, generated) {
     out
 }
 
-forecast_stan_data_prefix <- function(data, years) {
+forecast_stan_data_subset <- function(data, years) {
     available_years <- as.integer(data$years)
-    years <- as.integer(years)
-    if (
-        length(years) > length(available_years) ||
-            !identical(years, utils::head(available_years, length(years)))
-    ) {
-        cli_abort(
-            "`years` must be a consecutive prefix of the generated forecast data years."
+    years <- validate_state_years(years)
+    if (!all(years %in% available_years)) {
+        cli::cli_abort(
+            "`years` must be a consecutive subset of the generated forecast data years."
         )
     }
 
     out <- data$stan_data
-    removed <- length(available_years) - length(years)
-    n_state_years <- as.integer(out$n_state_years - removed)
+    offset <- match(years[1L], available_years) - 1L
+    n_state_years <- as.integer(length(years) + 1L)
+    state_indices <- offset + seq_len(n_state_years)
 
     observation_fields <- list(
         c("n_aerial_years", "aerial_year", "obs_aerial_count"),
@@ -273,7 +269,11 @@ forecast_stan_data_prefix <- function(data, years) {
         )
     )
     for (fields in observation_fields) {
-        keep <- out[[fields[2L]]] <= n_state_years
+        observation_years <- out[[fields[2L]]]
+        keep <- observation_years %in% state_indices
+        if (fields[2L] == "aerial_year") {
+            keep <- keep & observation_years > state_indices[1L]
+        }
         out[[fields[1L]]] <- as.integer(sum(keep))
         for (field in fields[-1L]) {
             value <- out[[field]]
@@ -283,18 +283,16 @@ forecast_stan_data_prefix <- function(data, years) {
                 value[keep]
             }
         }
+        out[[fields[2L]]] <- as.integer(out[[fields[2L]]] - offset)
     }
 
     out$n_state_years <- n_state_years
-    out$hunting_quota_sweden <- out$hunting_quota_sweden[seq_len(n_state_years)]
-    out$hunting_quota_finland <- out$hunting_quota_finland[seq_len(
-        n_state_years
-    )]
+    out$hunting_quota_sweden <- out$hunting_quota_sweden[state_indices]
+    out$hunting_quota_finland <- out$hunting_quota_finland[state_indices]
+    herring_indices <- offset + seq_len(n_state_years + 1L)
     out$herring_index_baltic_proper_gulf_finland <-
-        out$herring_index_baltic_proper_gulf_finland[seq_len(
-            n_state_years + 1L
-        )]
+        out$herring_index_baltic_proper_gulf_finland[herring_indices]
     out$herring_index_gulf_bothnia <-
-        out$herring_index_gulf_bothnia[seq_len(n_state_years + 1L)]
+        out$herring_index_gulf_bothnia[herring_indices]
     out
 }

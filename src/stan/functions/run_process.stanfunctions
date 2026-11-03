@@ -6,6 +6,9 @@
 /**
  * @brief Initialize the population composition with a deterministic burn-in
  *
+ * Normalize the demographic shape at each step and apply the target size last
+ * This preserves the homogeneous burn-in while avoiding accumulated scale overflow
+ *
  * @param population_init Starting demographic population composition before burn-in
  * @param population_init_size Target total population size after burn-in
  * @param population_burn_in Number of deterministic burn-in steps
@@ -31,6 +34,23 @@ tuple(vector, real, real) initialize_population_with_burnin(
   vector[n_demo_groups] population_comp_year = population_init;
   real population_total_year;
 
+  // Normalize the shape before burn-in and keep the requested size separate
+  if (!(population_init_size > 0.0) || is_inf(population_init_size)) {
+    reject("initialize_population_with_burnin requires a finite positive initial population size");
+  }
+  if (!(birth_rate_year >= 0.0 && birth_rate_year <= 1.0)) {
+    reject("initialize_population_with_burnin requires a birth rate in [0, 1]");
+  }
+  if (!(min(survival_probability) >= 0.0 && max(survival_probability) <= 1.0)) {
+    reject("initialize_population_with_burnin requires survival probabilities in [0, 1]");
+  }
+  if (!(min(population_init) >= 0.0 && max(population_init) > 0.0)
+      || is_inf(max(population_init))) {
+    reject("initialize_population_with_burnin requires finite non-negative initial counts with a positive total");
+  }
+  population_comp_year /= max(population_comp_year);
+  population_comp_year /= sum(population_comp_year);
+
   // Run deterministic survival, aging and births to obtain the initial composition
   for (burn_in_step in 1:population_burn_in) {
     // Apply survival and advance seals through the age classes
@@ -48,13 +68,17 @@ tuple(vector, real, real) initialize_population_with_burnin(
     population_comp_year[n_age_classes + 1] =
       birth_rate_year / 2.0
       * population_comp_year[n_age_classes];
+
+    // The burn-in is homogeneous, so normalizing each step preserves its shape
+    population_total_year = sum(population_comp_year);
+    if (!(population_total_year > 0.0) || is_inf(population_total_year)) {
+      reject("initialize_population_with_burnin cannot normalize an extinct or non-finite burn-in population");
+    }
+    population_comp_year /= population_total_year;
   }
 
-  // Rescale the demographic composition to the target initial population size
-  population_comp_year =
-    population_comp_year
-    * population_init_size
-    / sum(population_comp_year);
+  // Apply the requested size after normalizing to avoid intermediate overflow
+  population_comp_year *= population_init_size;
 
   // Calculate the total population after rescaling
   population_total_year = sum(population_comp_year);

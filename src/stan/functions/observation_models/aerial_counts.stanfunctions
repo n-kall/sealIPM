@@ -1,4 +1,14 @@
 /**
+ * @brief Negative-binomial observation with its zero-mean limiting distribution
+ */
+real aerial_observation_lpmf(int observed, real expected, real phi) {
+  if (expected == 0.0) {
+    return observed == 0 ? 0.0 : negative_infinity();
+  }
+  return neg_binomial_2_lpmf(observed | expected, phi);
+}
+
+/**
  * @brief aerial_count_lpmf
  *
  * @param obs_aerial_count vector of observed aerial counts
@@ -21,7 +31,7 @@ real aerial_count_lpmf(
   for (i in 1:n_obs) {
     int t = aerial_year[i];
 
-    lp += neg_binomial_2_lpmf(
+    lp += aerial_observation_lpmf(
       obs_aerial_count[i] |
       mu * non_pup_population_total[t],
       phi
@@ -55,7 +65,7 @@ vector aerial_count_pointwise_log_lik(
   for (i in 1:n_obs) {
     int t = aerial_year[i];
 
-    log_lik[i] = neg_binomial_2_lpmf(
+    log_lik[i] = aerial_observation_lpmf(
       obs_aerial_count[i] |
       mu * non_pup_population_total[t],
       phi

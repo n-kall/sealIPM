@@ -36,13 +36,13 @@ matrix create_aging_matrix(
 /**
  * @brief update_population_from_survivors
  *
- * Advance the continuous population and add stochastic births.
+ * Advance the continuous population with bounded logistic-normal births and sex allocation
  *
  * @param previous_survivors vector of previous survivors in each demo group
  * @param aging_mat aging matrix
  * @param birth_rate birth rate
- * @param birth_count_noise Standardized deviation in the number of pups born
- * @param pup_sex_allocation_noise Standardized deviation in the female and male pup allocation
+ * @param birth_count_noise Standard normal innovation for the birth allocation
+ * @param pup_sex_allocation_noise Standard normal innovation for the pup sex allocation
  * @param n_age_classes number of age classes
  * @return vector of new population
  */
@@ -56,22 +56,28 @@ vector update_population_from_survivors(
 ) {
   int n_demo = rows(previous_survivors);
   vector[n_demo] N = aging_mat * previous_survivors;
-  real N_temp;
+  row_vector[2] birth_counts;
+  row_vector[2] pup_counts;
 
-  N_temp =
-    N[n_age_classes] * birth_rate
-    + sqrt(
-        N[n_age_classes]
-        * birth_rate
-        * (1.0 - birth_rate)
-      ) * birth_count_noise;
+  if (!(birth_rate >= 0.0 && birth_rate <= 1.0)) {
+    reject("update_population_from_survivors requires birth_rate in [0, 1]");
+  }
 
-  N[1] =
-    N_temp / 2.0
-    + sqrt(N_temp / 4.0) * pup_sex_allocation_noise;
+  // Allocate adult females to non-births and births
+  birth_counts = allocate_counts(
+    [N[n_age_classes] * (1.0 - birth_rate), N[n_age_classes] * birth_rate],
+    [birth_count_noise],
+    N[n_age_classes]
+  );
 
-  N[n_age_classes + 1] =
-    N_temp - N[1];
+  // Allocate newborns to males and females without subtracting rounded counts
+  pup_counts = allocate_counts(
+    [birth_counts[2] / 2.0, birth_counts[2] / 2.0],
+    [pup_sex_allocation_noise],
+    birth_counts[2]
+  );
+  N[1] = pup_counts[2];
+  N[n_age_classes + 1] = pup_counts[1];
 
   return N;
 }

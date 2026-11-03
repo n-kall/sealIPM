@@ -151,6 +151,7 @@ real compute_density_dependence_intercept(
  *
  * The non-degenerate density-suppression case requires positive intercept
  * and carrying capacity and @f$ 0 < b_K/\bar b_0 < 1 @f$
+ * Undefined boundary calibrations and non-finite slopes are rejected explicitly
  *
  * @param birth_rate_at_capacity_to_baseline_ratio Birth rate at carrying capacity divided by the reference baseline birth rate
  * @param density_dependence_intercept Density dependence intercept
@@ -163,10 +164,31 @@ real compute_density_dependence_slope(
   real density_dependence_intercept,
   real carrying_capacity
 ) {
-  real log_birth_rate_ratio = log(birth_rate_at_capacity_to_baseline_ratio);
-  return log1p_exp(
+  real log_birth_rate_ratio;
+  real slope;
+
+  if (!(carrying_capacity > 0.0) || is_inf(carrying_capacity)) {
+    reject("compute_density_dependence_slope requires a finite positive carrying capacity; received ",
+           carrying_capacity);
+  }
+  if (!(density_dependence_intercept > 0.0) || is_inf(density_dependence_intercept)) {
+    reject("compute_density_dependence_slope requires a finite positive density intercept; received ",
+           density_dependence_intercept);
+  }
+  if (!(birth_rate_at_capacity_to_baseline_ratio > 0.0
+        && birth_rate_at_capacity_to_baseline_ratio <= 1.0)) {
+    reject("compute_density_dependence_slope requires a birth-rate ratio in (0, 1]; received ",
+           birth_rate_at_capacity_to_baseline_ratio);
+  }
+
+  log_birth_rate_ratio = log(birth_rate_at_capacity_to_baseline_ratio);
+  slope = log1p_exp(
     log(-log_birth_rate_ratio) - log(density_dependence_intercept)
   ) / carrying_capacity;
+  if (is_inf(slope) || is_nan(slope)) {
+    reject("compute_density_dependence_slope is outside the finite numerical range");
+  }
+  return slope;
 }
 
 /**

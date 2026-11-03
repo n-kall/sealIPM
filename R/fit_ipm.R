@@ -6,13 +6,16 @@
 #'   [forecast_to_data()].
 #' @param species Which species. Inferred for generated forecast data.
 #' @param years Vector of consecutive years in increasing order for the state
-#'   process. Inferred for generated forecast data.
+#'   process. Inferred for generated forecast data; may be any consecutive subset
+#'   of its available years.
 #' @param prior_spec priors
 #' @param method Stan method for fitting
 #' @param init Initialisation function or draws passed to Stan. A previously
 #'   fitted `seal_ipm` object can also be supplied. In that case, each chain is
 #'   initialized from a randomly selected posterior draw, with missing parameter
-#'   elements supplied by the initialization function.
+#'   elements supplied by the initialization function. For generated forecast
+#'   data fitted from a later starting year, default population and carrying
+#'   capacity starts use the aerial counts and initial detection probabilities.
 #' @param prior_only Should only prior be used?
 #' @param growth_rate_period Positive integer vector of population-growth look-back steps. Defaults to all possible lengths based on the number of years fitted.
 #' @param ... passed to Stan method
@@ -39,7 +42,7 @@ fit_ipm <- function(
             years <- data$years
         }
         if (!identical(species, data$species)) {
-            cli_abort(c(
+            cli::cli_abort(c(
                 "{.var species} must match the generated forecast data.",
                 "x" = "The generated forecast is for '{data$species}', but you specified '{species}'."
             ))
@@ -49,14 +52,14 @@ fit_ipm <- function(
     years <- validate_state_years(years)
 
     if (!species %in% c("grey", "ringed")) {
-        cli_abort(c(
+        cli::cli_abort(c(
             "{.var species} must be one of 'grey' or 'ringed'.",
             "x" = "you supplied '{species}'"
         ))
     }
 
     if (inherits(data, "seal_ipm_data") && !is.null(prior_spec)) {
-        cli_abort(c(
+        cli::cli_abort(c(
             "{.var prior_spec} cannot be changed when fitting generated forecast data."
         ))
     }
@@ -69,7 +72,7 @@ fit_ipm <- function(
 
     stan_data <- if (inherits(data, "seal_ipm_data")) {
         utils::modifyList(
-            forecast_stan_data_prefix(data, years),
+            forecast_stan_data_subset(data, years),
             list(prior_only = as.integer(prior_only))
         )
     } else {
@@ -122,7 +125,7 @@ fit_ipm <- function(
 
     if (inherits(init, "seal_ipm")) {
         if (!identical(init$species, species)) {
-            cli_abort(c(
+            cli::cli_abort(c(
                 "The previous fit supplied as `init` must use the same species.",
                 "x" = "You supplied '{species}' but the init is from '{init$species}'."
             ))
@@ -141,6 +144,12 @@ fit_ipm <- function(
             prior_spec = prior_spec,
             n_init = n_init
         )
+        if (
+            inherits(data, "seal_ipm_data") &&
+                years[1L] > data$years[1L]
+        ) {
+            init <- initialize_forecast_refit(init, stan_data)
+        }
     }
 
     fit <- switch(
@@ -198,14 +207,14 @@ previous_fit_init <- function(fit, n_state_years, n_demo, prior_spec, n_init) {
             n_init < 1 ||
             n_init != floor(n_init)
     ) {
-        cli_abort("`n_init` must be a positive integer.")
+        cli::cli_abort("`n_init` must be a positive integer.")
     }
 
     draws <- posterior::as_draws_matrix(
         fit$fit$draws(format = "draws_matrix")
     )
     if (!nrow(draws)) {
-        cli_abort("The previous fit contains no posterior draws.")
+        cli::cli_abort("The previous fit contains no posterior draws.")
     }
     # use one posterior draw per chain, recycling only if the fit is too small
     draws <- posterior::resample_draws(draws, ndraws = n_init)
@@ -258,7 +267,7 @@ validate_growth_rate_lookback <- function(growth_rate_period, n_state_years) {
             any(growth_rate_period < 1L) ||
             any(growth_rate_period >= n_state_years)
     ) {
-        cli_abort(
+        cli::cli_abort(
             "`growth_rate_period` must contain positive integer values smaller than the number of state years."
         )
     }

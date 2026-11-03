@@ -1,4 +1,14 @@
 /**
+ * @brief Hunting reports with zero catch represented by a point mass at zero
+ */
+real hunting_bag_observation_lpdf(real observed, real expected, real cv) {
+  if (expected == 0.0) {
+    return observed == 0.0 ? 0.0 : negative_infinity();
+  }
+  return normal_lpdf(observed | expected, cv * expected);
+}
+
+/**
  * @brief hunting_bags_lpdf
  *
  * @param hunting_count Observed count of reported hunted seals
@@ -18,10 +28,10 @@ real hunting_bags_lpdf(
 
   for (i in 1:n_obs) {
     int t = hunting_year[i];
-    lp += normal_lpdf(
+    lp += hunting_bag_observation_lpdf(
       hunting_count[i] |
       hunted_total[t],
-      hunting_bag_cv * hunted_total[t]
+      hunting_bag_cv
     );
   }
 
@@ -48,10 +58,10 @@ vector hunting_bags_pointwise_log_lik(
 
   for (i in 1:n_obs) {
     int t = hunting_year[i];
-    log_lik[i] = normal_lpdf(
+    log_lik[i] = hunting_bag_observation_lpdf(
       hunting_count[i] |
       hunted_total[t],
-      hunting_bag_cv * hunted_total[t]
+      hunting_bag_cv
     );
   }
 

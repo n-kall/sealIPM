@@ -1,4 +1,5 @@
 functions {
+  #include functions/observation_models/composition.stanfunctions
  #include functions/observation_models/aerial_counts.stanfunctions
  #include functions/observation_models/hunting_bags.stanfunctions
  #include functions/observation_models/hunting_composition.stanfunctions
@@ -7,6 +8,7 @@ functions {
  #include functions/observation_models/reproductive_signs.stanfunctions
  #include functions/pregnancy_births.stanfunctions
  #include functions/deaths.stanfunctions
+ #include functions/allocation.stanfunctions
  #include functions/aging.stanfunctions
  #include functions/hunting.stanfunctions
  #include functions/fates.stanfunctions
@@ -300,46 +302,6 @@ transformed parameters {
     density_dependence_intercept,
     carrying_capacity
   );
-
-  // check when density dependence slope is a bad value
-  if (
-    is_nan(density_dependence_slope) ||
-  is_inf(density_dependence_slope)
-  ) {
-    reject(
-    "Invalid density_dependence_slope: ",
-    "slope = ", density_dependence_slope,
-    ", bK = ", birth_rate_at_carrying_capacity,
-    ", reference birth rate = ",
-      birth_rate_baseline_reference,
-    ", bK / reference birth rate = ",
-      birth_rate_at_carrying_capacity /
-      birth_rate_baseline_reference,
-    ", log ratio = ",
-      log(
-        birth_rate_at_carrying_capacity /
-        birth_rate_baseline_reference
-      ),
-    ", density intercept = ",
-      density_dependence_intercept,
-    ", outer log argument = ",
-      1.0 -
-      log(
-        birth_rate_at_carrying_capacity /
-        birth_rate_baseline_reference
-      ) / density_dependence_intercept,
-    ", carrying capacity = ", carrying_capacity,
-    ", max baseline birth rate = ",
-      birth_rate_baseline_max,
-    ", min baseline birth rate actual = ",
-      birth_rate_baseline_min,
-    ", density dependence scaled = ",
-      density_dependence_scaled,
-    ", herring intercept scaled = ",
-      herring_birth_rate_midpoint,
-    ", herring slope = ", herring_slope
-    );
-  }
 
   // reporting probabilities
   vector<lower=0, upper=1>[n_state_years] placental_scar_detection_probability =

@@ -42,7 +42,7 @@
  *
  * Empty demographic groups are allowed and receive exactly zero pressure
  *
- * A positive quota requires a positive total population
+ * An extinct population receives zero pressure even when the quota is positive
  *
  * @param hunting_quota Hunting quota for the country
  * @param hunting_selectivity vector of hunting selectivity for demographics
@@ -81,31 +81,34 @@ vector compute_hunting_pressure(
     );
   }
 
-  if (!(sum(population_comp) > 0.0)) {
-    reject(
-      "compute_hunting_pressure requires a positive total ",
-      "population when the quota is positive."
-    );
+  if (sum(population_comp) == 0.0) {
+    return rep_vector(0.0, n_demo_groups);
   }
 
   {
-    vector[n_demo_groups] log_population = log(population_comp);
+    vector[n_demo_groups] log_population = rep_vector(negative_infinity(), n_demo_groups);
+    for (demo in 1:n_demo_groups) {
+      if (population_comp[demo] > 0.0) {
+        log_population[demo] = log(population_comp[demo]);
+      }
+    }
     real log_denominator =
       log_sum_exp(hunting_selectivity + log_population);
 
-    pressure = exp(
-      hunting_selectivity
-      + log(hunting_quota)
-      + log(2.0)
-      - 2.0 * log(hunting_duration)
-      - hunting_effort_noise * hunting_effort_sd
-      - log_denominator
-    );
-  }
-
-  for (demo in 1:n_demo_groups) {
-    if (population_comp[demo] == 0.0) {
-      pressure[demo] = 0.0;
+    // Empty groups must not evaluate an unused and potentially overflowing rate
+    for (demo in 1:n_demo_groups) {
+      if (population_comp[demo] > 0.0) {
+        pressure[demo] = exp(
+          hunting_selectivity[demo]
+          + log(hunting_quota)
+          + log(2.0)
+          - 2.0 * log(hunting_duration)
+          - hunting_effort_noise * hunting_effort_sd
+          - log_denominator
+        );
+      } else {
+        pressure[demo] = 0.0;
+      }
     }
   }
 
