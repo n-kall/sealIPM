@@ -22,262 +22,262 @@
 #'   [forecast_to_data()].
 #' @export
 forecast_ipm <- function(
-  fit,
-  actual_data = NULL,
-  scenario_data = NULL,
-  growth_rate_period = c(5, 10, 15, 20),
-  ...
-) {
-  fitted_years <- fit$years
-
-  if (
-    (is.null(actual_data) && is.null(scenario_data)) ||
-      !is.null(actual_data) && !is.null(scenario_data)
-  ) {
-    cli_abort(
-      "provide either actual data or scenario_data, but not both"
-    )
-  }
-
-  n_future_years <- if (!is.null(scenario_data)) {
-    length(scenario_data$future_hunting_quota_sweden)
-  } else {
-    quota_years <- actual_data$hunting_quotas$Year
-    if (length(quota_years) == 0L || anyNA(quota_years)) {
-      cli_abort("`actual_data` must include hunting quota years.")
-    }
-    max(quota_years) - max(fitted_years)
-  }
-
-  if (!is.finite(n_future_years) || n_future_years < 1L) {
-    cli_abort(
-      "Supply at least one forecast year in `scenario_data` or `actual_data`."
-    )
-  }
-
-  future_years <- max(fitted_years) + seq_len(n_future_years)
-
-  species <- fit$species
-
-  future_data <- build_future_stan_data(
-    species = species,
-    actual_data = actual_data,
-    scenario_data = scenario_data,
-    future_years = future_years,
-    fitted_stan_data = fit$stan_data,
-    growth_rate_period = if (missing(growth_rate_period)) {
-      NULL
-    } else {
-      growth_rate_period
-    }
-  )
-
-  forecast_model <- get_species_forecast_model(species)
-
-  forecast_variables <- stan_model_parameter_names(
-    "forecast",
-    species
-  )
-
-  past_draws <- fit$fit$draws(
-    variables = forecast_variables,
-    format = "draws_matrix"
-  )
-
-  forecast_draws <- forecast_model$generate_quantities(
-    fitted_params = past_draws,
-    data = utils::modifyList(
-      fit$stan_data,
-      future_data
-    ),
+    fit,
+    actual_data = NULL,
+    scenario_data = NULL,
+    growth_rate_period = c(5, 10, 15, 20),
     ...
-  )
+) {
+    fitted_years <- fit$years
 
-  attr(forecast_draws, "seal_ipm_forecast") <- list(
-    species = species,
-    fitted_years = fitted_years,
-    future_years = future_years,
-    fitted_stan_data = fit$stan_data,
-    priors = fit$priors,
-    original_data = fit$data,
-    scenario_data = scenario_data,
-    future_stan_data = future_data
-  )
+    if (
+        (is.null(actual_data) && is.null(scenario_data)) ||
+            !is.null(actual_data) && !is.null(scenario_data)
+    ) {
+        cli_abort(
+            "provide either actual data or scenario_data, but not both"
+        )
+    }
 
-  return(forecast_draws)
+    n_future_years <- if (!is.null(scenario_data)) {
+        length(scenario_data$future_hunting_quota_sweden)
+    } else {
+        quota_years <- actual_data$hunting_quotas$Year
+        if (length(quota_years) == 0L || anyNA(quota_years)) {
+            cli_abort("`actual_data` must include hunting quota years.")
+        }
+        max(quota_years) - max(fitted_years)
+    }
+
+    if (!is.finite(n_future_years) || n_future_years < 1L) {
+        cli_abort(
+            "Supply at least one forecast year in `scenario_data` or `actual_data`."
+        )
+    }
+
+    future_years <- max(fitted_years) + seq_len(n_future_years)
+
+    species <- fit$species
+
+    future_data <- build_future_stan_data(
+        species = species,
+        actual_data = actual_data,
+        scenario_data = scenario_data,
+        future_years = future_years,
+        fitted_stan_data = fit$stan_data,
+        growth_rate_period = if (missing(growth_rate_period)) {
+            NULL
+        } else {
+            growth_rate_period
+        }
+    )
+
+    forecast_model <- get_species_forecast_model(species)
+
+    forecast_variables <- stan_model_parameter_names(
+        "forecast",
+        species
+    )
+
+    past_draws <- fit$fit$draws(
+        variables = forecast_variables,
+        format = "draws_matrix"
+    )
+
+    forecast_draws <- forecast_model$generate_quantities(
+        fitted_params = past_draws,
+        data = utils::modifyList(
+            fit$stan_data,
+            future_data
+        ),
+        ...
+    )
+
+    attr(forecast_draws, "seal_ipm_forecast") <- list(
+        species = species,
+        fitted_years = fitted_years,
+        future_years = future_years,
+        fitted_stan_data = fit$stan_data,
+        priors = fit$priors,
+        original_data = fit$data,
+        scenario_data = scenario_data,
+        future_stan_data = future_data
+    )
+
+    return(forecast_draws)
 }
 
 stan_model_parameter_names <- function(model, species) {
-  stan_file <- system.file(
-    "bin",
-    "stan",
-    paste0(species, "_seal_IPM_", model, ".stan"),
-    package = "sealIPM",
-    mustWork = TRUE
-  )
-  return(names(cmdstanr::variables_stan_file(stan_file)$parameters)) # requires cmdstanr v1.0
+    stan_file <- system.file(
+        "bin",
+        "stan",
+        paste0(species, "_seal_IPM_", model, ".stan"),
+        package = "sealIPM",
+        mustWork = TRUE
+    )
+    return(names(cmdstanr::variables_stan_file(stan_file)$parameters)) # requires cmdstanr v1.0
 }
 
 
 get_species_forecast_model <- function(species, ...) {
-  instantiate::stan_package_model(
-    name = paste0(species, "_seal_IPM_forecast"),
-    package = "sealIPM"
-  )
+    instantiate::stan_package_model(
+        name = paste0(species, "_seal_IPM_forecast"),
+        package = "sealIPM"
+    )
 }
 
 
 build_future_stan_data <- function(
-  species,
-  actual_data = NULL,
-  scenario_data = NULL,
-  future_years,
-  fitted_stan_data,
-  growth_rate_period = NULL
-) {
-  switch(
     species,
-    grey = build_grey_future_stan_data(
-      actual_data = actual_data,
-      scenario_data = scenario_data,
-      future_years = future_years,
-      fitted_stan_data = fitted_stan_data,
-      growth_rate_period = growth_rate_period
-    ),
-    ringed = cli::cli_abort(
-      "Ringed seal forecasting is not yet implemented."
+    actual_data = NULL,
+    scenario_data = NULL,
+    future_years,
+    fitted_stan_data,
+    growth_rate_period = NULL
+) {
+    switch(
+        species,
+        grey = build_grey_future_stan_data(
+            actual_data = actual_data,
+            scenario_data = scenario_data,
+            future_years = future_years,
+            fitted_stan_data = fitted_stan_data,
+            growth_rate_period = growth_rate_period
+        ),
+        ringed = cli::cli_abort(
+            "Ringed seal forecasting is not yet implemented."
+        )
     )
-  )
 }
 
 build_grey_future_stan_data <- function(
-  actual_data,
-  scenario_data,
-  future_years,
-  fitted_stan_data,
-  growth_rate_period = NULL
+    actual_data,
+    scenario_data,
+    future_years,
+    fitted_stan_data,
+    growth_rate_period = NULL
 ) {
-  n_future_years <- length(future_years)
-  growth_rate_period <- if (is.null(growth_rate_period)) {
-    c(5L, 10L, 15L, 20L)[c(5L, 10L, 15L, 20L) < n_future_years]
-  } else {
-    validate_growth_rate_lookback(growth_rate_period, n_future_years)
-  }
-
-  if (!is.null(actual_data)) {
-    herring <- build_grey_herring(
-      herring = actual_data$herring,
-      years = future_years
-    )
-
-    # build_grey_herring() returns one additional lagged value as the
-    # forecast model needs n_future_years + 1 values.
-    herring_bp_gof <- utils::tail(
-      herring$herring_index_baltic_proper_gulf_finland,
-      n_future_years + 1L
-    )
-
-    herring_gob <- utils::tail(
-      herring$herring_index_gulf_bothnia,
-      n_future_years + 1L
-    )
-
-    quotas <- build_grey_hunting_quotas(
-      hunting_quotas = actual_data$hunting_quotas,
-      years = future_years
-    )
-
-    observations <- build_grey_future_observations(
-      data = actual_data,
-      future_years = future_years
-    )
-
-    out <- list(
-      future_herring_index_baltic_proper_gulf_finland = as.numeric(
-        herring_bp_gof
-      ),
-
-      future_herring_index_gulf_bothnia = as.numeric(herring_gob),
-
-      future_hunting_quota_sweden = as.integer(
-        quotas$hunting_quota_sweden
-      ),
-
-      future_hunting_quota_finland = as.integer(
-        quotas$hunting_quota_finland
-      )
-    )
-  } else if (!is.null(scenario_data)) {
-    scenario_fields <- c(
-      "future_hunting_quota_sweden",
-      "future_hunting_quota_finland",
-      "future_herring_index_baltic_proper_gulf_finland",
-      "future_herring_index_gulf_bothnia"
-    )
-
-    for (field in scenario_fields) {
-      n_values <- length(scenario_data[[field]])
-      if (n_values != n_future_years) {
-        cli::cli_abort(c(
-          "`scenario_data${field}` must contain {n_future_years} values, matching the forecast horizon.",
-          "x" = "Found {n_values} values."
-        ))
-      }
+    n_future_years <- length(future_years)
+    growth_rate_period <- if (is.null(growth_rate_period)) {
+        c(5L, 10L, 15L, 20L)[c(5L, 10L, 15L, 20L) < n_future_years]
+    } else {
+        validate_growth_rate_lookback(growth_rate_period, n_future_years)
     }
 
-    last_herring_bp_gof <- utils::tail(
-      fitted_stan_data$herring_index_baltic_proper_gulf_finland,
-      1L
-    )
-
-    last_herring_gob <- utils::tail(
-      fitted_stan_data$herring_index_gulf_bothnia,
-      1L
-    )
-
-    out <- list(
-      future_hunting_quota_sweden = as.integer(
-        scenario_data$future_hunting_quota_sweden
-      ),
-      future_hunting_quota_finland = as.integer(
-        scenario_data$future_hunting_quota_finland
-      ),
-
-      future_herring_index_baltic_proper_gulf_finland = as.numeric(
-        c(
-          last_herring_bp_gof,
-          scenario_data$future_herring_index_baltic_proper_gulf_finland
+    if (!is.null(actual_data)) {
+        herring <- build_grey_herring(
+            herring = actual_data$herring,
+            years = future_years
         )
-      ),
 
-      future_herring_index_gulf_bothnia = as.numeric(
-        c(
-          last_herring_gob,
-          scenario_data$future_herring_index_gulf_bothnia
+        # build_grey_herring() returns one additional lagged value as the
+        # forecast model needs n_future_years + 1 values.
+        herring_bp_gof <- utils::tail(
+            herring$herring_index_baltic_proper_gulf_finland,
+            n_future_years + 1L
         )
-      )
+
+        herring_gob <- utils::tail(
+            herring$herring_index_gulf_bothnia,
+            n_future_years + 1L
+        )
+
+        quotas <- build_grey_hunting_quotas(
+            hunting_quotas = actual_data$hunting_quotas,
+            years = future_years
+        )
+
+        observations <- build_grey_future_observations(
+            data = actual_data,
+            future_years = future_years
+        )
+
+        out <- list(
+            future_herring_index_baltic_proper_gulf_finland = as.numeric(
+                herring_bp_gof
+            ),
+
+            future_herring_index_gulf_bothnia = as.numeric(herring_gob),
+
+            future_hunting_quota_sweden = as.integer(
+                quotas$hunting_quota_sweden
+            ),
+
+            future_hunting_quota_finland = as.integer(
+                quotas$hunting_quota_finland
+            )
+        )
+    } else if (!is.null(scenario_data)) {
+        scenario_fields <- c(
+            "future_hunting_quota_sweden",
+            "future_hunting_quota_finland",
+            "future_herring_index_baltic_proper_gulf_finland",
+            "future_herring_index_gulf_bothnia"
+        )
+
+        for (field in scenario_fields) {
+            n_values <- length(scenario_data[[field]])
+            if (n_values != n_future_years) {
+                cli::cli_abort(c(
+                    "`scenario_data${field}` must contain {n_future_years} values, matching the forecast horizon.",
+                    "x" = "Found {n_values} values."
+                ))
+            }
+        }
+
+        last_herring_bp_gof <- utils::tail(
+            fitted_stan_data$herring_index_baltic_proper_gulf_finland,
+            1L
+        )
+
+        last_herring_gob <- utils::tail(
+            fitted_stan_data$herring_index_gulf_bothnia,
+            1L
+        )
+
+        out <- list(
+            future_hunting_quota_sweden = as.integer(
+                scenario_data$future_hunting_quota_sweden
+            ),
+            future_hunting_quota_finland = as.integer(
+                scenario_data$future_hunting_quota_finland
+            ),
+
+            future_herring_index_baltic_proper_gulf_finland = as.numeric(
+                c(
+                    last_herring_bp_gof,
+                    scenario_data$future_herring_index_baltic_proper_gulf_finland
+                )
+            ),
+
+            future_herring_index_gulf_bothnia = as.numeric(
+                c(
+                    last_herring_gob,
+                    scenario_data$future_herring_index_gulf_bothnia
+                )
+            )
+        )
+
+        observations <- build_grey_future_observations(
+            data = NULL,
+            future_years = future_years
+        )
+    }
+    sample_sizes <- build_grey_future_sample_sizes(
+        observations = observations,
+        n_future_years = n_future_years
     )
 
-    observations <- build_grey_future_observations(
-      data = NULL,
-      future_years = future_years
+    c(
+        out,
+        list(
+            n_future_years = as.integer(n_future_years),
+            n_growth_rate_period_future = length(growth_rate_period),
+            growth_rate_period_future = growth_rate_period
+        ),
+        sample_sizes,
+        observations
     )
-  }
-  sample_sizes <- build_grey_future_sample_sizes(
-    observations = observations,
-    n_future_years = n_future_years
-  )
-
-  c(
-    out,
-    list(
-      n_future_years = as.integer(n_future_years),
-      n_growth_rate_period_future = length(growth_rate_period),
-      growth_rate_period_future = growth_rate_period
-    ),
-    sample_sizes,
-    observations
-  )
 }
 
 
@@ -453,17 +453,14 @@ build_grey_future_observations <- function(
 
 build_grey_future_sample_sizes <- function(
     observations,
-    n_future_years,
-    default_sample_size = 100L
+    n_future_years
 ) {
     fill_sample_sizes <- function(
         observation_years,
-        sample_sizes
+        sample_sizes,
+        default_sample_size
     ) {
-        out <- rep.int(
-            as.integer(default_sample_size),
-            n_future_years
-        )
+        out <- rep.int(default_sample_size, n_future_years)
 
         if (length(observation_years) > 0L) {
             out[observation_years] <- as.integer(sample_sizes)
@@ -510,30 +507,36 @@ build_grey_future_sample_sizes <- function(
         integer()
     }
 
+    # Defaults are rounded mean annual sample counts after 2004
     list(
         future_hunting_sample_size_sweden = fill_sample_sizes(
             observations$hunting_comp_year_sweden,
-            hunting_sweden_sample_size
+            hunting_sweden_sample_size,
+            default_sample_size = 85
         ),
 
         future_hunting_sample_size_finland = fill_sample_sizes(
             observations$hunting_comp_year_finland,
-            hunting_finland_sample_size
+            hunting_finland_sample_size,
+            default_sample_size = 100
         ),
 
         future_bycatch_sample_size = fill_sample_sizes(
             observations$bycatch_year,
-            bycatch_sample_size
+            bycatch_sample_size,
+            default_sample_size = 50
         ),
 
         future_reproductive_signs_sample_size = fill_sample_sizes(
             observations$reproductive_signs_year,
-            reproductive_signs_sample_size
+            reproductive_signs_sample_size,
+            default_sample_size = 25
         ),
 
         future_pregnancy_sample_size = fill_sample_sizes(
             observations$pregnancy_count_year,
-            observations$future_obs_pregnancy_sample_size
+            observations$future_obs_pregnancy_sample_size,
+            default_sample_size = 10
         )
     )
 }
