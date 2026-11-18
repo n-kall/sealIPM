@@ -23,7 +23,8 @@ fit_ipm(
 \item{species}{Which species. Inferred for generated forecast data.}
 
 \item{years}{Vector of consecutive years in increasing order for the state
-process. Inferred for generated forecast data.}
+process. Inferred for generated forecast data; may be any consecutive subset
+of its available years.}
 
 \item{prior_spec}{priors}
 
@@ -32,7 +33,9 @@ process. Inferred for generated forecast data.}
 \item{init}{Initialisation function or draws passed to Stan. A previously
 fitted \code{seal_ipm} object can also be supplied. In that case, each chain is
 initialized from a randomly selected posterior draw, with missing parameter
-elements supplied by the initialization function.}
+elements supplied by the initialization function. For generated forecast
+data fitted from a later starting year, default population and carrying
+capacity starts use the aerial counts and initial detection probabilities.}
 
 \item{prior_only}{Should only prior be used?}
 
@@ -41,7 +44,14 @@ elements supplied by the initialization function.}
 \item{...}{passed to Stan method}
 }
 \value{
-fitted model
+A fitted model. For each \code{growth_rate_period}, posterior draws include
+\code{population_growth_rate_ols} and \code{population_growth_rate_geometric}, the OLS
+and geometric average compounded annual growth rates. These are fractional
+rates, so \code{0.05} means 5\% per year. Both summarize the period ending at the
+final fitted state year, using \code{k + 1} population states for a look-back of
+\code{k} years. The existing \code{population_growth_rate} output is retained as the
+OLS slope on the log-population scale, with
+\code{population_growth_rate_ols = expm1(population_growth_rate)}.
 }
 \description{
 Fits an IPM for seal observations

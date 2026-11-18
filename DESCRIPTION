@@ -26,6 +26,8 @@ Depends:
     R (>= 4.1.0)
 LazyData: true
 Suggests: 
+    DBI,
+    duckdb (>= 1.2.0),
     knitr,
     quarto,
     rmarkdown,

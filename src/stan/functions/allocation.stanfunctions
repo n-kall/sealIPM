@@ -1,0 +1,118 @@
+/**
+ * @brief Allocate a continuous population using a logistic-normal approximation
+ *
+ * Positive expected counts use the adjusted-concentration approximation shared
+ * by births, sex allocation and demographic fates, without exact multinomial moments
+ * Zero expected counts receive zero allocations and an empty population returns zeros
+ *
+ * @param expected_counts Expected counts in category order
+ * @param allocation_noise Standard normal innovations in positive-category order
+ * @param population_count Total population to allocate
+ * @return Non-negative category counts summing to population_count
+ */
+row_vector allocate_counts(
+  row_vector expected_counts,
+  row_vector allocation_noise,
+  real population_count
+) {
+  int n_categories = num_elements(expected_counts);
+  int n_active = 0;
+  row_vector[n_categories] counts = rep_row_vector(0.0, n_categories);
+
+  if (n_categories == 0) {
+    reject("allocate_counts requires at least one category");
+  }
+  if (!(population_count >= 0.0) || is_inf(population_count)) {
+    reject("allocate_counts requires a finite non-negative population count");
+  }
+  for (i in 1:n_categories) {
+    if (!(expected_counts[i] >= 0.0) || is_inf(expected_counts[i])) {
+      reject("allocate_counts requires finite non-negative expected counts");
+    }
+    if (expected_counts[i] > 0.0) {
+      n_active += 1;
+    }
+  }
+  if (population_count == 0.0) {
+    return counts;
+  }
+  if (n_active == 0) {
+    reject("allocate_counts requires a positive expected count for a positive population");
+  }
+  if (num_elements(allocation_noise) < n_active - 1) {
+    reject("allocate_counts requires at least ", n_active - 1, " innovations");
+  }
+
+  {
+    array[n_active] int active_indices;
+    int next_active = 1;
+    vector[n_active] expected_active_counts;
+    vector[n_active] logratio_location;
+    vector[n_active] logratio_variance;
+    real min_expected_count;
+    vector[n_active - 1] mean_logratio;
+    vector[n_active - 1] diagonal_variance;
+    real shared_variance;
+    matrix[n_active - 1, n_active - 1] allocation_cholesky =
+      rep_matrix(0.0, n_active - 1, n_active - 1);
+    vector[n_active] logits;
+    vector[n_active] active_counts;
+
+    for (i in 1:n_categories) {
+      if (expected_counts[i] > 0.0) {
+        active_indices[next_active] = i;
+        next_active += 1;
+      }
+    }
+    if (n_active == 1) {
+      counts[active_indices[1]] = population_count;
+      return counts;
+    }
+    expected_active_counts = expected_counts[active_indices]';
+    min_expected_count = min(expected_active_counts);
+    // Avoid forming adjusted concentrations that could overflow
+    for (i in 1:n_active) {
+      real log_concentration = log(expected_active_counts[i])
+        + log1p(min_expected_count) - log(min_expected_count);
+      if (log_concentration > 700.0) {
+        // Digamma and trigamma have negligible asymptotic errors at this scale
+        logratio_location[i] = log_concentration;
+        logratio_variance[i] = exp(-log_concentration);
+      } else {
+        real concentration_adjusted = expected_active_counts[i]
+          + expected_active_counts[i] / min_expected_count;
+        logratio_location[i] = digamma(concentration_adjusted);
+        logratio_variance[i] = trigamma(concentration_adjusted);
+      }
+    }
+
+    // Calculate log-ratio means and variances relative to the first category
+    mean_logratio = logratio_location[2:n_active]
+      - rep_vector(logratio_location[1], n_active - 1);
+    diagonal_variance = logratio_variance[2:n_active];
+    shared_variance = logratio_variance[1];
+
+    // Factor diag(diagonal_variance) + shared_variance * 1 * 1' directly
+    // This avoids losing small diagonal terms when the shared variance is large
+    for (i in 1:(n_active - 1)) {
+      real pivot_variance = diagonal_variance[i] + shared_variance;
+      allocation_cholesky[i, i] = sqrt(pivot_variance);
+      if (i < n_active - 1) {
+        for (j in (i + 1):(n_active - 1)) {
+          allocation_cholesky[j, i] = shared_variance / allocation_cholesky[i, i];
+        }
+        // A bounded ratio avoids cancellation and overflow in the variance update
+        shared_variance *= diagonal_variance[i] / pivot_variance;
+      }
+    }
+
+    // Apply the same innovations and convert log-ratios into population counts
+    logits[1] = 0.0;
+    logits[2:n_active] = mean_logratio
+      + allocation_cholesky * allocation_noise[1:(n_active - 1)]';
+    active_counts = population_count * softmax(logits);
+
+    counts[active_indices] = active_counts';
+  }
+  return counts;
+}

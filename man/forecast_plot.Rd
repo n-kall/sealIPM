@@ -7,14 +7,17 @@
 forecast_plot(forecast, future_years = NULL, variables = NULL)
 }
 \arguments{
-\item{forecast}{forecast draws}
+\item{forecast}{Forecast draws, preferably returned by \code{\link[=forecast_ipm]{forecast_ipm()}}.}
 
-\item{future_years}{years}
+\item{future_years}{Calendar years for the full forecast horizon. Defaults to
+the years recorded by \code{\link[=forecast_ipm]{forecast_ipm()}}, or forecast-year indices otherwise.}
 
-\item{variables}{variables to plot}
+\item{variables}{Variables to plot. Matrix variables use their final index
+for time and separate facets for each row. Growth-rate facets identify the
+lookback length and account for the first year with growth estimates.}
 }
 \value{
-ggplot object
+A ggplot object.
 }
 \description{
 Plot forecast

@@ -84,7 +84,7 @@ if (length(missing_functions) > 0L) {
     "deaths_or_bycatch",
     "hunted_sweden",
     "hunted_finland",
-    "bycatch_expected",
+    "non_hunting_deaths_expected",
     "hunting_bag_total_sweden",
     "hunting_bag_total_finland",
     "hunted_total",
@@ -92,17 +92,21 @@ if (length(missing_functions) > 0L) {
 )
 
 name_state_process_output <- function(x) {
-    if (length(x) != length(.state_output_names)) {
+    output_names <- .state_output_names
+    if (length(x) == length(output_names) + 1L) {
+        output_names <- append(output_names, "non_pup_population_total", after = 3L)
+    }
+    if (length(x) != length(output_names)) {
         stop(
             "Unexpected state-process tuple length: ",
             length(x),
             ". Expected ",
-            length(.state_output_names),
+            length(output_names),
             ".",
             call. = FALSE
         )
     }
-    names(x) <- .state_output_names
+    names(x) <- output_names
     x
 }
 
@@ -110,18 +114,19 @@ validate_forecast_inputs <- function(
     n_state_years,
     n_age_classes,
     survivors_final,
-    baseline_birth_rate,
+    birth_rate_baseline,
     S_diag,
     hunting_selectivity_sweden,
     hunting_selectivity_finland,
     hunting_quota_sweden,
     hunting_quota_finland,
-    epsilon_h_sw,
-    epsilon_h_fi,
-    pi_s,
-    pi_c,
-    t_mate_to_preg,
-    t_birth_to_end_hunt,
+    hunting_effort_noise_sweden,
+    hunting_effort_noise_finland,
+    placental_scar_detection_probability,
+    ca_detection_probability,
+    pregnancy_exposure_scaled,
+    t_birth_to_start_hunt,
+    hunting_duration,
     rel_tol,
     abs_tol,
     max_num_steps,
@@ -136,24 +141,27 @@ validate_forecast_inputs <- function(
         length(S_diag) == n_demo_groups,
         length(hunting_selectivity_sweden) == n_demo_groups,
         length(hunting_selectivity_finland) == n_demo_groups,
-        length(baseline_birth_rate) == n_state_years + 1L,
+        length(birth_rate_baseline) == n_state_years + 1L,
         length(hunting_quota_sweden) == n_state_years,
         length(hunting_quota_finland) == n_state_years,
-        length(epsilon_h_sw) == n_state_years,
-        length(epsilon_h_fi) == n_state_years,
-        length(pi_s) == n_state_years,
-        length(pi_c) == n_state_years,
+        length(hunting_effort_noise_sweden) == n_state_years,
+        length(hunting_effort_noise_finland) == n_state_years,
+        length(placental_scar_detection_probability) == n_state_years,
+        length(ca_detection_probability) == n_state_years,
         all(is.finite(survivors_final)),
         all(survivors_final >= 0),
         all(is.finite(S_diag)),
         all(S_diag > 0 & S_diag <= 1),
-        all(baseline_birth_rate >= 0 & baseline_birth_rate <= 1),
+        all(birth_rate_baseline >= 0 & birth_rate_baseline <= 1),
         all(hunting_quota_sweden >= 0),
         all(hunting_quota_finland >= 0),
-        all(pi_s >= 0 & pi_s <= 1),
-        all(pi_c >= 0 & pi_c <= 1),
-        t_mate_to_preg >= 0 && t_mate_to_preg <= 1,
-        t_birth_to_end_hunt >= 0 && t_birth_to_end_hunt <= 1,
+        all(placental_scar_detection_probability >= 0 & placental_scar_detection_probability <= 1),
+        all(ca_detection_probability >= 0 & ca_detection_probability <= 1),
+        pregnancy_exposure_scaled >= 0 && pregnancy_exposure_scaled <= 1,
+        hunting_duration >= 0 && hunting_duration <= 1,
+        is.finite(t_birth_to_start_hunt),
+        t_birth_to_start_hunt >= 0 &&
+            t_birth_to_start_hunt <= 1 - hunting_duration,
         is.finite(rel_tol) && rel_tol > 0,
         is.finite(abs_tol) && abs_tol > 0,
         max_num_steps >= 1L,
@@ -174,7 +182,7 @@ run_continuous_forecast <- function(
     n_age_classes = 6L,
     survivors_final = .default_survivors_final,
     birth_rate_first = 0.82,
-    baseline_birth_rate = rep(0.86, n_state_years + 1L),
+    birth_rate_baseline = rep(0.86, n_state_years + 1L),
     density_dependence_intercept = 0.05,
     density_dependence_slope = 1e-5,
     S_diag = .default_S_diag,
@@ -184,13 +192,14 @@ run_continuous_forecast <- function(
     hunting_quota_finland = rep(1000L, n_state_years),
     hunting_effort_sd_sweden = 0.2,
     hunting_effort_sd_finland = 0.2,
-    epsilon_h_sw = NULL,
-    epsilon_h_fi = NULL,
-    t_mate_to_preg = 0.5,
-    t_birth_to_end_hunt = 0.75,
-    pi_s = rep(0.8, n_state_years),
-    pi_c = rep(0.7, n_state_years),
-    prob_of_ca = 0.2,
+    hunting_effort_noise_sweden = NULL,
+    hunting_effort_noise_finland = NULL,
+    pregnancy_exposure_scaled = 0.5,
+    t_birth_to_start_hunt = 1.5 / 12,
+    hunting_duration = 0.75,
+    placental_scar_detection_probability = rep(0.8, n_state_years),
+    ca_detection_probability = rep(0.7, n_state_years),
+    ca_probability_without_birth = 0.2,
     rel_tol = 1e-8,
     abs_tol = 1e-8,
     max_num_steps = 100000L,
@@ -201,36 +210,37 @@ run_continuous_forecast <- function(
     n_demo_groups <- 2L * n_age_classes
     set.seed(as.integer(seed))
 
-    if (is.null(epsilon_h_sw)) {
-        epsilon_h_sw <- abs(rnorm(n_state_years))
+    if (is.null(hunting_effort_noise_sweden)) {
+        hunting_effort_noise_sweden <- abs(rnorm(n_state_years))
     }
-    if (is.null(epsilon_h_fi)) {
-        epsilon_h_fi <- abs(rnorm(n_state_years))
+    if (is.null(hunting_effort_noise_finland)) {
+        hunting_effort_noise_finland <- abs(rnorm(n_state_years))
     }
 
     validate_forecast_inputs(
         n_state_years,
         n_age_classes,
         survivors_final,
-        baseline_birth_rate,
+        birth_rate_baseline,
         S_diag,
         hunting_selectivity_sweden,
         hunting_selectivity_finland,
         hunting_quota_sweden,
         hunting_quota_finland,
-        epsilon_h_sw,
-        epsilon_h_fi,
-        pi_s,
-        pi_c,
-        t_mate_to_preg,
-        t_birth_to_end_hunt,
+        hunting_effort_noise_sweden,
+        hunting_effort_noise_finland,
+        placental_scar_detection_probability,
+        ca_detection_probability,
+        pregnancy_exposure_scaled,
+        t_birth_to_start_hunt,
+        hunting_duration,
         rel_tol,
         abs_tol,
         max_num_steps,
         fate_probability_tolerance
     )
 
-    mu_m <- -log(S_diag)
+    non_hunting_mortality_rate <- -log(S_diag)
     aging_matrix <- m$functions$create_aging_matrix(
         n_demo_groups,
         n_age_classes
@@ -250,8 +260,8 @@ run_continuous_forecast <- function(
 
     # Year 1 is supplied explicitly, so the first birth and sex innovations are
     # placeholders. Elements 2:n are used for later transitions.
-    epsilon_birth <- c(0, rnorm(n_state_years - 1L))
-    epsilon_sex <- c(0, rnorm(n_state_years - 1L))
+    birth_count_noise <- c(0, rnorm(n_state_years - 1L))
+    pup_sex_allocation_noise <- c(0, rnorm(n_state_years - 1L))
     transition_noise_raw <- matrix(
         rnorm(3L * n_demo_groups * n_state_years),
         nrow = 3L * n_demo_groups,
@@ -264,27 +274,28 @@ run_continuous_forecast <- function(
         population_comp_first,
         birth_rate_first,
         population_total_first,
-        baseline_birth_rate,
+        birth_rate_baseline,
         density_dependence_intercept,
         density_dependence_slope,
         aging_matrix,
-        mu_m,
+        non_hunting_mortality_rate,
         hunting_selectivity_sweden,
         hunting_selectivity_finland,
         as.integer(hunting_quota_sweden),
         as.integer(hunting_quota_finland),
         hunting_effort_sd_sweden,
         hunting_effort_sd_finland,
-        epsilon_h_sw,
-        epsilon_h_fi,
-        t_mate_to_preg,
-        t_birth_to_end_hunt,
-        epsilon_birth,
-        epsilon_sex,
+        hunting_effort_noise_sweden,
+        hunting_effort_noise_finland,
+        pregnancy_exposure_scaled,
+        t_birth_to_start_hunt,
+        hunting_duration,
+        birth_count_noise,
+        pup_sex_allocation_noise,
         transition_noise_raw,
-        pi_s,
-        pi_c,
-        prob_of_ca,
+        placental_scar_detection_probability,
+        ca_detection_probability,
+        ca_probability_without_birth,
         rel_tol,
         abs_tol,
         as.integer(max_num_steps),
@@ -304,7 +315,7 @@ run_discrete_forecast <- function(
     n_age_classes = 6L,
     survivors_final = .default_survivors_final,
     birth_rate_first = 0.82,
-    baseline_birth_rate = rep(0.86, n_state_years + 1L),
+    birth_rate_baseline = rep(0.86, n_state_years + 1L),
     density_dependence_intercept = 0.05,
     density_dependence_slope = 1e-5,
     S_diag = .default_S_diag,
@@ -314,13 +325,14 @@ run_discrete_forecast <- function(
     hunting_quota_finland = rep(1000L, n_state_years),
     hunting_effort_sd_sweden = 0.2,
     hunting_effort_sd_finland = 0.2,
-    epsilon_h_sw = NULL,
-    epsilon_h_fi = NULL,
-    t_mate_to_preg = 0.5,
-    t_birth_to_end_hunt = 0.75,
-    pi_s = rep(0.8, n_state_years),
-    pi_c = rep(0.7, n_state_years),
-    prob_of_ca = 0.2,
+    hunting_effort_noise_sweden = NULL,
+    hunting_effort_noise_finland = NULL,
+    pregnancy_exposure_scaled = 0.5,
+    t_birth_to_start_hunt = 1.5 / 12,
+    hunting_duration = 0.75,
+    placental_scar_detection_probability = rep(0.8, n_state_years),
+    ca_detection_probability = rep(0.7, n_state_years),
+    ca_probability_without_birth = 0.2,
     rel_tol = 1e-8,
     abs_tol = 1e-8,
     max_num_steps = 100000L,
@@ -334,36 +346,37 @@ run_discrete_forecast <- function(
     if (!is.null(seed)) {
         set.seed(as.integer(seed))
     }
-    if (is.null(epsilon_h_sw)) {
-        epsilon_h_sw <- abs(rnorm(n_state_years))
+    if (is.null(hunting_effort_noise_sweden)) {
+        hunting_effort_noise_sweden <- abs(rnorm(n_state_years))
     }
-    if (is.null(epsilon_h_fi)) {
-        epsilon_h_fi <- abs(rnorm(n_state_years))
+    if (is.null(hunting_effort_noise_finland)) {
+        hunting_effort_noise_finland <- abs(rnorm(n_state_years))
     }
 
     validate_forecast_inputs(
         n_state_years,
         n_age_classes,
         survivors_final,
-        baseline_birth_rate,
+        birth_rate_baseline,
         S_diag,
         hunting_selectivity_sweden,
         hunting_selectivity_finland,
         hunting_quota_sweden,
         hunting_quota_finland,
-        epsilon_h_sw,
-        epsilon_h_fi,
-        pi_s,
-        pi_c,
-        t_mate_to_preg,
-        t_birth_to_end_hunt,
+        hunting_effort_noise_sweden,
+        hunting_effort_noise_finland,
+        placental_scar_detection_probability,
+        ca_detection_probability,
+        pregnancy_exposure_scaled,
+        t_birth_to_start_hunt,
+        hunting_duration,
         rel_tol,
         abs_tol,
         max_num_steps,
         fate_probability_tolerance
     )
 
-    mu_m <- -log(S_diag)
+    non_hunting_mortality_rate <- -log(S_diag)
 
     # The joint-ODE discrete signature no longer accepts S_diag,
     # ode_init_state, or ode_times.
@@ -372,23 +385,24 @@ run_discrete_forecast <- function(
         n_age_classes,
         survivors_final,
         birth_rate_first,
-        baseline_birth_rate,
+        birth_rate_baseline,
         density_dependence_intercept,
         density_dependence_slope,
-        mu_m,
+        non_hunting_mortality_rate,
         hunting_selectivity_sweden,
         hunting_selectivity_finland,
         as.integer(hunting_quota_sweden),
         as.integer(hunting_quota_finland),
         hunting_effort_sd_sweden,
         hunting_effort_sd_finland,
-        epsilon_h_sw,
-        epsilon_h_fi,
-        t_mate_to_preg,
-        t_birth_to_end_hunt,
-        pi_s,
-        pi_c,
-        prob_of_ca,
+        hunting_effort_noise_sweden,
+        hunting_effort_noise_finland,
+        pregnancy_exposure_scaled,
+        t_birth_to_start_hunt,
+        hunting_duration,
+        placental_scar_detection_probability,
+        ca_detection_probability,
+        ca_probability_without_birth,
         rel_tol,
         abs_tol,
         as.integer(max_num_steps),
@@ -406,14 +420,14 @@ run_discrete_forecast <- function(
     stopifnot(
         all(is.finite(result$population_total)),
         all(is.finite(result$population_comp)),
-        all(is.finite(result$bycatch_expected)),
+        all(is.finite(result$non_hunting_deaths_expected)),
         all(result$population_total >= 0),
         all(result$population_comp >= 0),
         all(result$survivors >= 0),
         all(result$deaths_or_bycatch >= 0),
         all(result$hunted_sweden >= 0),
         all(result$hunted_finland >= 0),
-        all(result$bycatch_expected >= 0),
+        all(result$non_hunting_deaths_expected >= 0),
         all(result$population_comp == round(result$population_comp)),
         all(result$survivors == round(result$survivors)),
         all(result$deaths_or_bycatch == round(result$deaths_or_bycatch)),
@@ -596,7 +610,7 @@ compare_forecasts <- function(
     master_seed = 123L,
     survivors_final = .default_survivors_final,
     birth_rate_first = 0.82,
-    baseline_birth_rate = rep(0.86, n_state_years + 1L),
+    birth_rate_baseline = rep(0.86, n_state_years + 1L),
     density_dependence_intercept = 0.05,
     density_dependence_slope = 1e-5,
     S_diag = .default_S_diag,
@@ -612,15 +626,15 @@ compare_forecasts <- function(
     fate_probability_tolerance = .default_fate_probability_tolerance
 ) {
     set.seed(master_seed)
-    epsilon_h_sw <- abs(rnorm(n_state_years))
-    epsilon_h_fi <- abs(rnorm(n_state_years))
+    hunting_effort_noise_sweden <- abs(rnorm(n_state_years))
+    hunting_effort_noise_finland <- abs(rnorm(n_state_years))
 
     common_args <- list(
         n_state_years = n_state_years,
         n_age_classes = n_age_classes,
         survivors_final = survivors_final,
         birth_rate_first = birth_rate_first,
-        baseline_birth_rate = baseline_birth_rate,
+        birth_rate_baseline = birth_rate_baseline,
         density_dependence_intercept = density_dependence_intercept,
         density_dependence_slope = density_dependence_slope,
         S_diag = S_diag,
@@ -630,8 +644,8 @@ compare_forecasts <- function(
         hunting_quota_finland = hunting_quota_finland,
         hunting_effort_sd_sweden = hunting_effort_sd_sweden,
         hunting_effort_sd_finland = hunting_effort_sd_finland,
-        epsilon_h_sw = epsilon_h_sw,
-        epsilon_h_fi = epsilon_h_fi,
+        hunting_effort_noise_sweden = hunting_effort_noise_sweden,
+        hunting_effort_noise_finland = hunting_effort_noise_finland,
         rel_tol = rel_tol,
         abs_tol = abs_tol,
         max_num_steps = max_num_steps,

@@ -36,6 +36,11 @@ default_priors <- function(species) {
             prior_herring_birth_rate_midpoint_sd = 4,
             prior_herring_slope_sd = 3,
 
+            prior_mortality_age_shape_alpha = 1,
+            prior_mortality_age_shape_beta = 5,
+            prior_pup_to_adult_survival_ratio_alpha = 7,
+            prior_pup_to_adult_survival_ratio_beta = 3,
+
             # Positive male log mortality offsets reduce survival
             prior_male_pup_mortality_log_offset_location = 0,
             prior_male_pup_mortality_log_offset_scale = 0.2,

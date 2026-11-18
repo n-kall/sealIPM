@@ -16,11 +16,11 @@ for (year in 2010:2015) {
 method = "pathfinder"
   )
 
-forecast <- forecast_ipm(
-     fit,
-    grey_seal_data,
-     future_years = year
+  validation_data <- grey_seal_data
+  validation_data$hunting_quotas <- subset(
+    validation_data$hunting_quotas, Year <= year
   )
+  forecast <- forecast_ipm(fit, actual_data = validation_data)
 
   year_elpd_lfo <- sealIPM:::elpd_lfo(forecast)
   elpd_lfo_out <- c(elpd_lfo_out, year_elpd_lfo)

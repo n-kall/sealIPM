@@ -13,7 +13,7 @@ functions {
  #include functions/hunting.stanfunctions
  #include functions/fates.stanfunctions
  #include functions/run_process.stanfunctions
-  #include functions/growth_rate.stanfunctions
+ #include functions/growth_rate.stanfunctions
 }
 
 data {
@@ -136,6 +136,12 @@ data {
   real<lower=0> prior_herring_birth_rate_midpoint_sd;
   real<lower=0> prior_herring_slope_sd;
 
+  // Mortality age shape and pup-to-adult survival ratio: beta(alpha, beta)
+  real<lower=0> prior_mortality_age_shape_alpha;
+  real<lower=0> prior_mortality_age_shape_beta;
+  real<lower=0> prior_pup_to_adult_survival_ratio_alpha;
+  real<lower=0> prior_pup_to_adult_survival_ratio_beta;
+
   // Male log mortality offsets: normal(location, scale)
   real prior_male_pup_mortality_log_offset_location;
   real<lower=0> prior_male_pup_mortality_log_offset_scale;
@@ -205,7 +211,7 @@ parameters {
   vector<lower=0>[n_state_years] hunting_effort_noise_finland;
 
   // survival curve
-  real<lower=0, upper=1> mortality_age_shape; // c
+  real<lower=0, upper=0.5> mortality_age_shape; // c
 
   // natural mortality
   real<lower=0.8, upper=1> female_adult_survival_probability;
@@ -219,7 +225,7 @@ parameters {
   real<lower=0, upper=1> birth_rate_baseline_min_max_ratio; // Minimum baseline birth rate divided by maximum
   real<lower=0, upper=1> birth_rate_at_capacity_to_baseline_ratio; // Birth rate at carrying capacity divided by reference baseline birth rate
   real herring_birth_rate_midpoint; // -alpha / beta in weighted herring-index units
-  real herring_slope;            // beta
+  real<lower=0> herring_slope;            // beta
   real<lower=0, upper=1> herring_weight; // w
   real<lower=0, upper=1> density_dependence_scaled; // Scaled parameter used to derive the density dependence intercept
 
@@ -437,8 +443,12 @@ initialize_population_with_burnin(
   lprior += lprior_population_init_size;
 
   // Natural mortality
-  // female_adult_survival_probability ~ uniform(0,1); // implied prior by constraints
-  real lprior_pup_to_adult_survival_ratio = beta_lpdf(pup_to_adult_survival_ratio | 1, 1);
+  // female_adult_survival_probability ~ uniform(0.8, 1); // implied prior by constraints
+
+  real lprior_mortality_age_shape = beta_lpdf(mortality_age_shape | prior_mortality_age_shape_alpha, prior_mortality_age_shape_beta);
+  lprior += lprior_mortality_age_shape;
+  
+  real lprior_pup_to_adult_survival_ratio = beta_lpdf(pup_to_adult_survival_ratio | prior_pup_to_adult_survival_ratio_alpha, prior_pup_to_adult_survival_ratio_beta);
   lprior += lprior_pup_to_adult_survival_ratio;
 
   real lprior_male_pup_mortality_log_offset = normal_lpdf(male_pup_mortality_log_offset | prior_male_pup_mortality_log_offset_location, prior_male_pup_mortality_log_offset_scale);
@@ -470,8 +480,8 @@ initialize_population_with_burnin(
   lprior += lprior_hunting_effort_sd_finland;
 
   // Birth rate
-  // b0max ~ uniform (0, 1); // implied prior by bounds
-  // b0min_sc ~ uniform (0, 1); // implied prior by bounds
+  // b0max ~ uniform(0, 1); // implied prior by bounds
+  // b0min_sc ~ uniform(0, 1); // implied prior by bounds
 
   real lprior_birth_rate_diff = normal_lpdf(
     compute_birth_rate_replacement(non_hunting_mortality_rate, n_age_classes, female_adult_survival_probability, 1)
@@ -611,6 +621,13 @@ generated quantities {
     growth_rate_period,
     population_total
   );
+
+  // Keep population_growth_rate as the legacy OLS log-growth output
+  // Both named estimators below return compounded annual fractional rates
+  vector[n_growth_rate_period] population_growth_rate_ols =
+    expm1(population_growth_rate);
+  vector[n_growth_rate_period] population_growth_rate_geometric =
+    calculate_geometric_growth_rate(growth_rate_period, population_total);
 
   // ----------------------------
   // IN-SAMPLE PREDICTIONS

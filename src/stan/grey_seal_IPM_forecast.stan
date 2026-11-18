@@ -13,6 +13,7 @@ functions {
   #include functions/hunting.stanfunctions
   #include functions/fates.stanfunctions
   #include functions/run_process.stanfunctions
+  #include functions/growth_rate.stanfunctions
 }
 
 data {
@@ -126,12 +127,19 @@ data {
     int<lower=1, upper=n_future_years> reproductive_signs_year;
   array[n_future_reproductive_signs, 4]
     int<lower=0> future_obs_reproductive_signs_finland;
+
+
+  int<lower=0> n_growth_rate_period_future; // number of population growth rate periods
+  array[n_growth_rate_period_future] int<lower=1, upper=n_future_years - 1> growth_rate_period_future; // length of period to calculate growth rate
 }
 
 transformed data {
   // Consecutive state-process indices used by observation RNG functions.
   array[n_future_years] int future_year;
   int n_demo_groups = 2 * n_age_classes;
+  int growth_rate_max_period_future = n_growth_rate_period_future > 0
+    ? max(growth_rate_period_future) : n_future_years;
+  int n_growth_rate_years_future = n_future_years - growth_rate_max_period_future;
 
   for (year in 1:n_future_years) {
     future_year[year] = year;
@@ -296,6 +304,32 @@ generated quantities {
     max_num_steps,
     fate_probability_tolerance
   );
+
+  // ----------------------
+  // Growth-rate estimation
+  // ----------------------
+  // Column j corresponds to forecast year growth_rate_start_year_future + j - 1
+  int growth_rate_start_year_future = growth_rate_max_period_future + 1;
+  matrix[n_growth_rate_period_future, n_growth_rate_years_future]
+    population_growth_rate_future;
+  matrix[n_growth_rate_period_future, n_growth_rate_years_future]
+    population_growth_rate_geometric_future;
+
+  for (i in 1:n_growth_rate_years_future) {
+    int year = growth_rate_start_year_future + i - 1;
+    population_growth_rate_future[, i] = calculate_growth_rate(
+      growth_rate_period_future, population_total_future[:year]
+    );
+    population_growth_rate_geometric_future[, i] =
+      calculate_geometric_growth_rate(
+        growth_rate_period_future, population_total_future[:year]
+      );
+  }
+
+  // Keep population_growth_rate_future as the legacy OLS log-growth output
+  // Both named estimators return compounded annual fractional rates
+  matrix[n_growth_rate_period_future, n_growth_rate_years_future]
+    population_growth_rate_ols_future = expm1(population_growth_rate_future);
 
   // ------------------------------
   // POSTERIOR PREDICTIVE OBSERVATIONS

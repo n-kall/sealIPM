@@ -4,17 +4,29 @@
 \alias{forecast_ipm}
 \title{Forecast IPM}
 \usage{
-forecast_ipm(fit, actual_data = NULL, scenario_data = NULL, future_years, ...)
+forecast_ipm(
+  fit,
+  actual_data = NULL,
+  scenario_data = NULL,
+  growth_rate_period = c(5, 10, 15, 20),
+  ...
+)
 }
 \arguments{
 \item{fit}{A fitted IPM object.}
 
-\item{actual_data}{Raw data}
+\item{actual_data}{Raw data, including hunting quotas through the final
+forecast year. Supply either \code{actual_data} or \code{scenario_data}.}
 
-\item{scenario_data}{List of quotas and optionally herring indices. Use the function \code{build_scenario_data} to create it.}
+\item{scenario_data}{List of quotas and optionally herring indices. Use the function \code{build_scenario_data} to create it.
+All vectors must have the same positive length, with one value per forecast
+year in chronological order.}
 
-\item{future_years}{Consecutive integer years in increasing order, starting
-immediately after the final fitted year.}
+\item{growth_rate_period}{Positive integer vector of lookback lengths in years,
+each smaller than the forecast horizon. Only forecast populations are used.
+Defaults to \code{c(5, 10, 15, 20)}, keeping only lengths smaller than the horizon.
+All estimates start at forecast year \code{max(growth_rate_period) + 1}.
+Forecasts of five years or fewer have no growth estimates by default.}
 
 \item{...}{Passed to \code{generate_quantities()}.}
 }
@@ -24,7 +36,8 @@ fitted data, scenario, and forecast years needed by
 \code{\link[=forecast_to_data]{forecast_to_data()}}.
 }
 \description{
-Forecasts future years from a fitted IPM. When the original data are
-supplied, observations in \code{future_years} are automatically included for
-leave-future-out validation.
+Forecasts consecutive years starting immediately after the final fitted
+year. The forecast horizon is the length of the scenario vectors. When
+actual data are supplied instead, forecasts extend through the final hunting
+quota year and include observations for leave-future-out validation.
 }

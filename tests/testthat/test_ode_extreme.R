@@ -8,7 +8,8 @@ model <- cmdstan_model(
 )
 model$expose_functions()
 
-fate_probability <- model$functions$compute_joint_fate_probabilities(
+fate_probability <- model$functions$compute_fate_probabilities(
+    1.5 / 12,
     8 / 12,
     904.299,
     0,
@@ -19,7 +20,9 @@ fate_probability <- model$functions$compute_joint_fate_probabilities(
     1e-6
 )
 
-reference_death_during_hunting <- stats::integrate(
+survival_to_hunting_start <- exp(-0.125893 * (1.5 / 12))
+reference_death_before_hunting <- 1 - survival_to_hunting_start
+reference_death_during_hunting <- survival_to_hunting_start * stats::integrate(
     function(tau) {
         0.125893 * exp(
             -904.299 * ((8 / 12) * tau - tau^2 / 2) -
@@ -33,27 +36,26 @@ reference_death_during_hunting <- stats::integrate(
 )$value
 
 alive_at_end_hunting <- exp(
-    -904.299 * (8 / 12)^2 / 2 - 0.125893 * (8 / 12)
+    -904.299 * (8 / 12)^2 / 2 - 0.125893 * (1.5 / 12 + 8 / 12)
 )
 reference_death_after_hunting <- alive_at_end_hunting *
-    (1 - exp(-0.125893 * (1 - 8 / 12)))
+    (1 - exp(-0.125893 * (1 - 1.5 / 12 - 8 / 12)))
 
 stopifnot(
     all(is.finite(fate_probability)),
     all(fate_probability >= 0),
     isTRUE(all.equal(sum(fate_probability), 1, tolerance = 1e-12)),
-    isTRUE(all.equal(
-        fate_probability[2],
-        reference_death_during_hunting + reference_death_after_hunting,
-        tolerance = 1e-8
-    ))
+    # Death is a remainder of ODE probabilities, so compare absolute error
+    abs(fate_probability[4] -
+        (reference_death_before_hunting + reference_death_during_hunting +
+            reference_death_after_hunting)) < 1e-8
 )
 
-# Very small non-hunting mortality produces a probability close to zero. The
-# unscaled integrate_1d implementation failed here because a relative-error
-# target on a near-zero integral implied an impractically small absolute error.
+# With very small mortality, death is a near-zero remainder of the original
+# hunting ODE solves. Small solver boundary errors are handled by tolerance.
 near_zero_death_probability <-
-    model$functions$compute_joint_fate_probabilities(
+    model$functions$compute_fate_probabilities(
+        1.5 / 12,
         8 / 12,
         1e6,
         1e6,
@@ -74,11 +76,11 @@ stopifnot(
     ))
 )
 
-# Exercise a much stiffer case than the reported failure. The old scalar BDF
-# solve could overshoot below zero here; positive quadrature must remain on the
-# probability simplex.
+# Exercise a much more concentrated hunting hazard than the reported case.
+# The restored RK45 solves must conserve probability within tolerance.
 extreme_fate_probability <-
-    model$functions$compute_joint_fate_probabilities(
+    model$functions$compute_fate_probabilities(
+        1.5 / 12,
         8 / 12,
         1e6,
         1e6,

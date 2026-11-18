@@ -197,9 +197,12 @@ lfo_refit <- function(fit, stan_data, training_end, refit_args) {
     training_data <- lfo_prefix_data(stan_data, n_state)
     model <- get_species_model(fit$species)
     if (is.null(refit_args$init)) {
-        refit_args$init <- function() {
-            grey_init_fun(n_state, 2L * training_data$n_age_classes, fit$priors)
-        }
+        refit_args$init <- grey_init_fun(
+            n_state_years = n_state,
+            n_demo = 2L * training_data$n_age_classes,
+            n_init = if (is.null(refit_args$chains)) 4L else refit_args$chains,
+            prior_spec = fit$priors
+        )
     }
     sampled <- do.call(model$sample, c(list(data = training_data), refit_args))
     if (any(sampled$return_codes() != 0L)) {

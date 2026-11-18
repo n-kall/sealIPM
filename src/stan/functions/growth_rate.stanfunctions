@@ -1,22 +1,21 @@
 /**
- * @brief growth rate based on previous population changes
+ * @brief OLS annual log-growth rate based on previous population changes
  *
- * This corresponds to technique 1 in Mawson (2002). That is
+ * This is the log-growth slope underlying technique 1 in Mawson (2002)
  * @f[
- * \hat{r} = \sum_{j=2}^{L} \frac{6(L-j+1)(j-1)} {L(L+1)(L-1)} \log\!\left( \frac{N_{T-L+j}} {N_{T-L+j-1}} \right).
+ * \hat{\beta} = \sum_{j=2}^{L} \frac{6(L-j+1)(j-1)} {L(L+1)(L-1)} \log\!\left( \frac{N_{T-L+j}} {N_{T-L+j-1}} \right)
  * @f]
  *
  * 
  * @param growth_rate_period vector specifying lookback periods to calculate growth rate (L)
  * @param population_total vector of total population throughout the time series (N)
- * @return
+ * @return OLS slopes on the log-population scale, in look-back order
  */
 vector calculate_growth_rate(data array[] int growth_rate_period,
                              vector population_total) {
   int n_growth_rate_period = num_elements(growth_rate_period);
   
   vector[n_growth_rate_period] population_log_growth_rate;
-  vector[n_growth_rate_period] population_growth_rate;
   for (i in 1 : num_elements(growth_rate_period)) {
     int k = growth_rate_period[i];
     real weighted_log_growth = 0;
@@ -33,4 +32,30 @@ vector calculate_growth_rate(data array[] int growth_rate_period,
     population_log_growth_rate[i] = weighted_log_growth;
   }
   return (population_log_growth_rate);
+}
+
+/**
+ * @brief Geometric average annual growth over each look-back period
+ *
+ * This corresponds to technique 4 in Mawson (2002)
+ * For k annual intervals, return (N_T / N_{T-k})^(1/k) - 1
+ * Evaluate using log abundances and expm1 for numerical stability
+ *
+ * @param growth_rate_period Number of annual intervals in each look-back
+ * @param population_total Total population throughout the annual time series
+ * @return Compounded annual fractional growth rates, in look-back order
+ */
+vector calculate_geometric_growth_rate(data array[] int growth_rate_period,
+                                     vector population_total) {
+  int n_periods = num_elements(growth_rate_period);
+  int n_years = num_elements(population_total);
+  vector[n_periods] growth_rate;
+
+  for (i in 1:n_periods) {
+    int k = growth_rate_period[i];
+    real log_growth = (log(population_total[n_years])
+                       - log(population_total[n_years - k])) / k;
+    growth_rate[i] = expm1(log_growth);
+  }
+  return growth_rate;
 }

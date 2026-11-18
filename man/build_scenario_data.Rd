@@ -24,5 +24,8 @@ build_scenario_data(
 list to be passed as scenario data
 }
 \description{
-Build scenario data for forecasting
+All vectors must have the same positive length, with one value per forecast
+year in chronological order. Their length determines the horizon in
+\code{\link[=forecast_ipm]{forecast_ipm()}}, starting immediately after the final fitted year.
+Omitted herring indices default to zero for each year.
 }

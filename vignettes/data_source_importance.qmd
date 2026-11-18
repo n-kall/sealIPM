@@ -126,16 +126,12 @@ We then run the forecast for each of the models.
 ```{r}
 forecast_full <- forecast_ipm(
     fit_full,
-    scenario_data = future_scenario_data,
-    species = "grey",
-    future_years = 2011:2040
+    scenario_data = future_scenario_data
 )
 
 no_pregnancy_forecast <- forecast_ipm(
     fit_no_pregnancy,
-    scenario_data = future_scenario_data,
-    species = "grey",
-    future_years = 2011:2040
+    scenario_data = future_scenario_data
 )
 ```
 

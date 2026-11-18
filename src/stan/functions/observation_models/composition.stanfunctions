@@ -1,0 +1,57 @@
+/**
+ * @brief Weighted composition likelihood on the log scale
+ *
+ * Zero expected categories cannot contain observed animals
+ * Positive samples from an empty population have zero probability
+ */
+real weighted_composition_lpmf(array[] int observed, vector expected,
+                               vector selectivity) {
+  int K = num_elements(expected);
+  int n_active = 0;
+  if (!(min(expected) >= 0.0)) {
+    reject("weighted_composition requires non-negative expected counts");
+  }
+  for (k in 1:K) {
+    if (expected[k] > 0.0) {
+      n_active += 1;
+    } else if (observed[k] > 0) {
+      return negative_infinity();
+    }
+  }
+  if (sum(observed) == 0) {
+    return 0.0;
+  }
+  {
+    vector[n_active] logits;
+    array[n_active] int active_observed;
+    int next_active = 1;
+    for (k in 1:K) {
+      if (expected[k] > 0.0) {
+        logits[next_active] = log(expected[k]) + selectivity[k];
+        active_observed[next_active] = observed[k];
+        next_active += 1;
+      }
+    }
+    return multinomial_logit_lpmf(active_observed | logits);
+  }
+}
+
+/**
+ * @brief Sample weighted compositions without exponentiating selectivity
+ *
+ * Empty populations return zero catches, as do zero sample sizes
+ */
+array[] int weighted_composition_rng(vector expected, vector selectivity,
+                                     int sample_size) {
+  int K = num_elements(expected);
+  vector[K] logits = rep_vector(negative_infinity(), K);
+  if (sample_size == 0 || max(expected) == 0.0) {
+    return rep_array(0, K);
+  }
+  for (k in 1:K) {
+    if (expected[k] > 0.0) {
+      logits[k] = log(expected[k]) + selectivity[k];
+    }
+  }
+  return multinomial_rng(softmax(logits), sample_size);
+}

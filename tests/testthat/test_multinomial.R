@@ -1,3 +1,45 @@
+test_that("allocation remains finite when the survivor reference is rare", {
+    for (expected in list(
+        c(1e-20, 100, 100, 100),
+        c(1e-20, 100, 0, 200),
+        c(1e-20, 0, 100, 200),
+        c(1e-20, 0, 0, 100),
+        c(100, 1e-20, 100, 100)
+    )) {
+        for (noise in c(-2, 0, 2)) {
+            counts <- as.numeric(test_model$functions$allocate_fates(
+                expected, rep(noise, 3), sum(expected),
+                as.integer(expected[2] > 0), as.integer(expected[3] > 0)
+            ))
+            expect_true(all(is.finite(counts)))
+            expect_true(all(counts >= 0))
+            expect_equal(sum(counts), sum(expected), tolerance = 1e-12)
+        }
+    }
+})
+
+test_that("structured factor preserves the original allocation mapping", {
+    # At ordinary scales, compare against the original dense Cholesky factor.
+    for (expected in list(c(10, 20, 30, 40), c(40, 20, 30, 10),
+                         c(10, 40, 0, 20), c(10, 0, 40, 20), c(10, 0, 0, 20))) {
+        active <- which(expected > 0)
+        K <- length(active)
+        a <- expected[active] * (1 + 1 / min(expected[active]))
+        old_mean <- digamma(a[-1]) - digamma(a[1])
+        old_cov <- diag(trigamma(a[-1]), nrow = K - 1) + trigamma(a[1])
+        z <- seq_len(K - 1) / 3
+        old_logits <- c(0, old_mean + t(chol(old_cov)) %*% z)
+        weights <- exp(old_logits - max(old_logits))
+        expected_allocation <- numeric(4)
+        expected_allocation[active] <- sum(expected) * weights / sum(weights)
+        actual <- as.numeric(test_model$functions$allocate_fates(
+            expected, z, sum(expected),
+            as.integer(expected[2] > 0), as.integer(expected[3] > 0)
+        ))
+        expect_equal(actual, expected_allocation, tolerance = 1e-12)
+    }
+})
+
 test_that("multinomial allocation approximates rmultinom", {
     set.seed(123)
 
@@ -8,11 +50,13 @@ test_that("multinomial allocation approximates rmultinom", {
 
     allocation <- replicate(
         B,
-        test_model$functions$multinomial_allocation(
-            expected_counts = expected_counts,
-            z = rnorm(length(expected_counts) - 1),
-            N = N
-        )
+        as.numeric(test_model$functions$allocate_fates(
+            expected_fate_counts = expected_counts,
+            fate_allocation_noise = rnorm(3),
+            demographic_population_count = N,
+            hunting_active_sweden = 1L,
+            hunting_active_finland = 1L
+        ))
     )
 
     multinomial <- replicate(
@@ -101,11 +145,13 @@ test_that("allocation approximation works with unequal probabilities", {
 
     allocation <- replicate(
         B,
-        test_model$functions$multinomial_allocation(
-            expected_counts = expected_counts,
-            z = rnorm(length(expected_counts) - 1),
-            N = N
-        )
+        as.numeric(test_model$functions$allocate_fates(
+            expected_fate_counts = expected_counts,
+            fate_allocation_noise = rnorm(3),
+            demographic_population_count = N,
+            hunting_active_sweden = 1L,
+            hunting_active_finland = 1L
+        ))
     )
 
     multinomial <- replicate(
