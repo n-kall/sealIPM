@@ -51,8 +51,7 @@ stopifnot(
             reference_death_after_hunting)) < 1e-8
 )
 
-# With very small mortality, death is a near-zero remainder of the original
-# hunting ODE solves. Small solver boundary errors are handled by tolerance.
+# With very small mortality, death is a near-zero remainder of the hunting calculation
 near_zero_death_probability <-
     model$functions$compute_fate_probabilities(
         1.5 / 12,
@@ -76,14 +75,13 @@ stopifnot(
     ))
 )
 
-# Exercise a much more concentrated hunting hazard than the reported case.
-# The restored RK45 solves must conserve probability within tolerance.
+# Exercise a more concentrated hazard and an unequal split between countries
 extreme_fate_probability <-
     model$functions$compute_fate_probabilities(
         1.5 / 12,
         8 / 12,
         1e6,
-        1e6,
+        2e6,
         0.5,
         1e-8,
         1e-10,
@@ -94,6 +92,11 @@ extreme_fate_probability <-
 stopifnot(
     all(is.finite(extreme_fate_probability)),
     all(extreme_fate_probability >= 0),
+    isTRUE(all.equal(
+        extreme_fate_probability[3],
+        2 * extreme_fate_probability[2],
+        tolerance = 1e-12
+    )),
     isTRUE(all.equal(
         sum(extreme_fate_probability),
         1,

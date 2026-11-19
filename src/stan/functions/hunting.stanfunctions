@@ -115,6 +115,21 @@ vector compute_hunting_pressure(
   return pressure;
 }
 
+// Unit-population hunting curve shared by both countries
+real hunting_curve(
+  real time_since_hunting_start,
+  real hunting_duration,
+  real total_hunting_pressure,
+  real non_hunting_mortality_rate
+) {
+  return (hunting_duration - time_since_hunting_start)
+    * exp(
+        -total_hunting_pressure * time_since_hunting_start
+        * (hunting_duration - 0.5 * time_since_hunting_start)
+        - non_hunting_mortality_rate * time_since_hunting_start
+      );
+}
+
 /**
  * @brief Evaluate the hunting-count derivative for one country
  *
@@ -171,22 +186,34 @@ vector hunting_count_derivative(
   real hunting_pressure_competing,
   real non_hunting_mortality_rate
 ) {
-  // Expected population remaining during the hunting interval
-  real expected_alive_population =
-    population_at_hunting_start
-    * exp(
-        -(hunting_pressure_focal + hunting_pressure_competing)
-        * (hunting_duration * time_since_hunting_start - square(time_since_hunting_start) / 2.0)
-        - non_hunting_mortality_rate * time_since_hunting_start
+  real hunting_count_rate = population_at_hunting_start * hunting_pressure_focal
+    * hunting_curve(
+        time_since_hunting_start,
+        hunting_duration,
+        hunting_pressure_focal + hunting_pressure_competing,
+        non_hunting_mortality_rate
       );
-
-  // Instantaneous hunting count for the focal country
-  real hunting_count_rate =
-    expected_alive_population
-    * hunting_pressure_focal
-    * (hunting_duration - time_since_hunting_start);
-
   return rep_vector(hunting_count_rate, 1);
+}
+
+// Scale the integrated curve so the absolute solver tolerance is on a probability scale
+vector shared_hunting_derivative(
+  real time_since_hunting_start,
+  vector cumulative_hunting,
+  data real hunting_duration,
+  real total_hunting_pressure,
+  real non_hunting_mortality_rate
+) {
+  real scale = 1.0 + total_hunting_pressure;
+  return rep_vector(
+    scale * hunting_curve(
+      time_since_hunting_start,
+      hunting_duration,
+      total_hunting_pressure,
+      non_hunting_mortality_rate
+    ),
+    1
+  );
 }
 
 /**
@@ -211,15 +238,12 @@ vector hunting_count_derivative(
  * -\rho_{i,t}^{H^{\mathrm{sw}}}-\rho_{i,t}^{H^{\mathrm{fi}}}
  * @f]
  *
- * This implementation integrates hunting_count_derivative twice from zero to k with initial
- * hunting count zero and population_at_hunting_start equal to one
+ * One RK45 solve integrates the shared curve from zero to k, scaled by one
+ * plus total hunting pressure to control absolute error at high pressures
+ * Multiplying by each country's pressure divided by that scale recovers its
+ * hunting probability at onset and is well-defined even at tiny pressures
  *
- * Sweden is the focal country in the first solve and Finland in the second
- *
- * The resulting counts per unit hunting-onset population are multiplied by
- * survival from birth to hunting onset to obtain birth-referenced probabilities
- *
- * A zero focal pressure or zero hunting duration skips that solve and returns zero hunting
+ * Zero total pressure or zero hunting duration skips the solve
  *
  * @par Timing convention relative to Appendix B
  * Equation (26) distinguishes population just after birth from population
@@ -234,7 +258,7 @@ vector hunting_count_derivative(
  * \exp\left[-(E_{i,t}^{\mathrm{sw}}+E_{i,t}^{\mathrm{fi}})
  * \left(k\tau-\frac{\tau^2}{2}\right)-\mu_i\tau\right]\,d\tau
  * @f]
- * The pre-hunting factor is applied after each unit-population solve
+ * The pre-hunting factor is applied after the shared solve
  *
  * Annual survival already includes the full annual mortality hazard and is
  * not multiplied by this factor again
@@ -295,7 +319,7 @@ vector hunting_count_derivative(
  * @param max_num_steps Maximum number of steps for each hunting ODE solve
  * @param probability_tolerance Absolute tolerance for final probability validation
  * @return Probabilities in paper order: survival, Swedish hunting, Finnish hunting, other death or bycatch
- * @see hunting_count_derivative
+ * @see shared_hunting_derivative
  * @see allocate_fates
  */
 vector compute_fate_probabilities(
@@ -312,10 +336,9 @@ vector compute_fate_probabilities(
   vector[4] probability;
   real probability_sum;
   real k = hunting_duration;
+  real total_hunting_pressure = hunting_pressure_sweden + hunting_pressure_finland;
   real survival_to_hunting_start =
     exp(-non_hunting_mortality_rate * t_birth_to_start_hunt);
-  vector[1] initial_hunting = rep_vector(0.0, 1);
-  array[1] real times = { k };
 
   if (!(k >= 0.0 && k <= 1.0)) {
     reject(
@@ -342,31 +365,24 @@ vector compute_fate_probabilities(
     );
   }
 
-  // Integrate Swedish hunting and account for survival to hunting onset
+  // Integrate the shared curve and recover each birth-referenced hunting probability
   probability[2] = 0.0;
-  if (k > 0.0 && hunting_pressure_sweden > 0.0) {
-    array[1] vector[1] hunted_sweden = ode_rk45_tol(
-      hunting_count_derivative, initial_hunting, 0.0, times,
-      rel_tol, abs_tol, max_num_steps,
-      1.0, k, hunting_pressure_sweden, hunting_pressure_finland, non_hunting_mortality_rate
-    );
-    probability[2] = survival_to_hunting_start * hunted_sweden[1][1];
-  }
-
-  // Integrate Finnish hunting and account for survival to hunting onset
   probability[3] = 0.0;
-  if (k > 0.0 && hunting_pressure_finland > 0.0) {
-    array[1] vector[1] hunted_finland = ode_rk45_tol(
-      hunting_count_derivative, initial_hunting, 0.0, times,
+  if (k > 0.0 && total_hunting_pressure > 0.0) {
+    real scale = 1.0 + total_hunting_pressure;
+    array[1] vector[1] hunting_integral = ode_rk45_tol(
+      shared_hunting_derivative, rep_vector(0.0, 1), 0.0, { k },
       rel_tol, abs_tol, max_num_steps,
-      1.0, k, hunting_pressure_finland, hunting_pressure_sweden, non_hunting_mortality_rate
+      hunting_duration, total_hunting_pressure, non_hunting_mortality_rate
     );
-    probability[3] = survival_to_hunting_start * hunted_finland[1][1];
+    real hunting_at_birth = survival_to_hunting_start * hunting_integral[1][1];
+    probability[2] = hunting_at_birth * (hunting_pressure_sweden / scale);
+    probability[3] = hunting_at_birth * (hunting_pressure_finland / scale);
   }
 
   // Calculate survival and remaining non-hunting death probability
   probability[1] =
-    exp(-(hunting_pressure_sweden + hunting_pressure_finland) * square(k) / 2.0)
+    exp(-total_hunting_pressure * square(k) / 2.0)
     * exp(-non_hunting_mortality_rate);
   probability[4] =
     1.0 - probability[1] - probability[2] - probability[3];

@@ -33,6 +33,7 @@ tuple(vector, real, real) initialize_population_with_burnin(
   // Population state during burn-in
   vector[n_demo_groups] population_comp_year = population_init;
   real population_total_year;
+  matrix[n_demo_groups, n_demo_groups] survival_aging_matrix;
 
   // Normalize the shape before burn-in and keep the requested size separate
   if (!(population_init_size > 0.0) || is_inf(population_init_size)) {
@@ -51,13 +52,12 @@ tuple(vector, real, real) initialize_population_with_burnin(
   population_comp_year /= max(population_comp_year);
   population_comp_year /= sum(population_comp_year);
 
+  // Scale the aging matrix columns by survival once for all burn-in steps
+  survival_aging_matrix = diag_post_multiply(aging_matrix, survival_probability);
+
   // Run deterministic survival, aging and births to obtain the initial composition
   for (burn_in_step in 1:population_burn_in) {
-    // Apply survival and advance seals through the age classes
-    population_comp_year =
-      aging_matrix
-      * diag_matrix(survival_probability)
-      * population_comp_year;
+    population_comp_year = survival_aging_matrix * population_comp_year;
 
     // Add female pups using the adult female population
     population_comp_year[1] =
