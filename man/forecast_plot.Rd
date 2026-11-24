@@ -12,9 +12,10 @@ forecast_plot(forecast, future_years = NULL, variables = NULL)
 \item{future_years}{Calendar years for the full forecast horizon. Defaults to
 the years recorded by \code{\link[=forecast_ipm]{forecast_ipm()}}, or forecast-year indices otherwise.}
 
-\item{variables}{Variables to plot. Matrix variables use their final index
-for time and separate facets for each row. Growth-rate facets identify the
-lookback length and account for the first year with growth estimates.}
+\item{variables}{Variables to plot. Process outputs use their final index
+for time, and predictive observation arrays use their first index. Other
+indices define facets. Growth-rate facets identify the lookback length and
+account for the first year with growth estimates.}
 }
 \value{
 A ggplot object.

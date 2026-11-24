@@ -26,6 +26,7 @@ forecast_ipm <- function(
     actual_data = NULL,
     scenario_data = NULL,
     growth_rate_period = c(5, 10, 15, 20),
+    n_future_years = NULL,
     ...
 ) {
     fitted_years <- fit$years
@@ -39,14 +40,16 @@ forecast_ipm <- function(
         )
     }
 
-    n_future_years <- if (!is.null(scenario_data)) {
-        length(scenario_data$future_hunting_quota_sweden)
-    } else {
-        quota_years <- actual_data$hunting_quotas$Year
-        if (length(quota_years) == 0L || anyNA(quota_years)) {
-            cli_abort("`actual_data` must include hunting quota years.")
+    if (is.null(n_future_years)) {
+        n_future_years <- if (!is.null(scenario_data)) {
+            length(scenario_data$future_hunting_quota_sweden)
+        } else {
+            quota_years <- as.numeric(actual_data$hunting_quotas$Year)
+            if (length(quota_years) == 0L || anyNA(quota_years)) {
+                cli_abort("`actual_data` must include hunting quota years.")
+            }
+            max(quota_years) - max(fitted_years)
         }
-        max(quota_years) - max(fitted_years)
     }
 
     if (!is.finite(n_future_years) || n_future_years < 1L) {
@@ -193,18 +196,26 @@ build_grey_future_stan_data <- function(
         )
 
         out <- list(
-            future_herring_index_baltic_proper_gulf_finland = as.numeric(
-                herring_bp_gof
+            future_herring_index_baltic_proper_gulf_finland = array(
+                as.numeric(
+                    herring_bp_gof
+                )
             ),
 
-            future_herring_index_gulf_bothnia = as.numeric(herring_gob),
-
-            future_hunting_quota_sweden = as.integer(
-                quotas$hunting_quota_sweden
+            future_herring_index_gulf_bothnia = array(
+                as.numeric(herring_gob)
             ),
 
-            future_hunting_quota_finland = as.integer(
-                quotas$hunting_quota_finland
+            future_hunting_quota_sweden = array(
+                as.integer(
+                    quotas$hunting_quota_sweden
+                )
+            ),
+
+            future_hunting_quota_finland = array(
+                as.integer(
+                    quotas$hunting_quota_finland
+                )
             )
         )
     } else if (!is.null(scenario_data)) {
@@ -367,39 +378,39 @@ build_grey_future_observations <- function(
         n_future_aerial = as.integer(
             aerial$n_aerial_years
         ),
-        aerial_year = as.integer(
+        aerial_year = array(as.integer(
             aerial$aerial_year
-        ),
-        future_obs_aerial_count = as.integer(
+        )),
+        future_obs_aerial_count = array(as.integer(
             aerial$obs_aerial_count
-        ),
+        )),
 
         n_future_hunting_bag_sweden = as.integer(
             hunting_bags$n_hunting_bag_years_sweden
         ),
-        hunting_bag_year_sweden = as.integer(
+        hunting_bag_year_sweden = array(as.integer(
             hunting_bags$hunting_bag_year_sweden
-        ),
-        future_obs_hunting_bag_sweden = as.numeric(
+        )),
+        future_obs_hunting_bag_sweden = array(as.numeric(
             hunting_bags$obs_hunting_bag_sweden
-        ),
+        )),
 
         n_future_hunting_bag_finland = as.integer(
             hunting_bags$n_hunting_bag_years_finland
         ),
-        hunting_bag_year_finland = as.integer(
+        hunting_bag_year_finland = array(as.integer(
             hunting_bags$hunting_bag_year_finland
-        ),
-        future_obs_hunting_bag_finland = as.numeric(
+        )),
+        future_obs_hunting_bag_finland = array(as.numeric(
             hunting_bags$obs_hunting_bag_finland
-        ),
+        )),
 
         n_future_hunting_comp_sweden = as.integer(
             hunting_samples$n_hunting_comp_years_sweden
         ),
-        hunting_comp_year_sweden = as.integer(
+        hunting_comp_year_sweden = array(as.integer(
             hunting_samples$hunting_comp_year_sweden
-        ),
+        )),
         future_obs_hunting_comp_sweden = unname(
             hunting_samples$obs_hunting_comp_sweden
         ),
@@ -407,9 +418,9 @@ build_grey_future_observations <- function(
         n_future_hunting_comp_finland = as.integer(
             hunting_samples$n_hunting_comp_years_finland
         ),
-        hunting_comp_year_finland = as.integer(
+        hunting_comp_year_finland = array(as.integer(
             hunting_samples$hunting_comp_year_finland
-        ),
+        )),
         future_obs_hunting_comp_finland = unname(
             hunting_samples$obs_hunting_comp_finland
         ),
@@ -417,9 +428,9 @@ build_grey_future_observations <- function(
         n_future_bycatch = as.integer(
             bycatch$n_bycatch_years
         ),
-        bycatch_year = as.integer(
+        bycatch_year = array(as.integer(
             bycatch$bycatch_comp_year
-        ),
+        )),
         future_obs_bycatch_comp = unname(
             bycatch$obs_bycatch_comp
         ),
@@ -427,22 +438,22 @@ build_grey_future_observations <- function(
         n_future_pregnancy = as.integer(
             pregnancy$n_pregnancy_years
         ),
-        pregnancy_count_year = as.integer(
+        pregnancy_count_year = array(as.integer(
             pregnancy$pregnancy_count_year
-        ),
-        future_obs_pregnancy_count = as.integer(
+        )),
+        future_obs_pregnancy_count = array(as.integer(
             pregnancy$obs_pregnancy_count
-        ),
-        future_obs_pregnancy_sample_size = as.integer(
+        )),
+        future_obs_pregnancy_sample_size = array(as.integer(
             pregnancy$pregnancy_sample_size
-        ),
+        )),
 
         n_future_reproductive_signs = as.integer(
             reproductive_signs$n_reproductive_years
         ),
-        reproductive_signs_year = as.integer(
+        reproductive_signs_year = array(as.integer(
             reproductive_signs$reproductive_signs_year
-        ),
+        )),
         future_obs_reproductive_signs_finland = unname(
             reproductive_signs$obs_reproductive_signs_finland
         )
@@ -466,7 +477,7 @@ build_grey_future_sample_sizes <- function(
             out[observation_years] <- as.integer(sample_sizes)
         }
 
-        out
+        array(out)
     }
 
     hunting_sweden_sample_size <- if (

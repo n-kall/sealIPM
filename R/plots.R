@@ -3,9 +3,10 @@
 #' @param forecast Forecast draws, preferably returned by [forecast_ipm()].
 #' @param future_years Calendar years for the full forecast horizon. Defaults to
 #'   the years recorded by [forecast_ipm()], or forecast-year indices otherwise.
-#' @param variables Variables to plot. Matrix variables use their final index
-#'   for time and separate facets for each row. Growth-rate facets identify the
-#'   lookback length and account for the first year with growth estimates.
+#' @param variables Variables to plot. Process outputs use their final index
+#'   for time, and predictive observation arrays use their first index. Other
+#'   indices define facets. Growth-rate facets identify the lookback length and
+#'   account for the first year with growth estimates.
 #' @return A ggplot object.
 #' @importFrom rlang .data
 #' @export
@@ -32,12 +33,21 @@ forecast_plot <- function(forecast, future_years = NULL, variables = NULL) {
     ",",
     fixed = TRUE
   )
+  summary$facet <- sub("\\[[^]]*\\]$", "", summary$variable)
+  observation_rows <- summary$facet %in%
+    c(
+      "future_hunting_comp_finland",
+      "future_hunting_comp_sweden",
+      "future_bycatch_comp",
+      "future_reproductive_signs"
+    )
+  # Put the year last before extracting the year and facet indices
+  indices[observation_rows] <- lapply(indices[observation_rows], rev)
   summary$year_id <- vapply(
     indices,
-    function(x) as.integer(tail(x, 1)),
+    function(x) as.integer(tail(x, 1L)),
     integer(1)
   )
-  summary$facet <- sub("\\[[^]]*\\]$", "", summary$variable)
   matrix_rows <- lengths(indices) > 1L
   growth_rows <- matrix_rows &
     summary$facet %in%
@@ -80,7 +90,9 @@ forecast_plot <- function(forecast, future_years = NULL, variables = NULL) {
 
   if (!is.null(future_years)) {
     if (max(summary$year_id) > length(future_years)) {
-      cli::cli_abort("`future_years` must cover the full forecast horizon.")
+      cli::cli_abort(
+        "`future_years` must cover the full forecast horizon."
+      )
     }
     summary$year_id <- future_years[summary$year_id]
   }
