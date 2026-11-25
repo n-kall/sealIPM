@@ -170,7 +170,8 @@ build_grey_future_stan_data <- function(
     if (!is.null(actual_data)) {
         herring <- build_grey_herring(
             herring = actual_data$herring,
-            years = future_years
+            years = future_years,
+            constant_herring = actual_data$constant_herring
         )
 
         # build_grey_herring() returns one additional lagged value as the

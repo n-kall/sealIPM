@@ -197,7 +197,7 @@ transformed data {
 parameters {
   // aerial survey
   real<lower=0, upper=1> aerial_count_mu; // mu
-  real<lower=0> aerial_count_overdispersion; // r
+  real<lower=10> aerial_count_overdispersion; // Negative-binomial shape
 
   // selectivity
   vector[n_demo_groups] hunting_selectivity_sweden_sc; // g_sw

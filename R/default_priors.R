@@ -30,7 +30,7 @@ default_priors <- function(species) {
             prior_bycatch_selectivity_sd = 0.5,
 
             prior_hunting_effort_sd_location = 0,
-            prior_hunting_effort_sd_scale = 0.1,
+            prior_hunting_effort_sd_scale = 2.5,
 
             # Midpoint in standardized weighted herring-index units
             prior_herring_birth_rate_midpoint_sd = 4,

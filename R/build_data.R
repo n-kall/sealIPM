@@ -49,7 +49,16 @@ reindex_years <- function(df, year_col, years_keep, offset = 0) {
         )
 }
 
-build_grey_herring <- function(herring, years) {
+build_grey_herring <- function(herring, years, constant_herring = FALSE) {
+    if (isTRUE(constant_herring)) {
+        # Include the two lagged years used by the population process
+        reference_index <- rep(0, length(seq.int(min(years) - 2L, max(years))))
+        return(list(
+            herring_index_baltic_proper_gulf_finland = reference_index,
+            herring_index_gulf_bothnia = reference_index
+        ))
+    }
+
     out <- list()
 
     compute_index <- function(dat, region, ages_5plus) {
@@ -447,7 +456,8 @@ build_grey_stan_data <- function(
 
         build_grey_herring(
             data$herring,
-            years
+            years,
+            constant_herring = data$constant_herring
         ),
 
         build_grey_hunting_quotas(
